@@ -509,7 +509,7 @@ public class ChannelServiceImpl implements ChannelService{
 		if(raw_message.replace(" ", "").equals(MsbotConst.botName)) {
 			replyMsg.setAuto_escape(false);
 			replyMsg.setAt_sender(false);
-			replyMsg.setReply("[CQ:image,file=img/name.gif]");
+			replyMsg.setReply("(ﾉﾟ▽ﾟ)ﾉ我在哦~");
 			return replyMsg;
 		}
 		

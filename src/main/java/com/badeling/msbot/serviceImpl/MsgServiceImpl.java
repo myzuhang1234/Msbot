@@ -194,7 +194,7 @@ public class MsgServiceImpl implements MsgService{
         }else if(receiveMsg.getRaw_message().length()>=4&&receiveMsg.getRaw_message().startsWith("联盟查询")) {
         	return handLegionRank(receiveMsg);
         }else if(receiveMsg.getRaw_message().length()>=4&&receiveMsg.getRaw_message().startsWith("查询绑定")) {
-//        	查询绑定mooncute
+//        	查询绑定badeling
         	return handAddRankName(receiveMsg);
         }
 
@@ -325,7 +325,7 @@ public class MsgServiceImpl implements MsgService{
 			RankInfo rankInfo = rankInfoRepository.getInfoByUserId(receiveMsg.getUser_id());
 			if(rankInfo==null) {
 				replyMsg.setReply("请先绑定角色\r\n" + 
-						"例如：查询绑定mooncute");
+						"例如：查询绑定badeling");
 				return replyMsg;
 			}else {
 				name = rankInfo.getUser_name();
@@ -337,7 +337,7 @@ public class MsgServiceImpl implements MsgService{
     		RankInfo rankInfo = rankInfoRepository.getInfoByUserId(findNumber);
     		if(rankInfo==null) {
 				replyMsg.setReply("请先绑定角色\r\n" + 
-						"例如：查询绑定mooncute");
+						"例如：查询绑定badeling");
 				return replyMsg;
 			}else {
 				name = rankInfo.getUser_name();
@@ -757,74 +757,6 @@ public class MsgServiceImpl implements MsgService{
 			}
 			return replyMsg;
 		}
-		
-//		 while (it.hasNext()) {
-//			 msg = it.next();
-//			 if (raw_message.toLowerCase().contains(msg.getQuestion().toLowerCase())) {
-//				 replyMsg.setAt_sender(false);
-//				 replyMsg.setReply(msg.getAnswer());
-//				 return replyMsg;
-//			 }
-//		 }
-		
-//		复制图片到备份目录
-//		if(raw_message.contains("测试图片")) {
-//			Set<Msg> findAllQuestion = msgRepository.findAllQuestion();
-//			Iterator<Msg> iterator = findAllQuestion.iterator();
-//			
-//			List<MsgNoPrefix> findMsgNPList = msgNoPrefixRepository.findMsgNPList();
-//			while(iterator.hasNext()) {
-//				Msg next = iterator.next();
-//				String msgText = "";
-//				if(next.getLink()!=null&&!next.getLink().isEmpty()) {
-//					msgText = next.getAnswer() + next.getLink();
-//				}else {
-//					msgText = next.getAnswer();
-//				}
-//				
-//				if(msgText!=null&&msgText.contains("[CQ:image,file=")) {
-//					String[] shortMessage = msgText.split("\\[CQ:image,file=");	
-//		        	for(int i=0;i<shortMessage.length;i++) {
-//		        		int indexOf = shortMessage[i].indexOf("]");
-//		        		if(i>0&&indexOf!=-1) {
-//		        			String imageName = shortMessage[i].substring(0,indexOf);
-//		        			if(imageName.startsWith("save")) {
-//		        				File file = new File(MsbotConst.imageUrl + imageName);
-//		        				System.out.println(MsbotConst.imageUrl + "save_backup/"+file.getName());
-//		        				
-//		        				try {
-//		        					// 打开输入流
-//			        		        FileInputStream fis = new FileInputStream(file.getPath());
-//			        		        // 打开输出流
-//			        		        FileOutputStream fos = new FileOutputStream(MsbotConst.imageUrl + "save_backup/"+file.getName());
-//			        		        
-//			        		        // 读取和写入信息
-//			        		        int len = 0;
-//			        		        while ((len = fis.read()) != -1) {
-//			        		            fos.write(len);
-//			        		        }
-//			        		        
-//			        		        // 关闭流  先开后关  后开先关
-//			        		        fos.close(); // 后开先关
-//			        		        fis.close(); // 先开后关
-//								} catch (Exception e) {
-//									e.printStackTrace();
-//								}
-//		        		        
-//		        				
-//		        				
-//		        			}
-//		        		}
-//		        	}
-//				}
-//				
-//				
-//			}
-//			replyMsg.setReply("ok");
-//			return replyMsg;
-//			
-//		}
-		
 		
 		//删除
 		if(raw_message.startsWith(MsbotConst.botName+"删除问题")||raw_message.startsWith(MsbotConst.botName+" 删除问题")) {
@@ -1461,6 +1393,13 @@ public class MsgServiceImpl implements MsgService{
 		    }
 		    replyMsg.setReply(message.toString());
 		    return replyMsg;
+		}
+		
+		if(raw_message.replace(" ", "").equals(MsbotConst.botName)) {
+			replyMsg.setAuto_escape(false);
+			replyMsg.setAt_sender(false);
+			replyMsg.setReply("(ﾉﾟ▽ﾟ)ﾉ我在哦~");
+			return replyMsg;
 		}
 		
 		if(raw_message.replaceAll(MsbotConst.botName, "").replaceAll(" ","").equals("")) {
