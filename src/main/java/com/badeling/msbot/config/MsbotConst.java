@@ -19,7 +19,7 @@ public class MsbotConst {
 	//拉黑的qq号
 	public static final String[] blackList = {"323","423"};
 	
-	//第三方机器人 允许发言的频道
+	//第三方机器人 也就是上面登录的账号 允许发言的频道
 	public static final String[] botChannel = {"3155841637194909"};
 	
 	//茉莉机器人key
@@ -27,22 +27,23 @@ public class MsbotConst {
 	//茉莉机器人Secret
 	public static final String moliSecret = "";
 	
-	//茉莉机器人key
+	//茉莉机器人key 可以和上面填一样 一个是官方频道机器人用的 一个是上面登录的第三方机器人用的
 	public static final String moliKey2 = "";
 	//茉莉机器人Secret
 	public static final String moliSecret2 = "";
 	
-	//百度云识图Key
+	//百度云识图Key 可不填 只影响 识图和起源39自动识别功能 原本的气象功能已废弃
+	//百度云识图 普通模式每天免费5w次 高精度模式每天免费500次
 	public static final String baiduKey = "";
 	//百度云识图Secret
 	public static final String baiduSecret = "";
-	//百度翻译api
+	//百度翻译api 跟上面一样 每天有免费的次数 用不完
 	public static final String appid="";
 	//百度翻译key
 	public static final String securityKey="";
 
 	
-	//腾讯云key
+	//腾讯云key 这个可以不填 是为官方机器人用的 这个以后有条件再教
 	public static final String tencentSecretId = "";
 	//腾讯云Secret
 	public static final String tencentSecretKey = "";
