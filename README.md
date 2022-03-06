@@ -13,7 +13,6 @@
 ## 静态资源 
 
 下载链接：链接：https://pan.baidu.com/s/1DqnaK_MKystywwAsT_nZ7g 
-
 提取码：9xgb
 
 image.zip 图片资源 解压到go-cqhttp/data/image/
