@@ -521,8 +521,9 @@ public class ChannelOfficialServiceImpl implements ChannelOfficialService{
 		
 		//官网
 		if(raw_message.startsWith(MsbotConst.channelBotName+"官网")||raw_message.startsWith(MsbotConst.channelBotName+" 官网")) {
-			raw_message = raw_message.replace("官网", "");
-			raw_message = raw_message.replace(MsbotConst.channelBotName, "");
+			raw_message = raw_message.replaceAll("官网", "");
+			raw_message = raw_message.replaceAll(" ", "");
+			raw_message = raw_message.replaceAll(MsbotConst.channelBotName, "");
 			
 			if(raw_message.isEmpty()) {
 				replyMsg.setReply("输入【官网+项目】，查询游戏官网最新资讯。常见项目有：周日冒险岛、维护、敲敲乐、礼品袋");
