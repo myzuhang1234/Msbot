@@ -1321,7 +1321,70 @@ public class MsgServiceImpl implements MsgService{
 		if(raw_message.startsWith(MsbotConst.botName+"官网")||raw_message.startsWith(MsbotConst.botName+" 官网")) {
 			raw_message = raw_message.replace("官网", "");
 			raw_message = raw_message.replace(MsbotConst.botName, "");
+			if(raw_message.isEmpty()) {
+				replyMsg.setReply("输入【官网+项目】，查询游戏官网最新资讯。常见项目有：周日冒险岛、维护、敲敲乐、礼品袋");
+				return replyMsg;
+			}
+			
+/**			
+ * 			这一段代码本来是因为最近周日冒险岛没加索引 所以添加一个新从首页查询 再搜索查询
+ * 			但是我写完之后发现周日冒险岛从首页挤出去了 现在首页也找不到
+ * 			所以先放在这
+  			 */
+			
+//			//官网首页找
+//			try {
+//				String url = "http://mxd.web.sdo.com/web6/home/index.asp";
+//				Document doc = Jsoup.connect(url).get();
+//				Elements eleList = doc.select("div.news-list");
+//				
+//				for(Element element : eleList) {
+//					Elements elementsByTag2 = element.getElementsByTag("li");
+//					for(Element tempElement : elementsByTag2) {
+//						System.out.println(tempElement.text());
+//						if(tempElement.text().contains("转蛋")) {
+//							Element first = tempElement.getElementsByAttribute("href").first();
+//							url = first.attr("href").replaceAll("&amp;", "&");
+//
+//							if(url.startsWith("..")) {
+//								url = "http://mxd.sdo.com/web6" + url.substring(2);
+//							}
+//							url = "http://mxd.sdo.com/web6" + element.getElementsByAttribute("href").first().attr("href").replaceAll("&amp;", "&").substring(2);
+//							Document doc2 = Jsoup.connect(url).get();
+//							
+//							Element ele1 = doc2.getElementsByClass("innerTitle").first();
+//							Element ele2 = doc2.getElementsByClass("innerText").first();
+//							String message = "";
+//							for(Element temp : ele1.children()) {
+//								message = message + temp.text() + "\r\n";
+//							}
+////							message = message + "官网链接：" + url + "\r\n";
+//							if(ele2.text().length()>100) {
+//								message = message + ele2.text().substring(0,100)+"...";
+//							}else {
+//								message = message + ele2.text();
+//							}
+//							
+//							if(ele2.getElementsByTag("img").toString().length()>0) {
+//								Elements elementsByTag = ele2.getElementsByTag("img");
+//								for(Element temp : elementsByTag) {
+//									String imageUrl = mvpImageService.saveTempImage(temp.attr("src"));
+//									message = message + "[CQ:image,file="+imageUrl+"]";
+//								}
+//								
+//							}
+//							System.out.println(message);
+//							replyMsg.setReply(message);
+//							return replyMsg;
+//						}
+//					}
+//				}
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//			}
+			//搜索页面找
 			String url = "http://mxd.sdo.com/web6/news/newsList.asp?wd=" + raw_message +"&CategoryID=a";
+			
 			try {
 				Document doc = Jsoup.connect(url).get();
 				Element element = doc.select(".newList").first();

@@ -69,6 +69,10 @@ public class ChannelOfficialServiceImpl implements ChannelOfficialService{
 	@Autowired
 	GroupMsgService groupMsgService;
 	
+	public static void main(String[] args) {
+		
+	}
+	
 	@Override
 	public String receive(String msg) {
 		Map<String, Object> map = (Map<String, Object>)JSON.parseObject(msg);
@@ -517,13 +521,14 @@ public class ChannelOfficialServiceImpl implements ChannelOfficialService{
 		
 		//官网
 		if(raw_message.startsWith(MsbotConst.channelBotName+"官网")||raw_message.startsWith(MsbotConst.channelBotName+" 官网")) {
-			if(raw_message.equals(MsbotConst.channelBotName+"官网")) {
+			raw_message = raw_message.replace("官网", "");
+			raw_message = raw_message.replace(MsbotConst.channelBotName, "");
+			
+			if(raw_message.isEmpty()) {
 				replyMsg.setReply("输入【官网+项目】，查询游戏官网最新资讯。常见项目有：周日冒险岛、维护、敲敲乐、礼品袋");
 				return replyMsg;
 			}
-			
-			raw_message = raw_message.replace("官网", "");
-			raw_message = raw_message.replace(MsbotConst.channelBotName, "");
+
 			String url = "http://mxd.sdo.com/web6/news/newsList.asp?wd=" + raw_message +"&CategoryID=a";
 			try {
 				Document doc = Jsoup.connect(url).get();
@@ -544,8 +549,6 @@ public class ChannelOfficialServiceImpl implements ChannelOfficialService{
 				}else {
 					message = message + ele2.text();
 				}
-				
-				message = message.replace("http://kf.sdo.com", "游戏官网");
 				
 				if(ele2.getElementsByTag("img").toString().length()>0) {
 					Elements elementsByTag = ele2.getElementsByTag("img");

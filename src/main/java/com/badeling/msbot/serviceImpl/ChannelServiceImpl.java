@@ -431,7 +431,13 @@ public class ChannelServiceImpl implements ChannelService{
 		if(raw_message.startsWith(MsbotConst.botName+"官网")||raw_message.startsWith(MsbotConst.botName+" 官网")) {
 			raw_message = raw_message.replace("官网", "");
 			raw_message = raw_message.replace(MsbotConst.botName, "");
+			if(raw_message.isEmpty()) {
+				replyMsg.setReply("输入【官网+项目】，查询游戏官网最新资讯。常见项目有：周日冒险岛、维护、敲敲乐、礼品袋");
+				return replyMsg;
+			}
+			
 			String url = "http://mxd.sdo.com/web6/news/newsList.asp?wd=" + raw_message +"&CategoryID=a";
+			
 			try {
 				Document doc = Jsoup.connect(url).get();
 				Element element = doc.select(".newList").first();
@@ -586,6 +592,7 @@ public class ChannelServiceImpl implements ChannelService{
 			String name = channelMsg.getSender().getNickname();
 			try {
 				reply = msgZbCalculate.msgZb(channelMsg.getUser_id()+"");
+				reply = name + reply;
 				replyMsg.setReply(reply);
 				replyMsg.setAt_sender(true);
 				return replyMsg;
