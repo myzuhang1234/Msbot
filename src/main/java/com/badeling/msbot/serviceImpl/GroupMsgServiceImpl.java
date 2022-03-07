@@ -55,7 +55,7 @@ public class GroupMsgServiceImpl implements GroupMsgService{
 	
 	@Override
 	public Result<?> sendGroupMsg(GroupMsg groupMsg) {
-		System.out.println(groupMsg.toString());
+		groupMsg.setMessage(groupMsg.getMessage().replaceAll("\\\\", "/"));
 		Result<?> result = restTemplate.postForObject("http://127.0.0.1:5700/send_group_msg", groupMsg, Result.class);
 		System.err.println(result.toString());
 		return result;
@@ -63,6 +63,7 @@ public class GroupMsgServiceImpl implements GroupMsgService{
 	
 	@Override
 	public Result<?> sendChannelMsg(ChannelReplyMsg channelReplyMsg) {
+		channelReplyMsg.setMessage(channelReplyMsg.getMessage().replaceAll("\\\\", "/"));
 		Result<?> result = restTemplate.postForObject("http://127.0.0.1:5700/send_guild_channel_msg", channelReplyMsg, Result.class);
         return result;
 	}
