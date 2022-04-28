@@ -28,7 +28,8 @@ public class GroupMsgServiceImpl implements GroupMsgService{
 
 	@Autowired
     RestTemplate restTemplate;
-
+	
+	
 //  @LoadBalanced
 	@Bean
 	@Autowired

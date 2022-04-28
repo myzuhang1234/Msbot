@@ -495,28 +495,29 @@ public class ChannelOfficialServiceImpl implements ChannelOfficialService{
 			return replyMsg;
 		}
 		
-		if(raw_message.contains("抽卡")&&!raw_message.contains("系统")) {
-			if(raw_message.contains("kf")||raw_message.contains("KF")) {
-				String mes;
-				try {
-					mes = drawService.startDraw();
-				} catch (Exception e) {
-					e.printStackTrace();
-					mes = "图片文件缺失。";
-				}
-				replyMsg.setReply(mes);
-				return replyMsg;
-			}else {
-				String mes;
-				try {
-					mes = drawService.kemomimiDraw();
-				} catch (Exception e) {
-					e.printStackTrace();
-					mes = "图片文件缺失。";
-				}
-				replyMsg.setReply(mes);
-				return replyMsg;
+		if(raw_message.contains("抽卡")) {
+			String mes;
+			try {
+				mes = drawService.kemomimiDraw();
+			} catch (Exception e) {
+				e.printStackTrace();
+				mes = "图片文件缺失。";
 			}
+			replyMsg.setReply(mes);
+			return replyMsg;
+		}
+		
+		if(raw_message.contains("抽奖")||raw_message.contains("魔女")||raw_message.contains("百分百")) {
+			String mes;
+			try {
+				mes = drawService.startDrawMs();
+			} catch (Exception e) {
+				e.printStackTrace();
+				mes = "图片文件缺失。";
+			}
+			replyMsg.setAt_sender(true);
+			replyMsg.setReply(mes);
+			return replyMsg;
 		}
 		
 		//官网

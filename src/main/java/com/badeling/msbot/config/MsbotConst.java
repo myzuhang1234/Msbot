@@ -19,8 +19,9 @@ public class MsbotConst {
 	//拉黑的qq号
 	public static final String[] blackList = {"323","423"};
 	
-	//第三方机器人 也就是上面登录的账号 允许发言的频道
-	public static final String[] botChannel = {"3155841637194909"};
+	//第三方机器人 也就是上面登录的账号 允许发言的频道 QQ频道发一句话 然后后台查看频道id
+	//"channel_id":"1609899"
+	public static final String[] botChannel = {"1609899"};
 	
 	//茉莉机器人key
 	public static final String moliKey = "";

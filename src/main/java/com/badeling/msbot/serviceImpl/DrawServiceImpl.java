@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -47,8 +49,6 @@ public class DrawServiceImpl implements DrawService{
 	
 	@Autowired
 	FriendsRepository friendsRepository;
-	
-	
 	
 	@Override
 	public String startDraw() throws Exception {
@@ -726,6 +726,69 @@ public class DrawServiceImpl implements DrawService{
 	        ImageIO.write(sourceFile, "jpg", new File(saveFilePath));
 	        generateWaterFile(sourceFile, saveFilePath);
 			return "[CQ:image,file=" + uuid +".jpg]";
+		}
+
+		@Override
+		public String startDrawMs() throws Exception {
+			Random r = new Random();
+	        HashSet<Integer> randomList = new HashSet<>();
+	        while (randomList.size() < 10) {
+	        	int i = r.nextInt(10000)+1;
+	        	randomList.add(i);
+	        }
+	        
+	        Calendar cal = Calendar.getInstance();
+			int w=cal.get(Calendar.DAY_OF_WEEK)-1;
+	        
+			String sourceFilePath = MsbotConst.imageUrl + "bfb/" + "mn.jpg";
+
+			String uuid = UUID.randomUUID().toString().replaceAll("-", "");
+	        String saveFilePath = MsbotConst.imageUrl + uuid +".png";
+	        BufferedImage sourceFile = ImageIO.read(new File(sourceFilePath));
+	        
+	        BufferedImage buffImg1 = ImageIO.read(new File(MsbotConst.imageUrl + "bfb/a" + w + "1.png"));
+	        BufferedImage buffImg2 = ImageIO.read(new File(MsbotConst.imageUrl + "bfb/a" + w + "2.png"));
+	        BufferedImage buffImg3 = ImageIO.read(new File(MsbotConst.imageUrl + "bfb/a" + w + "3.png"));
+	        BufferedImage buffImg4 = ImageIO.read(new File(MsbotConst.imageUrl + "bfb/a" + w + "4.png"));
+	        BufferedImage buffImg5 = ImageIO.read(new File(MsbotConst.imageUrl + "bfb/a" + w + "5.png"));
+	        List<BufferedImage> list = new ArrayList<>();
+	        for(Integer random : randomList) {
+	        	if(random<7550) {
+	        		list.add(NewImageUtils.resizeBufferedImage(buffImg1,90,90,false));
+	        	}else if(random<7550+2124){
+	        		list.add(NewImageUtils.resizeBufferedImage(buffImg2,90,90,false));
+	        	}else if(random<7550+2124+300) {
+	        		list.add(NewImageUtils.resizeBufferedImage(buffImg3,90,90,false));
+	        	}else if(random<7550+2124+300+20) {
+	        		list.add(NewImageUtils.resizeBufferedImage(buffImg4,90,90,false));
+	        	}else {
+	        		list.add(NewImageUtils.resizeBufferedImage(buffImg5,90,90,false));
+	        	}
+	        }
+	        
+	        sourceFile = watermark(sourceFile, list.get(0) , 375, 410, 1.0f);
+	        sourceFile = watermark(sourceFile, list.get(1) , 620, 410, 1.0f);
+	        sourceFile = watermark(sourceFile, list.get(2) , 870, 410, 1.0f);
+	        sourceFile = watermark(sourceFile, list.get(3) , 250, 610, 1.0f);
+	        sourceFile = watermark(sourceFile, list.get(4) , 500, 610, 1.0f);
+	        sourceFile = watermark(sourceFile, list.get(5) , 745, 610, 1.0f);
+	        sourceFile = watermark(sourceFile, list.get(6) , 990, 610, 1.0f);
+	        sourceFile = watermark(sourceFile, list.get(7) , 375, 805, 1.0f);
+	        sourceFile = watermark(sourceFile, list.get(8) , 620, 805, 1.0f);
+	        sourceFile = watermark(sourceFile, list.get(9) , 870, 805, 1.0f);
+	        
+//	        buffImg = resizeBufferedImage(buffImg,buffImg.getWidth()/2,buffImg.getHeight()/2,true);
+	     // TYPE_INT_RGB:创建一个RBG图像，24位深度，成功将32位图转化成24位
+	        BufferedImage newBufferedImage = new BufferedImage(
+	        		sourceFile.getWidth(), sourceFile.getHeight(),
+	                BufferedImage.TYPE_INT_RGB);
+	        newBufferedImage.createGraphics().drawImage(sourceFile, 0, 0,
+	            Color.WHITE, null);
+	        // write to jpeg file
+//	        ImageIO.write(newBufferedImage, "jpg", new File(MsbotConst.imageUrl + "bfb/mn1.jpg"));
+	        ImageIO.write(newBufferedImage, "jpg", new File(MsbotConst.imageUrl +uuid +".jpg"));
+	        generateWaterFile(newBufferedImage, saveFilePath);
+	        return "[CQ:image,file=" + uuid +".jpg]";
 		}
 
 

@@ -165,13 +165,11 @@ public class MsgServiceImpl implements MsgService{
         
         if(receiveMsg.getRaw_message().startsWith(MsbotConst.botName)) {
         	System.out.println(receiveMsg.toString());
-        	ReplyMsg result = handleNameMsg(receiveMsg);
-        	return result;
+        	return handleNameMsg(receiveMsg);
         }else if(receiveMsg.getRaw_message().startsWith("[CQ:at,qq="+MsbotConst.botId+"]")){
            	receiveMsg.setRaw_message(receiveMsg.getRaw_message().replace("[CQ:at,qq="+MsbotConst.botId+"]", MsbotConst.botName));
         	System.out.println(receiveMsg.toString());
-        	ReplyMsg result = handleNameMsg(receiveMsg);
-        	return result;
+        	return handleNameMsg(receiveMsg);
         }else if((receiveMsg.getRaw_message().contains("气象")||receiveMsg.getRaw_message().contains("MVP"))&&receiveMsg.getRaw_message().length()<=40){
         	System.out.println(receiveMsg.toString());
         	return null;
@@ -197,7 +195,7 @@ public class MsgServiceImpl implements MsgService{
 //        	查询绑定badeling
         	return handAddRankName(receiveMsg);
         }
-
+        
         //收币 or 卖币
 //        Pattern r = Pattern.compile(".*\\d+[e|E|\\亿].*");
 //		Matcher m = r.matcher(receiveMsg.getRaw_message());
@@ -212,6 +210,7 @@ public class MsgServiceImpl implements MsgService{
     	return handRereadMsg(receiveMsg);
         
 	}
+
 	private ReplyMsg handRecognizeOz39(ReceiveMsg receiveMsg) {
 		//识图
 		String[] result = mvpImageService.handHigherImageMsg(receiveMsg);
@@ -389,6 +388,29 @@ public class MsgServiceImpl implements MsgService{
 		ReplyMsg replyMsg = privateService.handlePrivateMsg(receiveMsg);
 		return replyMsg;
 	}
+	
+	
+	private ReplyMsg handRecognize3(ReceiveMsg receiveMsg) {
+		//识图
+		String[] result = mvpImageService.handHigherImageMsg(receiveMsg);
+		//接受数据
+		String raw_message = "";
+		try {
+			@SuppressWarnings("unchecked")
+			Map<String,Object> backMessage = (Map<String, Object>) JSONObject.parse(result[0]);
+			@SuppressWarnings("unchecked")
+			List<Map<String,String>> list = (List<Map<String, String>>) backMessage.get("words_result");
+			for(Map<String,String> a : list) {
+				raw_message = raw_message + a.get("words");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+		ReplyMsg replyMsg = new ReplyMsg();
+		replyMsg.setReply(raw_message);
+		return replyMsg;
+}
 
 	private ReplyMsg handRecognize2(ReceiveMsg receiveMsg) {
 				//识图
@@ -587,12 +609,12 @@ public class MsgServiceImpl implements MsgService{
 	}
 	
 	private ReplyMsg handleNameMsg(ReceiveMsg receiveMsg) {
-		
 		Msg msg = null;
 		ReplyMsg replyMsg = new ReplyMsg();
 		String raw_message = receiveMsg.getMessage();
 		replyMsg.setAt_sender(true);
 		replyMsg.setAuto_escape(false);
+		
 		//布尔学习
 		if(raw_message.contains("学习")&&raw_message.contains("布尔问")&&raw_message.contains("答")) {
 			if(receiveMsg.getUser_id().equalsIgnoreCase(MsbotConst.masterId)) {
@@ -1078,32 +1100,6 @@ public class MsgServiceImpl implements MsgService{
 			return replyMsg;
 		}
 		
-		//抽卡
-		if(raw_message.contains("抽卡系统")) {
-			if(raw_message.contains("更新friends")) {
-				String update;
-				if(receiveMsg.getUser_id().contains(MsbotConst.masterId)) {
-					update = drawService.updateFriends();
-				}else {
-					update = "由于更新过程长达30S~120S不等，所以只对ADMIN开放";
-				}
-				replyMsg.setReply(update);
-				return replyMsg;
-			}
-			if(raw_message.contains("更新photo")) {
-				String update;
-				if(receiveMsg.getUser_id().contains(MsbotConst.masterId)) {
-					update = drawService.updatePhoto();
-				}else {
-					update = "由于更新过程长达30S~120S不等，所以只对ADMIN开放";
-				}
-				replyMsg.setReply(update);
-				return replyMsg;
-			}
-
-		}
-		
-		
 		//扔xxx
 		if(raw_message.startsWith(MsbotConst.botName+"扔")&&raw_message.contains("[CQ:at")) {
     		try {
@@ -1293,29 +1289,32 @@ public class MsgServiceImpl implements MsgService{
 			}
 		}
 		
-		if(raw_message.contains("抽卡")&&!raw_message.contains("系统")) {
-			if(raw_message.contains("kf")||raw_message.contains("KF")) {
-				String mes;
-				try {
-					mes = drawService.startDraw();
-				} catch (Exception e) {
-					e.printStackTrace();
-					mes = "图片文件缺失。";
-				}
-				replyMsg.setReply(mes);
-				return replyMsg;
-			}else {
-				String mes;
-				try {
-					mes = drawService.kemomimiDraw();
-				} catch (Exception e) {
-					e.printStackTrace();
-					mes = "图片文件缺失。";
-				}
-				replyMsg.setReply(mes);
-				return replyMsg;
+		if(raw_message.contains("抽卡")) {
+			String mes;
+			try {
+				mes = drawService.kemomimiDraw();
+			} catch (Exception e) {
+				e.printStackTrace();
+				mes = "图片文件缺失。";
 			}
+			replyMsg.setReply(mes);
+			return replyMsg;
 		}
+		
+		
+		if(raw_message.contains("抽奖")||raw_message.contains("魔女")||raw_message.contains("百分百")) {
+			String mes;
+			try {
+				mes = drawService.startDrawMs();
+			} catch (Exception e) {
+				e.printStackTrace();
+				mes = "图片文件缺失。";
+			}
+			replyMsg.setAt_sender(true);
+			replyMsg.setReply(mes);
+			return replyMsg;
+		}
+		
 		
 		//官网
 		if(raw_message.startsWith(MsbotConst.botName+"官网")||raw_message.startsWith(MsbotConst.botName+" 官网")) {

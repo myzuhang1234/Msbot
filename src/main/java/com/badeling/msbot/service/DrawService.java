@@ -12,6 +12,8 @@ public interface DrawService {
 	String updatePhoto();
 
 	String startDraw() throws Exception;
+	
+	String startDrawMs() throws Exception;
 
 	String kemomimiDraw() throws Exception;
 
