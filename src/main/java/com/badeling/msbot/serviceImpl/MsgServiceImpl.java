@@ -1288,7 +1288,7 @@ public class MsgServiceImpl implements MsgService{
 				e.printStackTrace();
 			}
 		}
-		/**
+
 		if(raw_message.contains("抽卡")) {
 			String mes;
 			try {
@@ -1299,9 +1299,8 @@ public class MsgServiceImpl implements MsgService{
 			}
 			replyMsg.setReply(mes);
 			return replyMsg;
-		}**/
-		
-		
+		}
+
 		if(raw_message.contains("抽奖")||raw_message.contains("魔女")||raw_message.contains("百分百")) {
 			String mes;
 			MonvTime monvTime = monvTimeRepository.findRoleBynumber(receiveMsg.getSender().getUser_id());
@@ -1331,8 +1330,8 @@ public class MsgServiceImpl implements MsgService{
 				firstmark = true;
 			}
 
-			Long cd_time = (time_now.getTime()-monvTime.getUpdateTime().getTime())/ 1000;
-			if (cd_time >= MsbotConst.monv_cd || firstmark==true){
+			long cd_time = (time_now.getTime()-monvTime.getUpdateTime().getTime())/ 1000;
+			if (cd_time >= MsbotConst.monv_cd || firstmark){
 				monvTime.setUpdateTime(time_now);
 				monvTimeRepository.modifyUpdateTime(monvTime.getId(), monvTime.getUpdateTime());
 
