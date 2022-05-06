@@ -1,6 +1,7 @@
 package com.badeling.msbot.serviceImpl;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -15,6 +16,7 @@ import java.util.TreeSet;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
+import com.badeling.msbot.repository.*;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -41,14 +43,7 @@ import com.badeling.msbot.entity.RankInfo;
 import com.badeling.msbot.entity.RereadSentence;
 import com.badeling.msbot.entity.RereadTime;
 import com.badeling.msbot.entity.RoleDmg;
-import com.badeling.msbot.repository.MsgNoPrefixRepository;
-import com.badeling.msbot.repository.MsgRepository;
-import com.badeling.msbot.repository.QuizOzAnswerRepository;
-import com.badeling.msbot.repository.QuizOzQuestionRepository;
-import com.badeling.msbot.repository.RankInfoRepository;
-import com.badeling.msbot.repository.RereadSentenceRepository;
-import com.badeling.msbot.repository.RereadTimeRepository;
-import com.badeling.msbot.repository.RoleDmgRepository;
+import com.badeling.msbot.entity.MonvTime;
 import com.badeling.msbot.service.ChannelService;
 import com.badeling.msbot.service.DrawService;
 import com.badeling.msbot.service.GroupMsgService;
@@ -111,6 +106,9 @@ public class MsgServiceImpl implements MsgService{
 	
 	@Autowired
 	QuizOzAnswerRepository quizOzAnswerRepository;
+
+	@Autowired
+	private MonvTimeRepository monvTimeRepository;
 	
 	@Override
 	public ReplyMsg receive(String msg) {
@@ -831,6 +829,8 @@ public class MsgServiceImpl implements MsgService{
 				}
 				roleDmg.setCommonDmg(100);
 				roleDmg.setBossDmg(200);
+				System.out.println("roleDmg:");
+				System.out.println(roleDmg);
 				roleDmg = roleDmgRepository.save(roleDmg);
 			}
 			try {
@@ -1288,7 +1288,7 @@ public class MsgServiceImpl implements MsgService{
 				e.printStackTrace();
 			}
 		}
-		
+		/**
 		if(raw_message.contains("抽卡")) {
 			String mes;
 			try {
@@ -1299,20 +1299,57 @@ public class MsgServiceImpl implements MsgService{
 			}
 			replyMsg.setReply(mes);
 			return replyMsg;
-		}
+		}**/
 		
 		
 		if(raw_message.contains("抽奖")||raw_message.contains("魔女")||raw_message.contains("百分百")) {
 			String mes;
-			try {
-				mes = drawService.startDrawMs();
-			} catch (Exception e) {
-				e.printStackTrace();
-				mes = "图片文件缺失。";
+			MonvTime monvTime = monvTimeRepository.findRoleBynumber(receiveMsg.getSender().getUser_id());
+
+			if(monvTime == null) {
+				//查询无角色
+				monvTime = new MonvTime();
+				//设置群名片 如果没有 设置昵称
+				if(receiveMsg.getSender().getCard()==null || receiveMsg.getSender().getCard().equals("")) {
+					monvTime.setName(receiveMsg.getSender().getNickname());
+				}else {
+					monvTime.setName(receiveMsg.getSender().getCard());
+				}
+				//设置QQ号
+				monvTime.setUser_id(receiveMsg.getSender().getUser_id());
+				//设置群号
+				if(receiveMsg.getGroup_id().contains("101577006")) {
+					monvTime.setGroup_id("398359236");
+				}else {
+					monvTime.setGroup_id(receiveMsg.getGroup_id());
+				}
+				Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+				monvTime.setUpdateTime(timestamp);
+				monvTime = monvTimeRepository.save(monvTime);
 			}
-			replyMsg.setAt_sender(true);
-			replyMsg.setReply(mes);
-			return replyMsg;
+			Timestamp time_now = new Timestamp(System.currentTimeMillis());
+			Long cd_time = (time_now.getTime()-monvTime.getUpdateTime().getTime())/ 1000;
+
+			if (cd_time >= MsbotConst.monv_cd){
+				monvTime.setUpdateTime(time_now);
+				monvTimeRepository.modifyUpdateTime(monvTime.getId(), monvTime.getUpdateTime());
+
+				try {
+					mes = drawService.startDrawMs();
+				} catch (Exception e) {
+					e.printStackTrace();
+					mes = "图片文件缺失。";
+				}
+				replyMsg.setAt_sender(true);
+				replyMsg.setReply(mes);
+				return replyMsg;
+			}
+			else {
+				mes = "抽奖冷却中,剩余"+(MsbotConst.monv_cd-cd_time)+"秒";
+				replyMsg.setAt_sender(true);
+				replyMsg.setReply(mes);
+				return replyMsg;
+			}
 		}
 		
 		

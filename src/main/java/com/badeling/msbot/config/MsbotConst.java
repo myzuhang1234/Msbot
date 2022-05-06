@@ -3,22 +3,25 @@ package com.badeling.msbot.config;
 public class MsbotConst {
 	
 	//go cqhttp本体
-	public static final String miraiUrl = "D:/go-cqhttp";
+	public static final String miraiUrl = "/Users/wuyingdi/go-cqhttp";
 	//go-cqhttp图片目录
 	public static final String imageUrl = miraiUrl + "/data/images/";
 	//机器人昵称
 	public static final String botName = "蠢猫";
 	//自己的昵称 
-	public static final String masterName = "BadeLing";
+	public static final String masterName = "yoyodi";
 	//机器人qq号
-	public static final String botId = "123456";
+	public static final String botId = "709037643";
 	//自己的qq号 超级管理员
-	public static final String masterId = "123456";
+	public static final String masterId = "7707131";
 	//管理员qq号
 	public static final String[] managerId = {"123","223"};
 	//拉黑的qq号
 	public static final String[] blackList = {"323","423"};
-	
+
+	//魔女cd 单位秒
+	public static final int monv_cd = 120;
+
 	//第三方机器人 也就是上面登录的账号 允许发言的频道 QQ频道发一句话 然后后台查看频道id
 	//"channel_id":"1609899"
 	public static final String[] botChannel = {"1609899"};
