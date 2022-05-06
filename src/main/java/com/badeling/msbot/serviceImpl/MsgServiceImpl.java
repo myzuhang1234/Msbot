@@ -1305,6 +1305,8 @@ public class MsgServiceImpl implements MsgService{
 		if(raw_message.contains("抽奖")||raw_message.contains("魔女")||raw_message.contains("百分百")) {
 			String mes;
 			MonvTime monvTime = monvTimeRepository.findRoleBynumber(receiveMsg.getSender().getUser_id());
+			Timestamp time_now = new Timestamp(System.currentTimeMillis());
+			boolean firstmark = false;
 
 			if(monvTime == null) {
 				//查询无角色
@@ -1326,11 +1328,11 @@ public class MsgServiceImpl implements MsgService{
 				Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 				monvTime.setUpdateTime(timestamp);
 				monvTime = monvTimeRepository.save(monvTime);
+				firstmark = true;
 			}
-			Timestamp time_now = new Timestamp(System.currentTimeMillis());
-			Long cd_time = (time_now.getTime()-monvTime.getUpdateTime().getTime())/ 1000;
 
-			if (cd_time >= MsbotConst.monv_cd){
+			Long cd_time = (time_now.getTime()-monvTime.getUpdateTime().getTime())/ 1000;
+			if (cd_time >= MsbotConst.monv_cd || firstmark==true){
 				monvTime.setUpdateTime(time_now);
 				monvTimeRepository.modifyUpdateTime(monvTime.getId(), monvTime.getUpdateTime());
 

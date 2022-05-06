@@ -3,17 +3,17 @@ package com.badeling.msbot.config;
 public class MsbotConst {
 	
 	//go cqhttp本体
-	public static final String miraiUrl = "/Users/wuyingdi/go-cqhttp";
+	public static final String miraiUrl = "D:/go-cqhttp";
 	//go-cqhttp图片目录
 	public static final String imageUrl = miraiUrl + "/data/images/";
 	//机器人昵称
 	public static final String botName = "蠢猫";
 	//自己的昵称 
-	public static final String masterName = "yoyodi";
+	public static final String masterName = "BadeLing";
 	//机器人qq号
-	public static final String botId = "709037643";
+	public static final String botId = "123456";
 	//自己的qq号 超级管理员
-	public static final String masterId = "7707131";
+	public static final String masterId = "123456";
 	//管理员qq号
 	public static final String[] managerId = {"123","223"};
 	//拉黑的qq号
