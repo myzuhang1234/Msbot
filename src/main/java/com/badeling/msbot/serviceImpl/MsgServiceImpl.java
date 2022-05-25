@@ -55,6 +55,7 @@ import com.badeling.msbot.service.WzXmlService;
 import com.badeling.msbot.util.Loadfont2;
 import com.badeling.msbot.util.TranslateUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.web.client.RestTemplate;
 
 @Component
 public class MsgServiceImpl implements MsgService{
@@ -612,7 +613,24 @@ public class MsgServiceImpl implements MsgService{
 		String raw_message = receiveMsg.getMessage();
 		replyMsg.setAt_sender(true);
 		replyMsg.setAuto_escape(false);
-		
+
+		//翻译
+		if(raw_message.contains(MsbotConst.botName+"翻译")) {
+			raw_message = raw_message.substring(raw_message.indexOf("翻译")+2);
+			raw_message = raw_message.replaceAll("\r",".");
+			raw_message = raw_message.replaceAll("\n",".");
+			System.out.println(raw_message);
+			String transResult;
+			try {
+				transResult = TranslateUtil.getTransResult(raw_message, "auto", "auto");
+				replyMsg.setReply(transResult);
+				return replyMsg;
+
+			} catch (IOException e) {
+			}
+			return null;
+		}
+
 		//布尔学习
 		if(raw_message.contains("学习")&&raw_message.contains("布尔问")&&raw_message.contains("答")) {
 			if(receiveMsg.getUser_id().equalsIgnoreCase(MsbotConst.masterId)) {
@@ -1288,7 +1306,7 @@ public class MsgServiceImpl implements MsgService{
 				e.printStackTrace();
 			}
 		}
-
+		/**
 		if(raw_message.contains("抽卡")) {
 			String mes;
 			try {
@@ -1299,7 +1317,7 @@ public class MsgServiceImpl implements MsgService{
 			}
 			replyMsg.setReply(mes);
 			return replyMsg;
-		}
+		}**/
 
 		if(raw_message.contains("抽奖")||raw_message.contains("魔女")||raw_message.contains("百分百")) {
 			String mes;
@@ -1495,7 +1513,43 @@ public class MsgServiceImpl implements MsgService{
 		    replyMsg.setReply(message.toString());
 		    return replyMsg;
 		}
-		
+
+		//禁言
+		if(raw_message.startsWith(MsbotConst.botName+"禁言")&&raw_message.contains("[CQ:at")) {
+			if(receiveMsg.getUser_id().equalsIgnoreCase(MsbotConst.masterId)||isAdminMsg(receiveMsg.getUser_id())) {
+				try {
+					int aIndex = receiveMsg.getRaw_message().indexOf("[CQ:at,qq=")+10;
+					int bIndex = receiveMsg.getRaw_message().indexOf("]");
+					String findNumber = receiveMsg.getRaw_message().substring(aIndex,bIndex);
+					if(findNumber.equals(MsbotConst.masterId)||findNumber.equals(MsbotConst.botId)||findNumber.equals("2419570484")) {
+						replyMsg.setReply("禁言防御");
+					}
+					else {
+						String imageName = "[CQ:image,file=save/AB59F6053D317B67646AA3B363B87415]";
+						replyMsg.setAt_sender(false);
+						String url = "http://127.0.0.1:5700/set_group_ban";
+						JSONObject postData = new JSONObject();
+						postData.put("group_id",receiveMsg.getGroup_id());
+						postData.put("user_id",findNumber);
+						postData.put("duration",30*60);
+						RestTemplate client = new RestTemplate();
+						JSONObject json = client.postForEntity(url, postData, JSONObject.class).getBody();
+						System.out.println(json);
+						//replyMsg.setBan(true);
+						replyMsg.setReply("[CQ:at,qq=" + findNumber + "]"+imageName);
+					}
+				}
+				catch (Exception e) {
+					replyMsg.setReply("出现异常");
+				}
+			}
+			else {
+				replyMsg.setReply("宁是什么东西也配命令老娘？爬爬爬！");
+			}
+
+			return replyMsg;
+		}
+
 		if(raw_message.replace(" ", "").equals(MsbotConst.botName)) {
 			replyMsg.setAuto_escape(false);
 			replyMsg.setAt_sender(false);
@@ -1607,7 +1661,7 @@ public class MsgServiceImpl implements MsgService{
 		        }
 			 Random r = new Random();
 			 int random = r.nextInt(rep.size());
-			 replyMsg.setAt_sender(false);
+			 replyMsg.setAt_sender(true);
 			 Msg msg2 = rep.get(random);
 			 if(msg2.getLink()==null) {
 				 replyMsg.setReply(msg2.getAnswer());
