@@ -1318,8 +1318,46 @@ public class MsgServiceImpl implements MsgService{
 			replyMsg.setReply(mes);
 			return replyMsg;
 		}**/
+		if(raw_message.contains("抽奖统计")||raw_message.contains("魔女统计")||raw_message.contains("百分百统计")) {
+			MonvTime monvTime = monvTimeRepository.findRoleBynumber(receiveMsg.getSender().getUser_id());
+			if(monvTime == null) {
+				//查询无角色
+				monvTime = new MonvTime();
+				//设置群名片 如果没有 设置昵称
+				if(receiveMsg.getSender().getCard()==null || receiveMsg.getSender().getCard().equals("")) {
+					monvTime.setName(receiveMsg.getSender().getNickname());
+				}else {
+					monvTime.setName(receiveMsg.getSender().getCard());
+				}
+				//设置QQ号
+				monvTime.setUser_id(receiveMsg.getSender().getUser_id());
+				//设置群号
+				if(receiveMsg.getGroup_id().contains("101577006")) {
+					monvTime.setGroup_id("398359236");
+				}else {
+					monvTime.setGroup_id(receiveMsg.getGroup_id());
+				}
+				Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+				monvTime.setUpdateTime(timestamp);
+				monvTime.setPrize(0,0,0,0,0);
+				monvTime = monvTimeRepository.save(monvTime);
+			}
 
-		if(raw_message.contains("抽奖")||raw_message.contains("魔女")||raw_message.contains("百分百")) {
+			String mes = "\r\n";
+			mes += "一爆 "+(monvTime.getPrize_1())+"\r\n";
+			mes += "二爆 "+(monvTime.getPrize_2())+"\r\n";
+			mes += "三爆 "+(monvTime.getPrize_3())+"\r\n";
+			mes += "四爆 "+(monvTime.getPrize_4())+"\r\n";
+			mes += "五爆 "+(monvTime.getPrize_5())+"\r\n";
+			mes += "氪金总额:"+(monvTime.getPrize_1()+monvTime.getPrize_2()+monvTime.getPrize_3()+monvTime.getPrize_4()+monvTime.getPrize_5())*100;
+
+			replyMsg.setAt_sender(true);
+			replyMsg.setReply(mes);
+			return replyMsg;
+
+		}
+
+			if(raw_message.contains("抽奖")||raw_message.contains("魔女")||raw_message.contains("百分百")) {
 			String mes;
 			MonvTime monvTime = monvTimeRepository.findRoleBynumber(receiveMsg.getSender().getUser_id());
 			Timestamp time_now = new Timestamp(System.currentTimeMillis());
@@ -1344,6 +1382,7 @@ public class MsgServiceImpl implements MsgService{
 				}
 				Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 				monvTime.setUpdateTime(timestamp);
+				monvTime.setPrize(0,0,0,0,0);
 				monvTime = monvTimeRepository.save(monvTime);
 				firstmark = true;
 			}
@@ -1354,7 +1393,7 @@ public class MsgServiceImpl implements MsgService{
 				monvTimeRepository.modifyUpdateTime(monvTime.getId(), monvTime.getUpdateTime());
 
 				try {
-					mes = drawService.startDrawMs();
+					mes = drawService.startDrawMs(monvTime);
 				} catch (Exception e) {
 					e.printStackTrace();
 					mes = "图片文件缺失。";

@@ -18,6 +18,8 @@ import java.util.UUID;
 
 import javax.imageio.ImageIO;
 
+import com.badeling.msbot.entity.MonvTime;
+import com.badeling.msbot.repository.MonvTimeRepository;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -49,7 +51,10 @@ public class DrawServiceImpl implements DrawService{
 	
 	@Autowired
 	FriendsRepository friendsRepository;
-	
+
+	@Autowired
+	private MonvTimeRepository monvTimeRepository;
+
 	@Override
 	public String startDraw() throws Exception {
 		Random r = new Random();
@@ -729,7 +734,12 @@ public class DrawServiceImpl implements DrawService{
 		}
 
 		@Override
-		public String startDrawMs() throws Exception {
+		public String startDrawMs(MonvTime monvTime) throws Exception {
+			 int prize_1=0;
+			int prize_2=0;
+			int prize_3=0;
+			int prize_4=0;
+			int prize_5=0;
 			Random r = new Random();
 	        HashSet<Integer> randomList = new HashSet<>();
 	        while (randomList.size() < 10) {
@@ -755,17 +765,37 @@ public class DrawServiceImpl implements DrawService{
 	        for(Integer random : randomList) {
 	        	if(random<7550) {
 	        		list.add(NewImageUtils.resizeBufferedImage(buffImg1,90,90,false));
+					prize_1=prize_1+1;
 	        	}else if(random<7550+2124){
 	        		list.add(NewImageUtils.resizeBufferedImage(buffImg2,90,90,false));
+					prize_2=prize_2+1;
 	        	}else if(random<7550+2124+300) {
 	        		list.add(NewImageUtils.resizeBufferedImage(buffImg3,90,90,false));
-	        	}else if(random<7550+2124+300+20) {
+					prize_3=prize_3+1;
+				}else if(random<7550+2124+300+20) {
 	        		list.add(NewImageUtils.resizeBufferedImage(buffImg4,90,90,false));
-	        	}else {
+					prize_4=prize_4+1;
+				}else {
 	        		list.add(NewImageUtils.resizeBufferedImage(buffImg5,90,90,false));
-	        	}
+					prize_5=prize_5+1;
+				}
 	        }
-	        
+			System.out.println(monvTime.getId());
+			System.out.println(monvTime.getPrize_1());
+			System.out.println(monvTime.getPrize_2());
+			System.out.println(monvTime.getPrize_3());
+			System.out.println(monvTime.getPrize_4());
+			System.out.println(monvTime.getPrize_5());
+
+			monvTimeRepository.modifyUpdatePrize(
+					monvTime.getId(),
+					monvTime.getPrize_1()+prize_1,
+					monvTime.getPrize_2()+prize_2,
+					monvTime.getPrize_3()+prize_3,
+					monvTime.getPrize_4()+prize_4,
+					monvTime.getPrize_5()+prize_5
+					);
+
 	        sourceFile = watermark(sourceFile, list.get(0) , 375, 410, 1.0f);
 	        sourceFile = watermark(sourceFile, list.get(1) , 620, 410, 1.0f);
 	        sourceFile = watermark(sourceFile, list.get(2) , 870, 410, 1.0f);
@@ -790,6 +820,69 @@ public class DrawServiceImpl implements DrawService{
 	        generateWaterFile(newBufferedImage, saveFilePath);
 	        return "[CQ:image,file=" + uuid +".jpg]";
 		}
+
+	@Override
+	public String startDrawMs() throws Exception {
+		Random r = new Random();
+		HashSet<Integer> randomList = new HashSet<>();
+		while (randomList.size() < 10) {
+			int i = r.nextInt(10000)+1;
+			randomList.add(i);
+		}
+
+		Calendar cal = Calendar.getInstance();
+		int w=cal.get(Calendar.DAY_OF_WEEK)-1;
+
+		String sourceFilePath = MsbotConst.imageUrl + "bfb/" + "mn.jpg";
+
+		String uuid = UUID.randomUUID().toString().replaceAll("-", "");
+		String saveFilePath = MsbotConst.imageUrl + uuid +".png";
+		BufferedImage sourceFile = ImageIO.read(new File(sourceFilePath));
+
+		BufferedImage buffImg1 = ImageIO.read(new File(MsbotConst.imageUrl + "bfb/a" + w + "1.png"));
+		BufferedImage buffImg2 = ImageIO.read(new File(MsbotConst.imageUrl + "bfb/a" + w + "2.png"));
+		BufferedImage buffImg3 = ImageIO.read(new File(MsbotConst.imageUrl + "bfb/a" + w + "3.png"));
+		BufferedImage buffImg4 = ImageIO.read(new File(MsbotConst.imageUrl + "bfb/a" + w + "4.png"));
+		BufferedImage buffImg5 = ImageIO.read(new File(MsbotConst.imageUrl + "bfb/a" + w + "5.png"));
+		List<BufferedImage> list = new ArrayList<>();
+		for(Integer random : randomList) {
+			if(random<7550) {
+				list.add(NewImageUtils.resizeBufferedImage(buffImg1,90,90,false));
+			}else if(random<7550+2124){
+				list.add(NewImageUtils.resizeBufferedImage(buffImg2,90,90,false));
+			}else if(random<7550+2124+300) {
+				list.add(NewImageUtils.resizeBufferedImage(buffImg3,90,90,false));
+			}else if(random<7550+2124+300+20) {
+				list.add(NewImageUtils.resizeBufferedImage(buffImg4,90,90,false));
+			}else {
+				list.add(NewImageUtils.resizeBufferedImage(buffImg5,90,90,false));
+			}
+		}
+
+		sourceFile = watermark(sourceFile, list.get(0) , 375, 410, 1.0f);
+		sourceFile = watermark(sourceFile, list.get(1) , 620, 410, 1.0f);
+		sourceFile = watermark(sourceFile, list.get(2) , 870, 410, 1.0f);
+		sourceFile = watermark(sourceFile, list.get(3) , 250, 610, 1.0f);
+		sourceFile = watermark(sourceFile, list.get(4) , 500, 610, 1.0f);
+		sourceFile = watermark(sourceFile, list.get(5) , 745, 610, 1.0f);
+		sourceFile = watermark(sourceFile, list.get(6) , 990, 610, 1.0f);
+		sourceFile = watermark(sourceFile, list.get(7) , 375, 805, 1.0f);
+		sourceFile = watermark(sourceFile, list.get(8) , 620, 805, 1.0f);
+		sourceFile = watermark(sourceFile, list.get(9) , 870, 805, 1.0f);
+
+//	        buffImg = resizeBufferedImage(buffImg,buffImg.getWidth()/2,buffImg.getHeight()/2,true);
+		// TYPE_INT_RGB:创建一个RBG图像，24位深度，成功将32位图转化成24位
+		BufferedImage newBufferedImage = new BufferedImage(
+				sourceFile.getWidth(), sourceFile.getHeight(),
+				BufferedImage.TYPE_INT_RGB);
+		newBufferedImage.createGraphics().drawImage(sourceFile, 0, 0,
+				Color.WHITE, null);
+		// write to jpeg file
+//	        ImageIO.write(newBufferedImage, "jpg", new File(MsbotConst.imageUrl + "bfb/mn1.jpg"));
+		ImageIO.write(newBufferedImage, "jpg", new File(MsbotConst.imageUrl +uuid +".jpg"));
+		generateWaterFile(newBufferedImage, saveFilePath);
+		return "[CQ:image,file=" + uuid +".jpg]";
+	}
 
 
 }

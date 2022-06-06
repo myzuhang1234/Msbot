@@ -14,6 +14,7 @@ import java.util.Set;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
+import com.badeling.msbot.entity.MonvTime;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -402,20 +403,8 @@ public class ChannelServiceImpl implements ChannelService{
 					"eg：蠢猫160级13星428攻");
 			return replyMsg;
 		}
-		
-		if(raw_message.contains("抽奖")||raw_message.contains("魔女")||raw_message.contains("百分百")) {
-			String mes;
-			try {
-				mes = drawService.startDrawMs();
-			} catch (Exception e) {
-				e.printStackTrace();
-				mes = "图片文件缺失。";
-			}
-			replyMsg.setAt_sender(true);
-			replyMsg.setReply(mes);
-			return replyMsg;
-		}
-		
+
+
 		if(raw_message.contains("抽卡")) {
 			String mes;
 			try {
