@@ -1349,7 +1349,7 @@ public class MsgServiceImpl implements MsgService{
 			mes += "三爆 "+(monvTime.getPrize_3())+"\r\n";
 			mes += "四爆 "+(monvTime.getPrize_4())+"\r\n";
 			mes += "五爆 "+(monvTime.getPrize_5())+"\r\n";
-			mes += "氪金总额:"+(monvTime.getPrize_1()+monvTime.getPrize_2()+monvTime.getPrize_3()+monvTime.getPrize_4()+monvTime.getPrize_5())*100;
+			mes += "氪金总额: "+(monvTime.getPrize_1()+monvTime.getPrize_2()+monvTime.getPrize_3()+monvTime.getPrize_4()+monvTime.getPrize_5())*100+" 悲伤币";
 
 			replyMsg.setAt_sender(true);
 			replyMsg.setReply(mes);
