@@ -9,8 +9,8 @@ import com.badeling.msbot.entity.MonvTime;
 import java.sql.Timestamp;
 
 public interface MonvTimeRepository extends CrudRepository<MonvTime, Long>{
-    @Query(value = "select * from monv_time where user_id = ?1",nativeQuery=true)
-    MonvTime findRoleBynumber(String user_id);
+    @Query(value = "select * from monv_time where user_id = ?1 and date = ?2",nativeQuery=true)
+    MonvTime findRoleBynumber(String user_id,String date);
 
     @Modifying
     @Transactional

@@ -27,6 +27,8 @@ public class MonvTime {
 
     private Integer  prize_5;
 
+    private  String date;
+
 
 
     public MonvTime() {
@@ -36,7 +38,7 @@ public class MonvTime {
     @Override
     public String toString() {
         return "MonvTime [id=" + id + ", user_id=" + user_id + ", name=" + name + ", group_id=" + group_id
-                + ", updated_at=" + updated_at +
+                + ", updated_at=" + updated_at + ", date=" + date +
                 ", prize_1=" + prize_1 + ", prize_2=" + prize_2 + ", prize_3=" + prize_3 +
                 ", prize_4=" + prize_4 +", prize_5=" + prize_5 +"]";
     }
@@ -127,5 +129,13 @@ public class MonvTime {
 
     public void setPrize_5(Integer prize_5) {
         this.prize_5 = prize_5;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
     }
 }
