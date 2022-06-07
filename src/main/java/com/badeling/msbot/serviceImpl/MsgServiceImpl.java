@@ -1405,7 +1405,7 @@ public class MsgServiceImpl implements MsgService{
 			SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 			String date_now = df.format(time_now);
 
-			MonvTime monvTime = monvTimeRepository.findRoleBynumber(receiveMsg.getSender().getUser_id(),date_now);
+			MonvTime monvTime = monvTimeRepository.findRoleBynumber(receiveMsg.getSender().getUser_id(),date_now,receiveMsg.getGroup_id());
 			if(monvTime == null) {
 				//查询无角色
 				monvTime = new MonvTime();
@@ -1450,7 +1450,7 @@ public class MsgServiceImpl implements MsgService{
 			SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 			String date_now = df.format(time_now);
 
-			MonvTime monvTime = monvTimeRepository.findRoleBynumber(receiveMsg.getSender().getUser_id(),date_now);
+			MonvTime monvTime = monvTimeRepository.findRoleBynumber(receiveMsg.getSender().getUser_id(),date_now,receiveMsg.getGroup_id());
 
 			if(monvTime == null) {
 				//查询无角色
