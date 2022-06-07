@@ -1099,30 +1099,30 @@ public class MsgServiceImpl implements MsgService{
 			List<MonvTime> list2 = monvTimeRepository.find3thLuckByGroup(receiveMsg.getGroup_id());
 			if(list!=null) {
 				message += map.get(list2.get(0).getUser_id()) +
-						"\r\n一爆: "+ list2.get(0).getPrize_5() +
-						" , 二爆: "+ list2.get(0).getPrize_4() +
+						"\r\n五爆: "+ list2.get(0).getPrize_5() +
+						" , 四爆: "+ list2.get(0).getPrize_4() +
 						" , 三爆: "+ list2.get(0).getPrize_3() +
-						" , 四爆: "+ list2.get(0).getPrize_2() +
-						" , 五爆: "+ list2.get(0).getPrize_1()+"\r\n";
+						" , 二爆: "+ list2.get(0).getPrize_2() +
+						" , 一爆: "+ list2.get(0).getPrize_1()+"\r\n";
 				message += "此外，以下两名成员获得了亚军和季军，也是非常优秀的欧皇：\r\n";
 				if(list2.size()>1) {
 					message += map.get(list2.get(1).getUser_id()) +
-							"  一爆: "+ list2.get(1).getPrize_5() +
-							" , 二爆: "+ list2.get(1).getPrize_4() +
+							"  五爆: "+ list2.get(1).getPrize_5() +
+							" , 四爆: "+ list2.get(1).getPrize_4() +
 							" , 三爆: "+ list2.get(1).getPrize_3() +
-							" , 四爆: "+ list2.get(1).getPrize_2() +
-							" , 五爆: "+ list2.get(1).getPrize_1()+"\r\n";
+							" , 二爆: "+ list2.get(1).getPrize_2() +
+							" , 一爆: "+ list2.get(1).getPrize_1()+"\r\n";
 				}
 				else{
 					message += "虚位以待\r\n";
 				}
 				if(list2.size()>2) {
 					message += map.get(list2.get(2).getUser_id()) +
-							"  一爆: "+ list2.get(2).getPrize_5() +
-							" , 二爆: "+ list2.get(2).getPrize_4() +
+							"  五爆: "+ list2.get(2).getPrize_5() +
+							" , 四爆: "+ list2.get(2).getPrize_4() +
 							" , 三爆: "+ list2.get(2).getPrize_3() +
-							" , 四爆: "+ list2.get(2).getPrize_2() +
-							" , 五爆: "+ list2.get(2).getPrize_1()+"\r\n";
+							" , 二爆: "+ list2.get(2).getPrize_2() +
+							" , 一爆: "+ list2.get(2).getPrize_1()+"\r\n";
 				}
 				else{
 					message += "虚位以待\r\n";
