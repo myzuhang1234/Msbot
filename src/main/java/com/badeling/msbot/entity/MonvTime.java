@@ -111,6 +111,8 @@ public class MonvTime {
         return prize_5;
     }
 
+    public Integer getPrize(){ return  prize_1+prize_2+prize_3+prize_4+prize_5;}
+
     public void setPrize_1(Integer prize_1) {
         this.prize_1 = prize_1;
     }
@@ -130,6 +132,7 @@ public class MonvTime {
     public void setPrize_5(Integer prize_5) {
         this.prize_5 = prize_5;
     }
+
 
     public String getDate() {
         return date;

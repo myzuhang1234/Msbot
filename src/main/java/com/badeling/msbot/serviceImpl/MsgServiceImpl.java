@@ -1053,6 +1053,88 @@ public class MsgServiceImpl implements MsgService{
 			}
 			
 		}
+
+		if (raw_message.contains("抽奖日报")||raw_message.contains("魔女日报")||raw_message.contains("百分百日报")) {
+			//得到群成员信息
+			GroupMsg gp = new GroupMsg();
+			gp.setGroup_id(Long.parseLong(receiveMsg.getGroup_id()));
+			Result<?> groupMember = groupMsgService.getGroupMember(gp);
+
+			@SuppressWarnings("unchecked")
+			List<Map<String,Object>> data = (List<Map<String, Object>>) groupMember.getData();
+			Map<String,String> map = new HashMap<>();
+			for(Map<String,Object> temp:data) {
+				String a = temp.get("user_id")+"";
+				String b = (String) temp.get("nickname");
+				String c = (String) temp.get("card");
+				if(c.equals("")) {
+					//无群名片
+					map.put(a, b);
+				}else {
+					//有群名片
+					map.put(a, c);
+				}
+			}
+
+			String message = "\r\n本日氪佬是：\r\n";
+			List<MonvTime> list = monvTimeRepository.find3thCostByGroup(receiveMsg.getGroup_id());
+			if(list!=null) {
+				message += map.get(list.get(0).getUser_id()) + "  氪金总额: "+ list.get(0).getPrize()*100 +" 悲伤币\r\n";
+				message += "此外，以下两名成员获得了亚军和季军，也是非常优秀的氪佬：\r\n";
+				if(list.size()>1) {
+					message += map.get(list.get(1).getUser_id()) +  "  氪金总额: "+ list.get(1).getPrize()*100 +" 悲伤币\r\n";
+				}else{
+					message += "虚位以待\r\n";
+				}
+				if(list.size()>2) {
+					message += map.get(list.get(2).getUser_id()) +  "  氪金总额: "+ list.get(2).getPrize()*100 +" 悲伤币\r\n";
+				}else{
+					message += "虚位以待\r\n";
+				}
+			}
+			else {
+				message += "虚位以待\r\n";
+			}
+			message += "——————————————————\r\n 本日欧皇是：\r\n";
+			List<MonvTime> list2 = monvTimeRepository.find3thLuckByGroup(receiveMsg.getGroup_id());
+			if(list!=null) {
+				message += map.get(list2.get(0).getUser_id()) +
+						"\r\n一爆: "+ list2.get(0).getPrize_5() +
+						" , 二爆: "+ list2.get(0).getPrize_4() +
+						" , 三爆: "+ list2.get(0).getPrize_3() +
+						" , 四爆: "+ list2.get(0).getPrize_2() +
+						" , 五爆: "+ list2.get(0).getPrize_1()+"\r\n";
+				message += "此外，以下两名成员获得了亚军和季军，也是非常优秀的欧皇：\r\n";
+				if(list2.size()>1) {
+					message += map.get(list2.get(1).getUser_id()) +
+							"  一爆: "+ list2.get(1).getPrize_5() +
+							" , 二爆: "+ list2.get(1).getPrize_4() +
+							" , 三爆: "+ list2.get(1).getPrize_3() +
+							" , 四爆: "+ list2.get(1).getPrize_2() +
+							" , 五爆: "+ list2.get(1).getPrize_1()+"\r\n";
+				}
+				else{
+					message += "虚位以待\r\n";
+				}
+				if(list2.size()>2) {
+					message += map.get(list2.get(2).getUser_id()) +
+							"  一爆: "+ list2.get(2).getPrize_5() +
+							" , 二爆: "+ list2.get(2).getPrize_4() +
+							" , 三爆: "+ list2.get(2).getPrize_3() +
+							" , 四爆: "+ list2.get(2).getPrize_2() +
+							" , 五爆: "+ list2.get(2).getPrize_1()+"\r\n";
+				}
+				else{
+					message += "虚位以待\r\n";
+				}
+			}
+			else {
+				message += "虚位以待\r\n";
+			}
+			message += "——————————————————\r\n为了成为欧洲人，努力氪金吧！uwu";
+			replyMsg.setReply(message);
+			return replyMsg;
+		}
 		
 		if(raw_message.contains("复读机周报")) {
 			//得到群成员信息
