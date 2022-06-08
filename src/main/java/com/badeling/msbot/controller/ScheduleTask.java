@@ -35,6 +35,7 @@ public class ScheduleTask {
 	@Autowired
 	private RereadTimeRepository rereadTimeRepository;
 
+	@Autowired
 	private MonvTimeRepository monvTimeRepository;
 	
 	

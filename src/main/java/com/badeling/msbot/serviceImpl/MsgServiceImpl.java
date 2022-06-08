@@ -3,6 +3,7 @@ package com.badeling.msbot.serviceImpl;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -1448,7 +1449,10 @@ public class MsgServiceImpl implements MsgService{
 		if(raw_message.contains("抽奖")||raw_message.contains("魔女")||raw_message.contains("百分百")) {
 			String mes;
 			Timestamp time_now = new Timestamp(System.currentTimeMillis());
-			int hours = time_now.getHours();
+
+			SimpleDateFormat formatHours = new SimpleDateFormat("HH");
+			int hours = Integer.parseInt(formatHours.format(time_now));
+
 			if(hours>=0 && hours<=11){
 				SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 				String date_now = df.format(time_now);
