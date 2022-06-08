@@ -138,7 +138,7 @@ public class ScheduleTask {
 		}
 
 
-	    @Scheduled(cron="50 59 23 * * ?")
+	    @Scheduled(cron="0 0 12 * * ?")
 		private void monvReport(){
 			List<String> groupList = monvTimeRepository.findEveryGroup();
 			if(groupList!=null) {
