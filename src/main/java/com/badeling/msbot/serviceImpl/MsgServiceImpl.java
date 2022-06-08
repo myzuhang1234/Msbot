@@ -1054,88 +1054,6 @@ public class MsgServiceImpl implements MsgService{
 			
 		}
 
-		if (raw_message.contains("抽奖日报")||raw_message.contains("魔女日报")||raw_message.contains("百分百日报")) {
-			//得到群成员信息
-			GroupMsg gp = new GroupMsg();
-			gp.setGroup_id(Long.parseLong(receiveMsg.getGroup_id()));
-			Result<?> groupMember = groupMsgService.getGroupMember(gp);
-
-			@SuppressWarnings("unchecked")
-			List<Map<String,Object>> data = (List<Map<String, Object>>) groupMember.getData();
-			Map<String,String> map = new HashMap<>();
-			for(Map<String,Object> temp:data) {
-				String a = temp.get("user_id")+"";
-				String b = (String) temp.get("nickname");
-				String c = (String) temp.get("card");
-				if(c.equals("")) {
-					//无群名片
-					map.put(a, b);
-				}else {
-					//有群名片
-					map.put(a, c);
-				}
-			}
-
-			String message = "\r\n本日氪佬是：\r\n";
-			List<MonvTime> list = monvTimeRepository.find3thCostByGroup(receiveMsg.getGroup_id());
-			if(list!=null) {
-				message += map.get(list.get(0).getUser_id()) + "  氪金总额: "+ list.get(0).getPrize()*100 +" 悲伤币\r\n";
-				message += "此外，以下两名成员获得了亚军和季军，也是非常优秀的氪佬：\r\n";
-				if(list.size()>1) {
-					message += map.get(list.get(1).getUser_id()) +  "  氪金总额: "+ list.get(1).getPrize()*100 +" 悲伤币\r\n";
-				}else{
-					message += "虚位以待\r\n";
-				}
-				if(list.size()>2) {
-					message += map.get(list.get(2).getUser_id()) +  "  氪金总额: "+ list.get(2).getPrize()*100 +" 悲伤币\r\n";
-				}else{
-					message += "虚位以待\r\n";
-				}
-			}
-			else {
-				message += "虚位以待\r\n";
-			}
-			message += "——————————————————\r\n 本日欧皇是：\r\n";
-			List<MonvTime> list2 = monvTimeRepository.find3thLuckByGroup(receiveMsg.getGroup_id());
-			if(list!=null) {
-				message += map.get(list2.get(0).getUser_id()) +
-						"\r\n五爆: "+ list2.get(0).getPrize_5() +
-						" , 四爆: "+ list2.get(0).getPrize_4() +
-						" , 三爆: "+ list2.get(0).getPrize_3() +
-						" , 二爆: "+ list2.get(0).getPrize_2() +
-						" , 一爆: "+ list2.get(0).getPrize_1()+"\r\n";
-				message += "此外，以下两名成员获得了亚军和季军，也是非常优秀的欧皇：\r\n";
-				if(list2.size()>1) {
-					message += map.get(list2.get(1).getUser_id()) +
-							"  五爆: "+ list2.get(1).getPrize_5() +
-							" , 四爆: "+ list2.get(1).getPrize_4() +
-							" , 三爆: "+ list2.get(1).getPrize_3() +
-							" , 二爆: "+ list2.get(1).getPrize_2() +
-							" , 一爆: "+ list2.get(1).getPrize_1()+"\r\n";
-				}
-				else{
-					message += "虚位以待\r\n";
-				}
-				if(list2.size()>2) {
-					message += map.get(list2.get(2).getUser_id()) +
-							"  五爆: "+ list2.get(2).getPrize_5() +
-							" , 四爆: "+ list2.get(2).getPrize_4() +
-							" , 三爆: "+ list2.get(2).getPrize_3() +
-							" , 二爆: "+ list2.get(2).getPrize_2() +
-							" , 一爆: "+ list2.get(2).getPrize_1()+"\r\n";
-				}
-				else{
-					message += "虚位以待\r\n";
-				}
-			}
-			else {
-				message += "虚位以待\r\n";
-			}
-			message += "——————————————————\r\n为了成为欧洲人，努力氪金吧！uwu";
-			replyMsg.setReply(message);
-			return replyMsg;
-		}
-		
 		if(raw_message.contains("复读机周报")) {
 			//得到群成员信息
 			GroupMsg gp = new GroupMsg();
@@ -1400,6 +1318,89 @@ public class MsgServiceImpl implements MsgService{
 			replyMsg.setReply(mes);
 			return replyMsg;
 		}**/
+
+		if (raw_message.contains("抽奖日报")||raw_message.contains("魔女日报")||raw_message.contains("百分百日报")) {
+			//得到群成员信息
+			GroupMsg gp = new GroupMsg();
+			gp.setGroup_id(Long.parseLong(receiveMsg.getGroup_id()));
+			Result<?> groupMember = groupMsgService.getGroupMember(gp);
+
+			@SuppressWarnings("unchecked")
+			List<Map<String,Object>> data = (List<Map<String, Object>>) groupMember.getData();
+			Map<String,String> map = new HashMap<>();
+			for(Map<String,Object> temp:data) {
+				String a = temp.get("user_id")+"";
+				String b = (String) temp.get("nickname");
+				String c = (String) temp.get("card");
+				if(c.equals("")) {
+					//无群名片
+					map.put(a, b);
+				}else {
+					//有群名片
+					map.put(a, c);
+				}
+			}
+
+			String message = "\r\n本日氪佬是：\r\n";
+			List<MonvTime> list = monvTimeRepository.find3thCostByGroup(receiveMsg.getGroup_id());
+			if(list!=null) {
+				message += map.get(list.get(0).getUser_id()) + "  氪金总额: "+ list.get(0).getPrize()*100 +" 悲伤币\r\n";
+				message += "此外，以下两名成员获得了亚军和季军，也是非常优秀的氪佬：\r\n";
+				if(list.size()>1) {
+					message += map.get(list.get(1).getUser_id()) +  "  氪金总额: "+ list.get(1).getPrize()*100 +" 悲伤币\r\n";
+				}else{
+					message += "虚位以待\r\n";
+				}
+				if(list.size()>2) {
+					message += map.get(list.get(2).getUser_id()) +  "  氪金总额: "+ list.get(2).getPrize()*100 +" 悲伤币\r\n";
+				}else{
+					message += "虚位以待\r\n";
+				}
+			}
+			else {
+				message += "虚位以待\r\n";
+			}
+			message += "——————————————————\r\n 本日欧皇是：\r\n";
+			List<MonvTime> list2 = monvTimeRepository.find3thLuckByGroup(receiveMsg.getGroup_id());
+			if(list!=null) {
+				message += map.get(list2.get(0).getUser_id()) +
+						"\r\n五爆: "+ list2.get(0).getPrize_5() +
+						" , 四爆: "+ list2.get(0).getPrize_4() +
+						" , 三爆: "+ list2.get(0).getPrize_3() +
+						" , 二爆: "+ list2.get(0).getPrize_2() +
+						" , 一爆: "+ list2.get(0).getPrize_1()+"\r\n";
+				message += "此外，以下两名成员获得了亚军和季军，也是非常优秀的欧皇：\r\n";
+				if(list2.size()>1) {
+					message += map.get(list2.get(1).getUser_id()) +
+							"  五爆: "+ list2.get(1).getPrize_5() +
+							" , 四爆: "+ list2.get(1).getPrize_4() +
+							" , 三爆: "+ list2.get(1).getPrize_3() +
+							" , 二爆: "+ list2.get(1).getPrize_2() +
+							" , 一爆: "+ list2.get(1).getPrize_1()+"\r\n";
+				}
+				else{
+					message += "虚位以待\r\n";
+				}
+				if(list2.size()>2) {
+					message += map.get(list2.get(2).getUser_id()) +
+							"  五爆: "+ list2.get(2).getPrize_5() +
+							" , 四爆: "+ list2.get(2).getPrize_4() +
+							" , 三爆: "+ list2.get(2).getPrize_3() +
+							" , 二爆: "+ list2.get(2).getPrize_2() +
+							" , 一爆: "+ list2.get(2).getPrize_1()+"\r\n";
+				}
+				else{
+					message += "虚位以待\r\n";
+				}
+			}
+			else {
+				message += "虚位以待\r\n";
+			}
+			message += "——————————————————\r\n为了成为欧洲人，努力氪金吧！uwu";
+			replyMsg.setReply(message);
+			return replyMsg;
+		}
+
 		if(raw_message.contains("抽奖统计")||raw_message.contains("魔女统计")||raw_message.contains("百分百统计")) {
 			Timestamp time_now = new Timestamp(System.currentTimeMillis());
 			SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
@@ -1447,56 +1448,65 @@ public class MsgServiceImpl implements MsgService{
 		if(raw_message.contains("抽奖")||raw_message.contains("魔女")||raw_message.contains("百分百")) {
 			String mes;
 			Timestamp time_now = new Timestamp(System.currentTimeMillis());
-			SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-			String date_now = df.format(time_now);
+			int hours = time_now.getHours();
+			if(hours>=0 && hours<=11){
+				SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+				String date_now = df.format(time_now);
+				MonvTime monvTime = monvTimeRepository.findRoleBynumber(receiveMsg.getSender().getUser_id(),date_now,receiveMsg.getGroup_id());
 
-			MonvTime monvTime = monvTimeRepository.findRoleBynumber(receiveMsg.getSender().getUser_id(),date_now,receiveMsg.getGroup_id());
-
-			if(monvTime == null) {
-				//查询无角色
-				monvTime = new MonvTime();
-				//设置群名片 如果没有 设置昵称
-				if(receiveMsg.getSender().getCard()==null || receiveMsg.getSender().getCard().equals("")) {
-					monvTime.setName(receiveMsg.getSender().getNickname());
-				}else {
-					monvTime.setName(receiveMsg.getSender().getCard());
+				if(monvTime == null) {
+					//查询无角色
+					monvTime = new MonvTime();
+					//设置群名片 如果没有 设置昵称
+					if(receiveMsg.getSender().getCard()==null || receiveMsg.getSender().getCard().equals("")) {
+						monvTime.setName(receiveMsg.getSender().getNickname());
+					}else {
+						monvTime.setName(receiveMsg.getSender().getCard());
+					}
+					//设置QQ号
+					monvTime.setUser_id(receiveMsg.getSender().getUser_id());
+					//设置群号
+					if(receiveMsg.getGroup_id().contains("101577006")) {
+						monvTime.setGroup_id("398359236");
+					}else {
+						monvTime.setGroup_id(receiveMsg.getGroup_id());
+					}
+					Timestamp timestamp = new Timestamp(0);
+					monvTime.setUpdateTime(timestamp);
+					monvTime.setDate(date_now);
+					monvTime.setPrize(0,0,0,0,0);
+					monvTime = monvTimeRepository.save(monvTime);
 				}
-				//设置QQ号
-				monvTime.setUser_id(receiveMsg.getSender().getUser_id());
-				//设置群号
-				if(receiveMsg.getGroup_id().contains("101577006")) {
-					monvTime.setGroup_id("398359236");
-				}else {
-					monvTime.setGroup_id(receiveMsg.getGroup_id());
-				}
-				Timestamp timestamp = new Timestamp(0);
-				monvTime.setUpdateTime(timestamp);
-				monvTime.setDate(date_now);
-				monvTime.setPrize(0,0,0,0,0);
-				monvTime = monvTimeRepository.save(monvTime);
-			}
 
-			long cd_time = (time_now.getTime()-monvTime.getUpdateTime().getTime())/ 1000;
-			if (cd_time >= MsbotConst.monv_cd){
-				monvTime.setUpdateTime(time_now);
-				monvTimeRepository.modifyUpdateTime(monvTime.getId(), monvTime.getUpdateTime());
+				long cd_time = (time_now.getTime()-monvTime.getUpdateTime().getTime())/ 1000;
+				if (cd_time >= MsbotConst.monv_cd){
+					monvTime.setUpdateTime(time_now);
+					monvTimeRepository.modifyUpdateTime(monvTime.getId(), monvTime.getUpdateTime());
 
-				try {
-					mes = drawService.startDrawMs(monvTime);
-				} catch (Exception e) {
-					e.printStackTrace();
-					mes = "图片文件缺失。";
+					try {
+						mes = drawService.startDrawMs(monvTime);
+					} catch (Exception e) {
+						e.printStackTrace();
+						mes = "图片文件缺失。";
+					}
+					replyMsg.setAt_sender(true);
+					replyMsg.setReply(mes);
+					return replyMsg;
 				}
-				replyMsg.setAt_sender(true);
-				replyMsg.setReply(mes);
-				return replyMsg;
+				else {
+					mes = "抽奖冷却中,剩余"+(MsbotConst.monv_cd-cd_time)+"秒";
+					replyMsg.setAt_sender(true);
+					replyMsg.setReply(mes);
+					return replyMsg;
+				}
 			}
 			else {
-				mes = "抽奖冷却中,剩余"+(MsbotConst.monv_cd-cd_time)+"秒";
+				mes = "抽奖时间: 每日0-12点,请稍后...";
 				replyMsg.setAt_sender(true);
 				replyMsg.setReply(mes);
 				return replyMsg;
 			}
+
 		}
 		
 		
