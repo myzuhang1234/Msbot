@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.badeling.msbot.entity.MonvTime;
+import com.badeling.msbot.repository.MonvTimeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -32,6 +34,9 @@ public class ScheduleTask {
 	
 	@Autowired
 	private RereadTimeRepository rereadTimeRepository;
+
+	@Autowired
+	private MonvTimeRepository monvTimeRepository;
 	
 	
 		//清除图片缓存
@@ -66,7 +71,7 @@ public class ScheduleTask {
 				try {
 					for(String group_id:groupList) {
 						RereadSentence rereadSentence = rereadSentenceRepository.findMaxByGroup(group_id);
-						
+
 						//得到群成员信息
 						GroupMsg gp = new GroupMsg();
 						gp.setGroup_id(Long.parseLong(group_id));
@@ -131,8 +136,102 @@ public class ScheduleTask {
 			rereadSentenceRepository.deleteAll();
 			rereadTimeRepository.deleteAll();
 		}
-			
-		
-		
+
+
+	    @Scheduled(cron="0 0 12 * * ?")
+		private void monvReport(){
+			List<String> groupList = monvTimeRepository.findEveryGroup();
+			if(groupList!=null) {
+				try {
+					for(String group_id:groupList) {
+						//得到群成员信息
+						GroupMsg gp = new GroupMsg();
+						gp.setGroup_id(Long.parseLong(group_id));
+						Result<?> groupMember = groupMsgService.getGroupMember(gp);
+						@SuppressWarnings("unchecked")
+						List<Map<String,Object>> data = (List<Map<String, Object>>) groupMember.getData();
+						Map<String,String> map = new HashMap<>();
+						for(Map<String,Object> temp:data) {
+							String a = temp.get("user_id")+"";
+							String b = (String) temp.get("nickname");
+							String c = (String) temp.get("card");
+							if(c.equals("")) {
+								//无群名片
+								map.put(a, b);
+							}else {
+								//有群名片
+								map.put(a, c);
+							}
+						}
+
+						String message = "\r\n本日氪佬是：\r\n";
+						List<MonvTime> list = monvTimeRepository.find3thCostByGroup(group_id);
+						if(list!=null) {
+							message += map.get(list.get(0).getUser_id()) + "  氪金总额: "+ list.get(0).getPrize()*100 +" 悲伤币\r\n";
+							message += "此外，以下两名成员获得了亚军和季军，也是非常优秀的氪佬：\r\n";
+							if(list.size()>1) {
+								message += map.get(list.get(1).getUser_id()) +  "  氪金总额: "+ list.get(1).getPrize()*100 +" 悲伤币\r\n";
+							}else{
+								message += "虚位以待\r\n";
+							}
+							if(list.size()>2) {
+								message += map.get(list.get(2).getUser_id()) +  "  氪金总额: "+ list.get(2).getPrize()*100 +" 悲伤币\r\n";
+							}else{
+								message += "虚位以待\r\n";
+							}
+						}
+						else {
+							message += "虚位以待\r\n";
+						}
+						message += "——————————————————\r\n 本日欧皇是：\r\n";
+						List<MonvTime> list2 = monvTimeRepository.find3thLuckByGroup(group_id);
+						if(list!=null) {
+							message += map.get(list2.get(0).getUser_id()) +
+									"\r\n五爆: "+ list2.get(0).getPrize_5() +
+									" , 四爆: "+ list2.get(0).getPrize_4() +
+									" , 三爆: "+ list2.get(0).getPrize_3() +
+									" , 二爆: "+ list2.get(0).getPrize_2() +
+									" , 一爆: "+ list2.get(0).getPrize_1()+"\r\n";
+							message += "此外，以下两名成员获得了亚军和季军，也是非常优秀的欧皇：\r\n";
+							if(list2.size()>1) {
+								message += map.get(list2.get(1).getUser_id()) +
+										"  五爆: "+ list2.get(1).getPrize_5() +
+										" , 四爆: "+ list2.get(1).getPrize_4() +
+										" , 三爆: "+ list2.get(1).getPrize_3() +
+										" , 二爆: "+ list2.get(1).getPrize_2() +
+										" , 一爆: "+ list2.get(1).getPrize_1()+"\r\n";
+							}
+							else{
+								message += "虚位以待\r\n";
+							}
+							if(list2.size()>2) {
+								message += map.get(list2.get(2).getUser_id()) +
+										"  五爆: "+ list2.get(2).getPrize_5() +
+										" , 四爆: "+ list2.get(2).getPrize_4() +
+										" , 三爆: "+ list2.get(2).getPrize_3() +
+										" , 二爆: "+ list2.get(2).getPrize_2() +
+										" , 一爆: "+ list2.get(2).getPrize_1()+"\r\n";
+							}
+							else{
+								message += "虚位以待\r\n";
+							}
+						}
+						else {
+							message += "虚位以待\r\n";
+						}
+						message += "——————————————————\r\n为了成为欧洲人，努力氪金吧！uwu";
+						GroupMsg groupMsg = new GroupMsg();
+						groupMsg.setAuto_escape(false);
+						groupMsg.setMessage(message);
+						groupMsg.setGroup_id(Long.parseLong((group_id)));
+						groupMsgService.sendGroupMsg(groupMsg);
+					}
+				}catch (Exception e) {
+					e.printStackTrace();
+				}
+			}else {}
+		}
+
+
 }
 

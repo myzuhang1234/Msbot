@@ -1,5 +1,6 @@
 package com.badeling.msbot.service;
 
+import com.badeling.msbot.entity.MonvTime;
 import org.springframework.stereotype.Service;
 
 
@@ -12,8 +13,11 @@ public interface DrawService {
 	String updatePhoto();
 
 	String startDraw() throws Exception;
-	
+
 	String startDrawMs() throws Exception;
+
+	String startDrawMs(MonvTime monvTime) throws Exception;
+
 
 	String kemomimiDraw() throws Exception;
 

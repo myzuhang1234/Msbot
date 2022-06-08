@@ -18,7 +18,10 @@ public class MsbotConst {
 	public static final String[] managerId = {"123","223"};
 	//拉黑的qq号
 	public static final String[] blackList = {"323","423"};
-	
+
+	//魔女cd 单位秒
+	public static final int monv_cd = 120;
+
 	//第三方机器人 也就是上面登录的账号 允许发言的频道 QQ频道发一句话 然后后台查看频道id
 	//"channel_id":"1609899"
 	public static final String[] botChannel = {"1609899"};
