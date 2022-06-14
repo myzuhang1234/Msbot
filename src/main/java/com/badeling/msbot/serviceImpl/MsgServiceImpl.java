@@ -1320,14 +1320,79 @@ public class MsgServiceImpl implements MsgService{
 			return replyMsg;
 		}**/
 
-		if(raw_message.startsWith(MsbotConst.botName+"结账")&&raw_message.contains("[CQ:at")) {
-			try {
-				int aIndex = receiveMsg.getRaw_message().indexOf("[CQ:at,qq=")+10;
-				int bIndex = receiveMsg.getRaw_message().indexOf("]");
-				String findNumber = receiveMsg.getRaw_message().substring(aIndex,bIndex);
+		if(raw_message.startsWith(MsbotConst.botName+"结账")){
+			if (raw_message.contains("[CQ:at")){
+				try {
+					int aIndex = receiveMsg.getRaw_message().indexOf("[CQ:at,qq=")+10;
+					int bIndex = receiveMsg.getRaw_message().indexOf("]");
+					String findNumber = receiveMsg.getRaw_message().substring(aIndex,bIndex);
 
 
-				if(receiveMsg.getUser_id().equalsIgnoreCase(MsbotConst.masterId)||isAdminMsg(receiveMsg.getUser_id())) {
+					if(receiveMsg.getUser_id().equalsIgnoreCase(MsbotConst.masterId)||isAdminMsg(receiveMsg.getUser_id())) {
+						List<MonvTime> list = monvTimeRepository.findCostByGroup(findNumber,receiveMsg.getGroup_id());
+
+						//得到群成员信息
+						GroupMsg gp = new GroupMsg();
+						gp.setGroup_id(Long.parseLong(receiveMsg.getGroup_id()));
+						Result<?> groupMember = groupMsgService.getGroupMember(gp);
+
+						@SuppressWarnings("unchecked")
+						List<Map<String,Object>> data = (List<Map<String, Object>>) groupMember.getData();
+						Map<String,String> map = new HashMap<>();
+						for(Map<String,Object> temp:data) {
+							String a = temp.get("user_id")+"";
+							String b = (String) temp.get("nickname");
+							String c = (String) temp.get("card");
+							if(c.equals("")) {
+								//无群名片
+								map.put(a, b);
+							}else {
+								//有群名片
+								map.put(a, c);
+							}
+						}
+
+						String mes = "\r\n";
+						if(list.size() == 0) {
+							mes += "未查到: "+ map.get(findNumber) +" 的抽奖记录";
+							replyMsg.setAt_sender(true);
+							replyMsg.setReply(mes);
+						}
+						else {
+							mes += "氪佬: "+map.get(list.get(0).getUser_id()) +"\r\n";
+							int prize_1 =0,prize_2 =0,prize_3 =0,prize_4 =0,prize_5 =0;
+
+							for (int i = 0; i < list.size(); i++) {
+								prize_1 += list.get(i).getPrize_1();
+								prize_2 += list.get(i).getPrize_2();
+								prize_3 += list.get(i).getPrize_3();
+								prize_4 += list.get(i).getPrize_4();
+								prize_5 += list.get(i).getPrize_5();
+							}
+
+							mes += "一爆 "+prize_1+"\r\n";
+							mes += "二爆 "+prize_2+"\r\n";
+							mes += "三爆 "+prize_3+"\r\n";
+							mes += "四爆 "+prize_4+"\r\n";
+							mes += "五爆 "+prize_5+"\r\n";
+							mes += "氪金总额: "+(prize_1+prize_2+prize_3+prize_4+prize_5)*100+" 悲伤币";
+
+							replyMsg.setAt_sender(true);
+							replyMsg.setReply(mes);
+						}
+					}
+					else {
+						replyMsg.setAt_sender(false);
+						replyMsg.setReply("[CQ:at,qq=" + receiveMsg.getUser_id()  + "]" + "宁是什么东西也配命令老娘？爬爬爬！");
+					}
+					return replyMsg;
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			else {
+				try {
+					String findNumber = receiveMsg.getUser_id();
 					List<MonvTime> list = monvTimeRepository.findCostByGroup(findNumber,receiveMsg.getGroup_id());
 
 					//得到群成员信息
@@ -1345,52 +1410,50 @@ public class MsgServiceImpl implements MsgService{
 						if(c.equals("")) {
 							//无群名片
 							map.put(a, b);
-						}else {
+						}
+						else {
 							//有群名片
 							map.put(a, c);
 						}
 					}
 
 					String mes = "\r\n";
-					System.out.println(findNumber);
-					System.out.println(list);
-					if(list.size() == 0) {
-						mes += "未查到: "+ map.get(findNumber) +" 的抽奖记录";
-						replyMsg.setAt_sender(true);
-						replyMsg.setReply(mes);
-					}
-					else {
-						mes += "氪佬: "+map.get(list.get(0).getUser_id()) +"\r\n";
-						int prize_1 =0,prize_2 =0,prize_3 =0,prize_4 =0,prize_5 =0;
 
-						for (int i = 0; i < list.size(); i++) {
-							prize_1 += list.get(i).getPrize_1();
-							prize_2 += list.get(i).getPrize_2();
-							prize_3 += list.get(i).getPrize_3();
-							prize_4 += list.get(i).getPrize_4();
-							prize_5 += list.get(i).getPrize_5();
+					if(list.size() == 0) {
+							mes += "未查到: "+ map.get(findNumber) +" 的抽奖记录";
+							replyMsg.setAt_sender(true);
+							replyMsg.setReply(mes);
+						}
+					else {
+							mes += "氪佬: "+map.get(list.get(0).getUser_id()) +"\r\n";
+							int prize_1 =0,prize_2 =0,prize_3 =0,prize_4 =0,prize_5 =0;
+
+							for (int i = 0; i < list.size(); i++) {
+								prize_1 += list.get(i).getPrize_1();
+								prize_2 += list.get(i).getPrize_2();
+								prize_3 += list.get(i).getPrize_3();
+								prize_4 += list.get(i).getPrize_4();
+								prize_5 += list.get(i).getPrize_5();
+							}
+
+							mes += "一爆 "+prize_1+"\r\n";
+							mes += "二爆 "+prize_2+"\r\n";
+							mes += "三爆 "+prize_3+"\r\n";
+							mes += "四爆 "+prize_4+"\r\n";
+							mes += "五爆 "+prize_5+"\r\n";
+							mes += "氪金总额: "+(prize_1+prize_2+prize_3+prize_4+prize_5)*100+" 悲伤币";
+
+							replyMsg.setAt_sender(true);
+							replyMsg.setReply(mes);
 						}
 
-						mes += "一爆 "+prize_1+"\r\n";
-						mes += "二爆 "+prize_2+"\r\n";
-						mes += "三爆 "+prize_3+"\r\n";
-						mes += "四爆 "+prize_4+"\r\n";
-						mes += "五爆 "+prize_5+"\r\n";
-						mes += "氪金总额: "+(prize_1+prize_2+prize_3+prize_4+prize_5)*100+" 悲伤币";
-
-						replyMsg.setAt_sender(true);
-						replyMsg.setReply(mes);
-					}
+					return replyMsg;
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
-				else {
-					replyMsg.setAt_sender(false);
-					replyMsg.setReply("[CQ:at,qq=" + receiveMsg.getUser_id()  + "]" + "宁是什么东西也配命令老娘？爬爬爬！");
-				}
-				return replyMsg;
-			} catch (Exception e) {
-				e.printStackTrace();
 			}
 		}
+
 
 		if (raw_message.contains("抽奖日报")||raw_message.contains("魔女日报")||raw_message.contains("百分百日报")) {
 			//得到群成员信息
