@@ -164,7 +164,7 @@ public class ScheduleTask {
 							}
 						}
 
-						String message = "\r\n本日氪佬是：\r\n";
+						String message = "本日氪佬是：\r\n";
 						List<MonvTime> list = monvTimeRepository.find3thCostByGroup(group_id);
 						if(list!=null) {
 							message += map.get(list.get(0).getUser_id()) + "  氪金总额: "+ list.get(0).getPrize()*100 +" 悲伤币\r\n";

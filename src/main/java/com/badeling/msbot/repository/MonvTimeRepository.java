@@ -12,12 +12,16 @@ import java.sql.Timestamp;
 import java.util.List;
 
 public interface MonvTimeRepository extends CrudRepository<MonvTime, Long>{
+
     @Query(value = "select * from monv_time where user_id = ?1 and date = ?2 and group_id=?3",nativeQuery=true)
     MonvTime findRoleBynumber(String user_id,String date,String group_id );
 
     @Query(value = "SELECT *,(SELECT SUM(prize_1+prize_2+prize_3+prize_4+prize_5) FROM monv_time mt2 WHERE mt1.id = mt2.id ) as gold" +
             " FROM monv_time mt1 WHERE (group_id  = ?1 AND TO_DAYS(NOW()) - TO_DAYS(mt1.`date`) <=0) ORDER BY gold DESC LIMIT 0,3 ",nativeQuery=true)
     List <MonvTime> find3thCostByGroup(String group_id);
+
+    @Query(value = "SELECT * FROM monv_time mt WHERE user_id  =?1 AND group_id = ?2 ",nativeQuery=true)
+    List <MonvTime> findCostByGroup(String user_id,String group_id);
 
     @Query(value = "SELECT * FROM monv_time WHERE (group_id =?1 AND TO_DAYS(NOW()) - TO_DAYS(`date`) <=0) " +
             "ORDER BY prize_5 DESC,prize_4 DESC,prize_3 DESC,prize_2 DESC,prize_1 DESC LIMIT 0,3",nativeQuery=true)
