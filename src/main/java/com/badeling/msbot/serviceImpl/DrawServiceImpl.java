@@ -50,6 +50,109 @@ public class DrawServiceImpl implements DrawService{
 	@Autowired
 	FriendsRepository friendsRepository;
 	
+	public static void main(String[] args) throws Exception {
+		String a1 = "您今日的运势指数为★☆☆☆☆";
+		String a2 = "运势最好的频道是7频道哦！";
+		String a3 = "寒风水冷隐作痛，鸡犬相闻闹晨曦。";
+		String a4 = "宜：爬起源之塔";
+		String a5 = "喜提4级克制之戒";
+		String a6 = "忌：肝活动";
+		String a7 = "这活动是人玩的吗？？";
+		String a8 = "今日最佳玄学地图是：";
+		String a9 = "林中之城，韧性之林";
+		
+		String roleUrl = "";
+		
+		File f = new File("D:\\go-cqhttp\\data\\images\\class");
+		File[] listFiles = f.listFiles();
+		for(File file : listFiles) {
+			roleUrl = file.getParent() + "\\" +file.getName();
+			System.out.println(roleUrl);
+			String imageUrl = "D:\\go-cqhttp\\data\\images\\zb\\19.jpg";
+			String sourceFilePath = MsbotConst.imageUrl + "zb/background.png";
+
+			String uuid = UUID.randomUUID().toString().replaceAll("-", "");
+	        String saveFilePath = MsbotConst.imageUrl + uuid +".png";
+	        BufferedImage sourceFile = ImageIO.read(new File(sourceFilePath));
+	        
+	        //紫色条形框
+	        BufferedImage buffImg1 = ImageIO.read(new File(MsbotConst.imageUrl + "zb/a1.png"));
+	        
+	        //人物
+	        BufferedImage roleImg = ImageIO.read(new File(roleUrl));
+	        roleImg = NewImageUtils.resizeBufferedImage(roleImg,188,210,false);
+	        sourceFile = watermark(sourceFile, roleImg , 550, 30, 1.0f);
+	        
+	        //地图
+	        BufferedImage mapImg = ImageIO.read(new File(imageUrl));
+	        mapImg = NewImageUtils.resizeBufferedImage(mapImg,370,180,false);
+	        mapImg = NewImageUtils.setRadius(mapImg,30,0,0);
+	        sourceFile = watermark(sourceFile, buffImg1 , 450, 230, 1.0f);
+	        sourceFile = watermark(sourceFile, mapImg , 460, 350, 1.0f);
+	        
+	        
+	        Graphics2D g = sourceFile.createGraphics();
+	        Font font = Loadfont2.Font(22);
+	        g.setFont(font);
+	        g.setColor(new Color(230,230,230));
+	        //指数
+	        g.drawString(a1,65,65);
+	        //频道
+	        g.drawString(a2,65,65+65);
+	        //事件
+	       
+	        if(a3.length()>16) {
+	        	 g.drawString(a3.substring(0,16),65,65+65+35);
+	        	 g.drawString(a3.substring(16),65,65+65+35+35);
+	        }else {
+	        	 g.drawString(a3,65,65+65+35);
+	        }
+	        //宜
+	        g.drawString(a4,65,65+65+30+110);
+	        //宜事件
+	        if(a5.length()>16) {
+	        	g.drawString(a5.substring(0,16),65,65+65+30+110+35);
+	            g.drawString(a5.substring(16),65,65+65+30+110+35+35);
+	        }else {
+	        	g.drawString(a5,65,65+65+30+110+35);
+	        }
+	        
+	        
+	        //忌
+	        g.drawString(a6,65,65+65+30+110+30+130);
+	        //忌事件
+	        if(a7.length()>16) {
+	        	g.drawString(a7.substring(0,16),65,65+65+30+110+30+130+35);
+	            g.drawString(a7.substring(16),65,65+65+30+110+30+130+35+35);
+	        }else {
+	        	g.drawString(a7,65,65+65+30+110+30+130+35);
+	        }
+	        
+	        
+	        //地图
+	        g.drawString(a8,480,65+65+30+110);
+	        //地图名
+	        g.drawString(a9,480,65+65+30+110+35);
+	        
+	        g.dispose();
+	        
+//	        buffImg = resizeBufferedImage(buffImg,buffImg.getWidth()/2,buffImg.getHeight()/2,true);
+	     // TYPE_INT_RGB:创建一个RBG图像，24位深度，成功将32位图转化成24位
+	        BufferedImage newBufferedImage = new BufferedImage(
+	        		sourceFile.getWidth(), sourceFile.getHeight(),
+	                BufferedImage.TYPE_INT_RGB);
+	        newBufferedImage.createGraphics().drawImage(sourceFile, 0, 0,
+	            Color.WHITE, null);
+	        // write to jpeg file
+//	        ImageIO.write(newBufferedImage, "jpg", new File(MsbotConst.imageUrl + "bfb/mn1.jpg"));
+	        ImageIO.write(newBufferedImage, "jpg", new File(MsbotConst.imageUrl +uuid +".jpg"));
+	        generateWaterFile(newBufferedImage, saveFilePath);
+		}
+		
+	}
+	
+	
+	
 	@Override
 	public String startDraw() throws Exception {
 		Random r = new Random();
@@ -776,6 +879,103 @@ public class DrawServiceImpl implements DrawService{
 	        sourceFile = watermark(sourceFile, list.get(7) , 375, 805, 1.0f);
 	        sourceFile = watermark(sourceFile, list.get(8) , 620, 805, 1.0f);
 	        sourceFile = watermark(sourceFile, list.get(9) , 870, 805, 1.0f);
+	        
+//	        buffImg = resizeBufferedImage(buffImg,buffImg.getWidth()/2,buffImg.getHeight()/2,true);
+	     // TYPE_INT_RGB:创建一个RBG图像，24位深度，成功将32位图转化成24位
+	        BufferedImage newBufferedImage = new BufferedImage(
+	        		sourceFile.getWidth(), sourceFile.getHeight(),
+	                BufferedImage.TYPE_INT_RGB);
+	        newBufferedImage.createGraphics().drawImage(sourceFile, 0, 0,
+	            Color.WHITE, null);
+	        // write to jpeg file
+//	        ImageIO.write(newBufferedImage, "jpg", new File(MsbotConst.imageUrl + "bfb/mn1.jpg"));
+	        ImageIO.write(newBufferedImage, "jpg", new File(MsbotConst.imageUrl +uuid +".jpg"));
+	        generateWaterFile(newBufferedImage, saveFilePath);
+	        return "[CQ:image,file=" + uuid +".jpg]";
+		}
+
+
+
+		@Override
+		public String zbImage(String[] msg) throws Exception {
+			String a1 = msg[0];
+			String a2 = msg[1];
+			String a3 = msg[2];
+			String a4 = msg[3];
+			String a5 = msg[4];
+			String a6 = msg[5];
+			String a7 = msg[6];
+			String a8 = msg[7];
+			String a9 = msg[8];
+			String imageUrl = msg[9];
+			String roleUrl = msg[10];
+			
+			String sourceFilePath = MsbotConst.imageUrl + "zb/background.png";
+
+			String uuid = UUID.randomUUID().toString().replaceAll("-", "");
+	        String saveFilePath = MsbotConst.imageUrl + uuid +".png";
+	        BufferedImage sourceFile = ImageIO.read(new File(sourceFilePath));
+	        
+	        //紫色条形框
+	        BufferedImage buffImg1 = ImageIO.read(new File(MsbotConst.imageUrl + "zb/a1.png"));
+	        
+	        //人物
+	        BufferedImage roleImg = ImageIO.read(new File(roleUrl));
+	        roleImg = NewImageUtils.resizeBufferedImage(roleImg,188,210,false);
+	        sourceFile = watermark(sourceFile, roleImg , 550, 30, 1.0f);
+	        
+	        //地图
+	        BufferedImage mapImg = ImageIO.read(new File(imageUrl));
+	        mapImg = NewImageUtils.resizeBufferedImage(mapImg,370,180,false);
+	        mapImg = NewImageUtils.setRadius(mapImg,30,0,0);
+	        sourceFile = watermark(sourceFile, buffImg1 , 450, 230, 1.0f);
+	        sourceFile = watermark(sourceFile, mapImg , 460, 350, 1.0f);
+	        
+	        
+	        Graphics2D g = sourceFile.createGraphics();
+	        Font font = Loadfont2.Font(22);
+	        g.setFont(font);
+	        g.setColor(new Color(230,230,230));
+	        //指数
+	        g.drawString(a1,65,65);
+	        //频道
+	        g.drawString(a2,65,65+65);
+	        //事件
+	       
+	        if(a3.length()>16) {
+	        	 g.drawString(a3.substring(0,16),65,65+65+35);
+	        	 g.drawString(a3.substring(16),65,65+65+35+35);
+	        }else {
+	        	 g.drawString(a3,65,65+65+35);
+	        }
+	        //宜
+	        g.drawString(a4,65,65+65+30+110);
+	        //宜事件
+	        if(a5.length()>16) {
+	        	g.drawString(a5.substring(0,16),65,65+65+30+110+35);
+	            g.drawString(a5.substring(16),65,65+65+30+110+35+35);
+	        }else {
+	        	g.drawString(a5,65,65+65+30+110+35);
+	        }
+	        
+	        
+	        //忌
+	        g.drawString(a6,65,65+65+30+110+30+130);
+	        //忌事件
+	        if(a7.length()>16) {
+	        	g.drawString(a7.substring(0,16),65,65+65+30+110+30+130+35);
+	            g.drawString(a7.substring(16),65,65+65+30+110+30+130+35+35);
+	        }else {
+	        	g.drawString(a7,65,65+65+30+110+30+130+35);
+	        }
+	        
+	        
+	        //地图
+	        g.drawString(a8,480,65+65+30+110);
+	        //地图名
+	        g.drawString(a9,480,65+65+30+110+35);
+	        
+	        g.dispose();
 	        
 //	        buffImg = resizeBufferedImage(buffImg,buffImg.getWidth()/2,buffImg.getHeight()/2,true);
 	     // TYPE_INT_RGB:创建一个RBG图像，24位深度，成功将32位图转化成24位

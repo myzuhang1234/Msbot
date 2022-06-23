@@ -46,7 +46,6 @@ public class MsbotController {
 			System.out.println(receive.toString());
 			receive.setReply(receive.getReply().replaceAll("\\\\", "/"));
 		}
-		
 		return JSON.toJSONString(receive);
 	}
 	

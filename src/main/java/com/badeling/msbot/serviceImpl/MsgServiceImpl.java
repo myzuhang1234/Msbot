@@ -132,7 +132,7 @@ public class MsgServiceImpl implements MsgService{
 		
         try {
         	if(msg.contains("message_type")) {
-        		if(msg.contains("{\"channel_id\":")) {
+        		if(msg.contains("\"channel_id\":")) {
         			channelService.receive(msg);
         			return null;
         		}
@@ -150,11 +150,11 @@ public class MsgServiceImpl implements MsgService{
         } catch (IOException e) {
             e.printStackTrace();
         }
-        
-        if(receiveMsg.getMessage_type().equals("private")&&receiveMsg.getUser_id().equals(MsbotConst.masterId)) {
-        	System.err.println(receiveMsg.toString());
-        	return handlePrivateMsg(receiveMsg);
-        }
+			//私聊
+//        if(receiveMsg.getMessage_type().equals("private")&&receiveMsg.getUser_id().equals(MsbotConst.masterId)) {
+//      	System.err.println(receiveMsg.toString());
+//        	return handlePrivateMsg(receiveMsg);
+//        }
         
         //黑名单的人
         for(String temp : MsbotConst.blackList) {
@@ -1312,7 +1312,8 @@ public class MsgServiceImpl implements MsgService{
 			}
 			replyMsg.setAt_sender(true);
 			replyMsg.setReply(mes);
-			return replyMsg;
+//			由于群内对于该功能过于狂热，所以取消 如果需要启动可以取消下一行的注释
+//			return replyMsg;
 		}
 		
 		

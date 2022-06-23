@@ -121,6 +121,7 @@ public class ScheduleTask {
 						groupMsg.setMessage(message);
 						groupMsg.setGroup_id(Long.parseLong((group_id)));
 						groupMsgService.sendGroupMsg(groupMsg);
+						Thread.sleep(3542);
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
