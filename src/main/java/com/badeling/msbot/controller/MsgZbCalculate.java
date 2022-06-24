@@ -38,11 +38,12 @@ public class MsgZbCalculate {
 		SimpleDateFormat format2 = new SimpleDateFormat("u");
 		String reply = new String();
 		int i = Math.abs((numb+format1.format(date)+format2.format(date)).hashCode()%97);
-		int j = Math.abs((numb+format2.format(date)+format1.format(date)).hashCode()%20)+1;
+		int j = Math.abs((numb+format2.format(date)+format1.format(date)).hashCode()%12)+1;
 		int k = Math.abs((format1.format(date)+ numb +format2.format(date)).hashCode());
 		int l = Math.abs((format2.format(date)+ numb +format1.format(date)).hashCode());
 		int m = Math.abs((format1.format(date)+format2.format(date)+numb).hashCode());
 		int n = Math.abs((format2.format(date)+format1.format(date)+numb).hashCode());
+
 		/**
 		 * i 运势
 		 * j 频道
@@ -86,6 +87,7 @@ public class MsgZbCalculate {
 				+ luckyMap +"\n"
 				+ "//-------------------//";
 
+		System.out.println(reply);
 
 		String a1 = "您今日的运势指数为" +luckyRank(i);
 		String a2 = "运势最好的频道是"+ j +"频道哦！";
@@ -97,7 +99,10 @@ public class MsgZbCalculate {
 		String a8 = "今日最佳玄学地图是：";
 		String a9 = lm.getMap();
 
+
 		String mapUrl = MsbotConst.imageUrl + lm.getMapUrl().substring(15,lm.getMapUrl().length()-1).replaceAll("\\\\", "/");
+
+
 		String roleUrl = MsbotConst.imageUrl + "class/0.png";
 		File f = new File(MsbotConst.imageUrl + "class");
 		File[] listFiles = f.listFiles();
