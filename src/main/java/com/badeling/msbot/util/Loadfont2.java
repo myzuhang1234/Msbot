@@ -126,6 +126,13 @@ public class Loadfont2{
 		return font;//返回字体
 	}
 
+	public static java.awt.Font Font2(float i) {
+		String root= MsbotConst.imageUrl + "qd";//项目根目录路径
+//		String root = "D:\\go-cqhttp\\data\\images\\qd";
+		Font font = Loadfont2.loadFont(root+"/微软雅黑.ttf", i);//调用
+		return font;//返回字体
+	}
+
 	public static java.awt.Font Font2(){
 		String root= MsbotConst.imageUrl + "qd";
 //		String root = "D:\\go-cqhttp\\data\\images\\qd";

@@ -29,5 +29,5 @@ public interface DrawService {
 
 	String ignImage(String ignDate) throws Exception;
 
-
+	String zbImage(String[] msg) throws Exception;
 }

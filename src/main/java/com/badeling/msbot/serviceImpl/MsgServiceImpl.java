@@ -132,7 +132,7 @@ public class MsgServiceImpl implements MsgService{
 		
         try {
         	if(msg.contains("message_type")) {
-        		if(msg.contains("{\"channel_id\":")) {
+				if(msg.contains("\"channel_id\":")) {
         			channelService.receive(msg);
         			return null;
         		}
@@ -150,11 +150,11 @@ public class MsgServiceImpl implements MsgService{
         } catch (IOException e) {
             e.printStackTrace();
         }
-        
-        if(receiveMsg.getMessage_type().equals("private")&&receiveMsg.getUser_id().equals(MsbotConst.masterId)) {
-        	System.err.println(receiveMsg.toString());
-        	return handlePrivateMsg(receiveMsg);
-        }
+		//私聊
+		//if(receiveMsg.getMessage_type().equals("private")&&receiveMsg.getUser_id().equals(MsbotConst.masterId)) {
+        //      	System.err.println(receiveMsg.toString());
+        //        	return handlePrivateMsg(receiveMsg);
+        // }
         
         //黑名单的人
         for(String temp : MsbotConst.blackList) {

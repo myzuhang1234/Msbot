@@ -1,5 +1,6 @@
 package com.badeling.msbot.controller;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -8,12 +9,14 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.badeling.msbot.config.MsbotConst;
 import com.badeling.msbot.entity.LuckyMap;
 import com.badeling.msbot.entity.LuckyTable;
 import com.badeling.msbot.entity.LuckyThing;
 import com.badeling.msbot.repository.LuckyMapRepository;
 import com.badeling.msbot.repository.LuckyTableRepository;
 import com.badeling.msbot.repository.LuckyThingRepository;
+import com.badeling.msbot.service.DrawService;
 import com.badeling.msbot.util.Loadfont2;
 
 @Component
@@ -24,7 +27,9 @@ public class MsgZbCalculate {
 	LuckyTableRepository luckyTableRepository;
 	@Autowired
 	LuckyThingRepository luckyThingRepository;
-	
+	@Autowired
+	DrawService drawService;
+
 	public String msgZb(String numb) {
 		Date date = new Date(System.currentTimeMillis());
 		//几号
@@ -80,6 +85,35 @@ public class MsgZbCalculate {
 				+ "今日最佳玄学地图是"+"\n"
 				+ luckyMap +"\n"
 				+ "//-------------------//";
+
+
+		String a1 = "您今日的运势指数为" +luckyRank(i);
+		String a2 = "运势最好的频道是"+ j +"频道哦！";
+		String a3 = luckyTable;
+		String a4 = "宜：" + lgt.getGood();
+		String a5 = lgt.getGoodThing();
+		String a6 = "忌：" + lbt.getBad();
+		String a7 = lbt.getBadThing();
+		String a8 = "今日最佳玄学地图是：";
+		String a9 = lm.getMap();
+
+		String mapUrl = MsbotConst.imageUrl + lm.getMapUrl().substring(15,lm.getMapUrl().length()-1).replaceAll("\\\\", "/");
+		String roleUrl = MsbotConst.imageUrl + "class/0.png";
+		File f = new File(MsbotConst.imageUrl + "class");
+		File[] listFiles = f.listFiles();
+
+		int p = Math.abs((format2.format(date)+format1.format(date)+numb).hashCode()%listFiles.length);
+		File file = listFiles[p];
+
+		roleUrl = file.getParent() + "/" +file.getName();
+
+		String[] msg = {a1,a2,a3,a4,a5,a6,a7,a8,a9,mapUrl,roleUrl};
+		try {
+			reply = drawService.zbImage(msg);
+		} catch (Exception e) {
+			reply = "出现未知的错误";
+			e.printStackTrace();
+		}
 		return reply;
 	}
 	public String msgZb(String numb,String name) throws Exception {
@@ -124,7 +158,7 @@ public class MsgZbCalculate {
 		int count3 = luckyMapRepository.getCount();
 		m = m % count3;
 		LuckyMap lm = luckyMapRepository.findByRandom(m);
-		
+
 		Map<String,String> map = new HashMap<String, String>();
 		map.put("name", name);
 		map.put("star", "您今日的运势指数为" +luckyRank(i));
@@ -133,7 +167,7 @@ public class MsgZbCalculate {
 		map.put("gThing", luckyThing);
 		map.put("bThing", luckyBdThing);
 		map.put("map", lm.getMap());
-		map.put("mapUrl", lm.getMapUrl());	
+		map.put("mapUrl", lm.getMapUrl());
 		return Loadfont2.zbImage(map);
 	}
 	//指数
@@ -151,19 +185,19 @@ public class MsgZbCalculate {
 		}
 	}
 	//指数
-		private String luckyRank2(int i) {
-			if(i<5) {
-				return "1";
-			}else if(i<10){
-				return "2";
-			}else if(i<45){
-				return "3";
-			}else if(i<80){
-				return "4";
-			}else{
-				return "5";
-			}
+	private String luckyRank2(int i) {
+		if(i<5) {
+			return "1";
+		}else if(i<10){
+			return "2";
+		}else if(i<45){
+			return "3";
+		}else if(i<80){
+			return "4";
+		}else{
+			return "5";
 		}
+	}
 
 	public void msgAddMap(String raw_message, String imageCq) {
 		LuckyMap luckyMap = new LuckyMap();
