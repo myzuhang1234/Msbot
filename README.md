@@ -8,7 +8,11 @@
 
 前台监听地址 host: 127.0.0.1  port: 5700
 
-视频搭建流程 https://www.bilibili.com/video/BV14R4y1G7sM
+# 视频搭建流程：
+
+Linux服务器搭建：https://www.bilibili.com/video/BV14R4y1G7sM
+
+windows服务器搭建：https://www.bilibili.com/video/BV1pW4y1r7JS
 
 ## 静态资源 
 
