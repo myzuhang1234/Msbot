@@ -38,8 +38,8 @@ public class MvpImageServiceImpl implements MvpImageService{
 		String raw_message = receiveMsg.getMessage();
 		int questionIndex = raw_message.indexOf(",url=")+5;
 		int answerIndex = raw_message.indexOf("]");
-		
-		String imageName = raw_message.substring(raw_message.indexOf("file=")+5,raw_message.indexOf(",url=")-6);
+		String imageName = UUID.randomUUID().toString().replaceAll("-", "")+".jpg";
+//		String imageName = raw_message.substring(raw_message.indexOf("file=")+5,raw_message.indexOf(",url=")-6);
 		String imageUrl = raw_message.substring(questionIndex, answerIndex);
 //		try {
 //			String NewfileName = CoolQconst.imageUrl + imageName +".cqimg";
@@ -81,7 +81,8 @@ public class MvpImageServiceImpl implements MvpImageService{
 		int answerIndex = raw_message.indexOf("]");
 //		[CQ:image,file=6BBE03D40F0DA08AD91BBF6C627AEEE5,url=http://gchat.qpic.cn/gchatpic_new/123179118/4193168946-3038401046-6BBE03D40F0DA08AD91BBF6C627AEEE5/0?term=2]","raw_message":"[CQ:image,file=6BBE03D40F0DA08AD91BBF6C627AEEE5,url=http://gchat.qpic.cn/gchatpic_new/123179118/4193168946-3038401046-6BBE03D40F0DA08AD91BBF6C627AEEE5/0?term=2]","font":0,"sender":{"user_id":123179118,"nickname":"神话ヤ北真天","card":"神话ヤ北真天","sex":"unknown","age":0,"area":"unknown","level":"unknown","role":"admin","title":"unknown"},"time":1600180430,"post_type":"message","message_type":"group"}
 //		String imageName = raw_message.substring(raw_message.indexOf("file=")+5,raw_message.indexOf(",url="));
-		String imageName = raw_message.substring(raw_message.indexOf("file=")+5,raw_message.indexOf(",url=")-6);
+//		String imageName = raw_message.substring(raw_message.indexOf("file=")+5,raw_message.indexOf(",url=")-6);
+		String imageName = UUID.randomUUID().toString().replaceAll("-", "")+".jpg";
 		String imageUrl = raw_message.substring(questionIndex, answerIndex);
 		try {
 			download(imageUrl, imageName,MsbotConst.imageUrl+"save/",imageName);
@@ -209,8 +210,8 @@ public class MvpImageServiceImpl implements MvpImageService{
 	public String saveFlagRaceImage(String raw_message,String imageNewName) {
 		int questionIndex = raw_message.indexOf(",url=")+5;
 		int answerIndex = raw_message.indexOf("]");
-		
-		String imageName = raw_message.substring(raw_message.indexOf("file=")+5,raw_message.indexOf(",url=")-6);
+		String imageName = UUID.randomUUID().toString().replaceAll("-", "")+".jpg";
+//		String imageName = raw_message.substring(raw_message.indexOf("file=")+5,raw_message.indexOf(",url=")-6);
 		String imageUrl = raw_message.substring(questionIndex, answerIndex);
 //		try {
 //			String NewfileName = CoolQconst.imageUrl + imageName + ".cqimg";
@@ -246,8 +247,8 @@ public class MvpImageServiceImpl implements MvpImageService{
 		String raw_message = receiveMsg.getMessage();
 		int questionIndex = raw_message.indexOf(",url=")+5;
 		int answerIndex = raw_message.indexOf("]");
-		
-		String imageName = raw_message.substring(raw_message.indexOf("file=")+5,raw_message.indexOf(",url=")-6);
+		String imageName = UUID.randomUUID().toString().replaceAll("-", "")+".jpg";
+//		String imageName = raw_message.substring(raw_message.indexOf("file=")+5,raw_message.indexOf(",url=")-6);
 		String imageUrl = raw_message.substring(questionIndex, answerIndex);
 //		try {
 //			String NewfileName = CoolQconst.imageUrl + imageName +".cqimg";
