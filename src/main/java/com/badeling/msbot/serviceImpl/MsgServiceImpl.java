@@ -1,6 +1,7 @@
 package com.badeling.msbot.serviceImpl;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -529,7 +530,7 @@ public class MsgServiceImpl implements MsgService{
 			
 		}
 		
-		if(reReadMsg.getMes_count()>300) {
+		if(reReadMsg.getMes_count()>300&&reReadMsg.getCount()==1) {
 			reReadMsg.setMes_count(1);
 			
 			Random r = new Random();
@@ -1535,7 +1536,18 @@ public class MsgServiceImpl implements MsgService{
 				ScriptEngineManager manager = new ScriptEngineManager();
 				ScriptEngine engine = manager.getEngineByName("js");
 				Object result = engine.eval(raw_message.substring(raw_message.indexOf(MsbotConst.botName)+2));
-				replyMsg.setReply(raw_message.substring(receiveMsg.getRaw_message().indexOf(MsbotConst.botName)+2)+"="+result.toString());
+				//更改结果格式
+				DecimalFormat myformat = new DecimalFormat();
+				myformat.applyPattern("##,###.00000");
+				Double d = Double.valueOf(result.toString());
+				String formatResult = myformat.format(d);
+				if(formatResult.startsWith(".")) {
+					formatResult = "0"+formatResult;
+				}
+				while(formatResult.contains(".")&&(formatResult.endsWith("0")||formatResult.endsWith("."))) {
+					formatResult = formatResult.substring(0, formatResult.length()-1);
+				}
+				replyMsg.setReply(raw_message.substring(receiveMsg.getRaw_message().indexOf(MsbotConst.botName)+2)+"="+formatResult);
 				return replyMsg;
 			}
 		}catch (Exception e) {
