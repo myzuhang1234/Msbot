@@ -1580,74 +1580,6 @@ public class MsgServiceImpl implements MsgService{
 			return replyMsg;
 
 		}
-
-		if(raw_message.contains("抽奖")||raw_message.contains("魔女")||raw_message.contains("百分百")) {
-			String mes;
-			Timestamp time_now = new Timestamp(System.currentTimeMillis());
-
-			SimpleDateFormat formatHours = new SimpleDateFormat("HH");
-			int hours = Integer.parseInt(formatHours.format(time_now));
-
-			if(hours>=0 && hours<=11){
-				SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-				String date_now = df.format(time_now);
-				MonvTime monvTime = monvTimeRepository.findRoleBynumber(receiveMsg.getSender().getUser_id(),date_now,receiveMsg.getGroup_id());
-
-				if(monvTime == null) {
-					//查询无角色
-					monvTime = new MonvTime();
-					//设置群名片 如果没有 设置昵称
-					if(receiveMsg.getSender().getCard()==null || receiveMsg.getSender().getCard().equals("")) {
-						monvTime.setName(receiveMsg.getSender().getNickname());
-					}else {
-						monvTime.setName(receiveMsg.getSender().getCard());
-					}
-					//设置QQ号
-					monvTime.setUser_id(receiveMsg.getSender().getUser_id());
-					//设置群号
-					if(receiveMsg.getGroup_id().contains("101577006")) {
-						monvTime.setGroup_id("398359236");
-					}else {
-						monvTime.setGroup_id(receiveMsg.getGroup_id());
-					}
-					Timestamp timestamp = new Timestamp(0);
-					monvTime.setUpdateTime(timestamp);
-					monvTime.setDate(date_now);
-					monvTime.setPrize(0,0,0,0,0);
-					monvTime = monvTimeRepository.save(monvTime);
-				}
-
-				long cd_time = (time_now.getTime()-monvTime.getUpdateTime().getTime())/ 1000;
-				if (cd_time >= MsbotConst.monv_cd){
-					monvTime.setUpdateTime(time_now);
-					monvTimeRepository.modifyUpdateTime(monvTime.getId(), monvTime.getUpdateTime());
-
-					try {
-						mes = drawService.startDrawMs(monvTime);
-					} catch (Exception e) {
-						e.printStackTrace();
-						mes = "图片文件缺失。";
-					}
-					replyMsg.setAt_sender(true);
-					replyMsg.setReply(mes);
-					return replyMsg;
-				}
-				else {
-					mes = "抽奖冷却中,剩余"+(MsbotConst.monv_cd-cd_time)+"秒";
-					replyMsg.setAt_sender(true);
-					replyMsg.setReply(mes);
-					return replyMsg;
-				}
-			}
-			else {
-				mes = "抽奖时间: 每日0-12点,请稍后...";
-				replyMsg.setAt_sender(true);
-				replyMsg.setReply(mes);
-				return replyMsg;
-			}
-
-		}
-		
 		
 		//官网
 		if(raw_message.startsWith(MsbotConst.botName+"官网")||raw_message.startsWith(MsbotConst.botName+" 官网")) {
@@ -1751,7 +1683,75 @@ public class MsgServiceImpl implements MsgService{
 				return replyMsg;
 			}
 		}
-		
+
+		//魔女
+		if(raw_message.contains("抽奖")||raw_message.contains("魔女")||raw_message.contains("百分百")) {
+			String mes;
+			Timestamp time_now = new Timestamp(System.currentTimeMillis());
+
+			SimpleDateFormat formatHours = new SimpleDateFormat("HH");
+			int hours = Integer.parseInt(formatHours.format(time_now));
+
+			if(hours>=0 && hours<=11){
+				SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+				String date_now = df.format(time_now);
+				MonvTime monvTime = monvTimeRepository.findRoleBynumber(receiveMsg.getSender().getUser_id(),date_now,receiveMsg.getGroup_id());
+
+				if(monvTime == null) {
+					//查询无角色
+					monvTime = new MonvTime();
+					//设置群名片 如果没有 设置昵称
+					if(receiveMsg.getSender().getCard()==null || receiveMsg.getSender().getCard().equals("")) {
+						monvTime.setName(receiveMsg.getSender().getNickname());
+					}else {
+						monvTime.setName(receiveMsg.getSender().getCard());
+					}
+					//设置QQ号
+					monvTime.setUser_id(receiveMsg.getSender().getUser_id());
+					//设置群号
+					if(receiveMsg.getGroup_id().contains("101577006")) {
+						monvTime.setGroup_id("398359236");
+					}else {
+						monvTime.setGroup_id(receiveMsg.getGroup_id());
+					}
+					Timestamp timestamp = new Timestamp(0);
+					monvTime.setUpdateTime(timestamp);
+					monvTime.setDate(date_now);
+					monvTime.setPrize(0,0,0,0,0);
+					monvTime = monvTimeRepository.save(monvTime);
+				}
+
+				long cd_time = (time_now.getTime()-monvTime.getUpdateTime().getTime())/ 1000;
+				if (cd_time >= MsbotConst.monv_cd){
+					monvTime.setUpdateTime(time_now);
+					monvTimeRepository.modifyUpdateTime(monvTime.getId(), monvTime.getUpdateTime());
+
+					try {
+						mes = drawService.startDrawMs(monvTime);
+					} catch (Exception e) {
+						e.printStackTrace();
+						mes = "图片文件缺失。";
+					}
+					replyMsg.setAt_sender(true);
+					replyMsg.setReply(mes);
+					return replyMsg;
+				}
+				else {
+					mes = "抽奖冷却中,剩余"+(MsbotConst.monv_cd-cd_time)+"秒";
+					replyMsg.setAt_sender(true);
+					replyMsg.setReply(mes);
+					return replyMsg;
+				}
+			}
+			else {
+				mes = "抽奖时间: 每日0-12点,请稍后...";
+				replyMsg.setAt_sender(true);
+				replyMsg.setReply(mes);
+				return replyMsg;
+			}
+
+		}
+
 		if(raw_message.startsWith(MsbotConst.botName+"抽签")||raw_message.startsWith(MsbotConst.botName+"运势")) {
 			String reply = new String();
 			reply = msgZbCalculate.msgDeZb(receiveMsg.getUser_id());
