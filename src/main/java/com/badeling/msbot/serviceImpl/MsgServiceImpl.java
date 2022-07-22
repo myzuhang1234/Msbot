@@ -62,56 +62,194 @@ import org.springframework.web.client.RestTemplate;
 public class MsgServiceImpl implements MsgService{
 	
 	@Autowired
-	private MsgRepository msgRepository;
-	
-	@Autowired
-	private MsgZbCalculate msgZbCalculate;
-	
-	@Autowired
-	private GroupMsgService groupMsgService;
-	
-	@Autowired
-	private MvpImageService mvpImageService;
-	
-	@Autowired
-	private DrawService drawService;
-	
-	@Autowired
-	private RankService rankService;
-	
-	@Autowired
-	private ChannelService channelService;
-	
-	@Autowired
-	private RereadSentenceRepository rereadSentenceRepository;
-	
-	@Autowired
-	private RereadTimeRepository rereadTimeRepository;
-	
-	@Autowired
-	private RoleDmgRepository roleDmgRepository;
-	
-	@Autowired
-	private PrivateService privateService;
-	
-	@Autowired
-	private WzXmlService wzXmlService;
-	
-	@Autowired
-	private MsgNoPrefixRepository msgNoPrefixRepository;
-	
-	@Autowired
 	RankInfoRepository rankInfoRepository;
-	
 	@Autowired
 	QuizOzQuestionRepository quizOzQuestionRepository;
-	
 	@Autowired
 	QuizOzAnswerRepository quizOzAnswerRepository;
-
+	@Autowired
+	private MsgRepository msgRepository;
+	@Autowired
+	private MsgZbCalculate msgZbCalculate;
+	@Autowired
+	private GroupMsgService groupMsgService;
+	@Autowired
+	private MvpImageService mvpImageService;
+	@Autowired
+	private DrawService drawService;
+	@Autowired
+	private RankService rankService;
+	@Autowired
+	private ChannelService channelService;
+	@Autowired
+	private RereadSentenceRepository rereadSentenceRepository;
+	@Autowired
+	private RereadTimeRepository rereadTimeRepository;
+	@Autowired
+	private RoleDmgRepository roleDmgRepository;
+	@Autowired
+	private PrivateService privateService;
+	@Autowired
+	private WzXmlService wzXmlService;
+	@Autowired
+	private MsgNoPrefixRepository msgNoPrefixRepository;
 	@Autowired
 	private MonvTimeRepository monvTimeRepository;
 	
+	public static int[] starForceDesc(int level,int stat,int att,int star) {
+		Map<Integer, Map<String, int[]>> starForceDataAfter16 = starForceDataAfter16();
+		Map<String, int[]> map = starForceDataAfter16.get(level);
+		while(star>0) {
+			stat = starForceStatDesc(star, stat, map.get("stat"));
+			att = starForceAttDesc(star,att,map.get("attWeapon"));
+			star--;
+		}
+		return new int[]{stat,att};
+	}
+
+	public static int[] starForce(int level,int stat,int att,int nowStar,int targetStar,Boolean isWeapon) {
+		Map<Integer, Map<String, int[]>> starForceDataAfter16 = starForceDataAfter16();
+		Map<String, int[]> map = starForceDataAfter16.get(level);
+		if(isWeapon) {
+			while(nowStar<targetStar) {
+				stat = starForceStat(nowStar,stat,map.get("stat"));
+				att = starForceAtt(nowStar,att,map.get("attWeapon"));
+				nowStar++;
+			}
+		}else {
+			while(nowStar<targetStar) {
+				stat = starForceStat(nowStar,stat,map.get("stat"));
+				att = starForceAttNotWeapon(nowStar,att,map.get("att"));
+				nowStar++;
+			}
+		}
+		return new int[]{stat,att};
+	}
+
+	private static int starForceStat(int star,int totalStat,int[] stat16) {
+		if(star<5) {
+			totalStat = totalStat + 2;
+		}else if(star<15) {
+			totalStat = totalStat + 3;
+		}else{
+			totalStat = totalStat + stat16[star-15];
+		}
+		return totalStat;
+	}
+
+	private static int starForceStatDesc(int star,int totalStat,int[] stat16) {
+		if(star<=5) {
+			totalStat = totalStat - 2;
+		}else if(star<=15) {
+			totalStat = totalStat - 3;
+		}else{
+			totalStat = totalStat - stat16[star-16];
+		}
+		return totalStat;
+	}
+
+	private static int starForceAttNotWeapon(int star,int totalAtt,int[] att16) {
+		if(star>=15) {
+			totalAtt = totalAtt + att16[star-15];
+		}
+		return totalAtt;
+	}
+
+	private static int starForceAtt(int star,int totalAtt,int[] att16) {
+		if(star<15) {
+			totalAtt = totalAtt + totalAtt/50 + 1;
+		}else {
+			totalAtt = totalAtt + att16[star-15];
+		}
+		return totalAtt;
+	}
+	
+	private static int starForceAttDesc(int star,int totalAtt,int[] att16) {
+		int before = totalAtt;
+		if(star<=15) {
+			if(totalAtt%50<totalAtt/50) {
+				totalAtt = totalAtt - totalAtt/50;
+			}else {
+				totalAtt = totalAtt - totalAtt/50 - 1;
+			}
+
+		}else {
+			totalAtt = totalAtt - att16[star-16];
+		}
+		System.out.println("star:" + star + " " + totalAtt + " = " + before + " " + (before-totalAtt));
+		return totalAtt;
+	}
+
+	private static Map<Integer, Map<String, int[]>> starForceDataAfter16() {
+		Map<Integer,Map<String,int[]>> map = new HashMap<>();
+
+		Map<String, int[]> map130 = new HashMap<>();
+		map130.put("stat", new int[] {7,7,7,7,7});
+ 		map130.put("att", new int[] {7,8,9,10,11});
+ 		map130.put("attWeapon", new int[] {6,7,7,8,9});
+ 		map.put(130, map130);
+
+ 		Map<String,int[]> map140 = new HashMap<>();
+		map140.put("stat", new int[] {9,9,9,9,9,9,9,0,0,0});
+ 		map140.put("att", new int[] {8,9,10,11,12,13,15,17,19,21});
+ 		map140.put("attWeapon", new int[] {7,8,8,9,10,11,12,30,31,32});
+ 		map.put(140, map140);
+
+ 		Map<String,int[]> map150 = new HashMap<>();
+		map150.put("stat", new int[] {11,11,11,11,11,11,11,0,0,0});
+ 		map150.put("att", new int[] {9,10,11,12,13,14,16,18,20,22});
+ 		map150.put("attWeapon", new int[] {8,9,9,10,11,12,13,31,32,33});
+ 		map.put(150, map150);
+
+ 		Map<String,int[]> map160 = new HashMap<>();
+ 		map160.put("stat", new int[] {13,13,13,13,13,13,13,0,0,0});
+ 		map160.put("att", new int[] {10,11,12,13,14,15,17,19,21,23});
+ 		map160.put("attWeapon", new int[] {9,9,10,11,12,13,14,32,33,34});
+ 		map.put(160, map160);
+
+ 		Map<String,int[]> map200 = new HashMap<>();
+ 		map200.put("stat", new int[] {15,15,15,15,15,15,15,0,0,0});
+ 		map200.put("att", new int[] {12,13,14,15,16,17,19,21,23,25});
+ 		map200.put("attWeapon", new int[] {13,13,14,14,15,16,17,34,35,36});
+ 		map.put(200, map200);
+
+		return map;
+	}
+
+	private static double defAndign(double def, double ign) {
+		double i = Double.parseDouble(String.format("%.2f", 100-(def-ign*def/100)));
+		if(i<0) {
+			i=0;
+		}
+		if(i>100) {
+			i=100;
+		}
+		return i;
+	}
+
+	 public static int getResult(String A, String B) {
+	        if(A.equals(B)) {
+	            return 0;
+	        }
+	        //dp[i][j]表示源串A位置i到目标串B位置j处最低需要操作的次数
+	        int[][] dp = new int[A.length() + 1][B.length() + 1];
+	        for(int i = 1;i <= A.length();i++)
+	            dp[i][0] = i;
+	        for(int j = 1;j <= B.length();j++)
+	            dp[0][j] = j;
+	        for(int i = 1;i <= A.length();i++) {
+	            for(int j = 1;j <= B.length();j++) {
+	                if(A.charAt(i - 1) == B.charAt(j - 1))
+	                    dp[i][j] = dp[i - 1][j - 1];
+	                else {
+	                    dp[i][j] = Math.min(dp[i - 1][j] + 1,
+	                            Math.min(dp[i][j - 1] + 1, dp[i - 1][j - 1] + 1));
+	                }
+	            }
+	        }
+	        return dp[A.length()][B.length()];
+	    }
+
 	@Override
 	public ReplyMsg receive(String msg) {
 		ReceiveMsg receiveMsg = null;
@@ -120,7 +258,7 @@ public class MsgServiceImpl implements MsgService{
 		if(msgList.contains(msg)) {
 			return null;
 		}
-		if(msgList.size()>128) {	
+		if(msgList.size()>128) {
 			for(int i=0;i<16;i++) {
 				Iterator<String> iterator = msgList.iterator();
 				msgList.remove(iterator.next());
@@ -128,8 +266,8 @@ public class MsgServiceImpl implements MsgService{
 		}
 		msgList.add(msg);
 		GlobalVariable.setMsgList(msgList);
-		
-		
+
+
         try {
         	if(msg.contains("message_type")) {
 				if(msg.contains("\"channel_id\":")) {
@@ -155,47 +293,52 @@ public class MsgServiceImpl implements MsgService{
         //      	System.err.println(receiveMsg.toString());
         //        	return handlePrivateMsg(receiveMsg);
         // }
-        
+
         //黑名单的人
         for(String temp : MsbotConst.blackList) {
         	if(receiveMsg.getUser_id().equals(temp)) {
         		return null;
         	}
         }
-        
-        if(receiveMsg.getRaw_message().startsWith(MsbotConst.botName)) {
-        	System.out.println(receiveMsg.toString());
-        	return handleNameMsg(receiveMsg);
-        }else if(receiveMsg.getRaw_message().startsWith("[CQ:at,qq="+MsbotConst.botId+"]")){
-           	receiveMsg.setRaw_message(receiveMsg.getRaw_message().replace("[CQ:at,qq="+MsbotConst.botId+"]", MsbotConst.botName));
-        	System.out.println(receiveMsg.toString());
-        	return handleNameMsg(receiveMsg);
-        }else if((receiveMsg.getRaw_message().contains("气象")||receiveMsg.getRaw_message().contains("MVP"))&&receiveMsg.getRaw_message().length()<=40){
-        	System.out.println(receiveMsg.toString());
-        	return null;
+
+
+		if (receiveMsg.getRaw_message().startsWith(MsbotConst.botName)) {
+			System.out.println(receiveMsg.toString());
+			return handleNameMsg(receiveMsg);
+		}
+		else if (receiveMsg.getRaw_message().startsWith("[CQ:at,qq=" + MsbotConst.botId + "]")) {
+			receiveMsg.setRaw_message(receiveMsg.getRaw_message().replace("[CQ:at,qq=" + MsbotConst.botId + "]", MsbotConst.botName));
+			System.out.println(receiveMsg.toString());
+			return handleNameMsg(receiveMsg);
+		}
+		else if ((receiveMsg.getRaw_message().contains("气象") || receiveMsg.getRaw_message().contains("MVP")) && receiveMsg.getRaw_message().length() <= 40) {
+			System.out.println(receiveMsg.toString());
+			return null;
 //        	return handleMvpMsg(receiveMsg);
-        }else if(receiveMsg.getRaw_message().contains("[CQ:image,file=")){
-        	//识别气象图
-        	System.out.println(receiveMsg.toString());
-        	if(receiveMsg.getRaw_message().contains("高精度识图")) {
-        		return handRecognize2(receiveMsg);
-        	}
-        	if(receiveMsg.getRaw_message().contains("识图")) {
-        		return handRecognize(receiveMsg);
-        	}
-        	if(receiveMsg.getRaw_message().startsWith("39")) {
-        		return handRecognizeOz39(receiveMsg);
-        	}
-        }else if(receiveMsg.getRaw_message().length()>=2&&receiveMsg.getRaw_message().substring(0,2).contains("翻译")){
-        	System.out.println(receiveMsg.toString());
-        	return handTransMsg(receiveMsg);
-        }else if(receiveMsg.getRaw_message().length()>=4&&receiveMsg.getRaw_message().startsWith("联盟查询")) {
-        	return handLegionRank(receiveMsg);
-        }else if(receiveMsg.getRaw_message().length()>=4&&receiveMsg.getRaw_message().startsWith("查询绑定")) {
+		} else if (receiveMsg.getRaw_message().contains("[CQ:image,file=")) {
+			//识别气象图
+			System.out.println(receiveMsg.toString());
+			if (receiveMsg.getRaw_message().contains("高精度识图")) {
+				return handRecognize2(receiveMsg);
+			}
+			if (receiveMsg.getRaw_message().contains("识图")) {
+				return handRecognize(receiveMsg);
+			}
+			if (receiveMsg.getRaw_message().startsWith("39")) {
+				return handRecognizeOz39(receiveMsg);
+			}
+		}
+		else if (receiveMsg.getRaw_message().length() >= 2 && receiveMsg.getRaw_message().substring(0, 2).contains("翻译")) {
+			System.out.println(receiveMsg.toString());
+			return handTransMsg(receiveMsg);
+		} else if (receiveMsg.getRaw_message().length() >= 4 && receiveMsg.getRaw_message().startsWith("联盟查询")) {
+			return handLegionRank(receiveMsg);
+		}
+		else if (receiveMsg.getRaw_message().length() >= 4 && receiveMsg.getRaw_message().startsWith("查询绑定")) {
 //        	查询绑定badeling
-        	return handAddRankName(receiveMsg);
-        }
-        
+			return handAddRankName(receiveMsg);
+		}
+
         //收币 or 卖币
 //        Pattern r = Pattern.compile(".*\\d+[e|E|\\亿].*");
 //		Matcher m = r.matcher(receiveMsg.getRaw_message());
@@ -203,14 +346,32 @@ public class MsgServiceImpl implements MsgService{
 //    	if(matches) {
 //    		handMemberSellAndBuy(receiveMsg);
 //    	}
-        
+
+		//禁言信息
+		List<MsgNoPrefix> result = msgNoPrefixRepository.findMsgNPList();
+		for(MsgNoPrefix m : result) {
+			if(m.isExact()&&receiveMsg.getRaw_message().contains(m.getQuestion())) {
+				System.out.println(m.getAnswer());
+				if (m.getAnswer().equals("禁言")){
+					ReplyMsg replyMsg = new ReplyMsg();
+					replyMsg.setAt_sender(true);
+					replyMsg.setAuto_escape(false);
+					replyMsg.setBan(true);
+					replyMsg.setReply("[CQ:image,file=save/AB59F6053D317B67646AA3B363B87415]");
+					System.out.println(replyMsg);
+					return replyMsg;
+				}
+				else{
+					handReplyMsg(receiveMsg);
+				}
+			}
+		}
     	//re-read
-    	handReplyMsg(receiveMsg);
     	receiveMsg.setRaw_message(receiveMsg.getMessage());
     	return handRereadMsg(receiveMsg);
-        
-	}
 
+	}
+	
 	private ReplyMsg handRecognizeOz39(ReceiveMsg receiveMsg) {
 		//识图
 		String[] result = mvpImageService.handHigherImageMsg(receiveMsg);
@@ -222,9 +383,9 @@ public class MsgServiceImpl implements MsgService{
 			Map<String,Object> backMessage = (Map<String, Object>) JSONObject.parse(result[0]);
 			@SuppressWarnings("unchecked")
 			List<Map<String,String>> list = (List<Map<String, String>>) backMessage.get("words_result");
-			
+
 			int count = list.size();
-			
+
 			for(int i=0;i<count-4;i++) {
 				raw_message = raw_message + list.get(i).get("words");
 			}
@@ -241,7 +402,7 @@ public class MsgServiceImpl implements MsgService{
 				}
 			}
 			reply = reply + "MatchQue : "+MatchQoz.getQuestion()+"\r\n \r\n";
-			
+
 			String a = list.get(count-4).get("words").replaceAll("  ", " ").replaceAll("  ", " ");
 			String b = list.get(count-3).get("words").replaceAll("  ", " ").replaceAll("  ", " ");
 			String c = list.get(count-2).get("words").replaceAll("  ", " ").replaceAll("  ", " ");
@@ -249,7 +410,7 @@ public class MsgServiceImpl implements MsgService{
 
 			Set<QuizOzAnswer> answers = MatchQoz.getAnswers();
 			Iterator<QuizOzAnswer> iterator = answers.iterator();
-			
+
 			reply = reply + "所有答案 : ";
 			int k = 16;
 			QuizOzAnswer MatchQoa = null;
@@ -261,7 +422,7 @@ public class MsgServiceImpl implements MsgService{
 				}else {
 					reply = reply + "\r\n \r\n";
 				}
-				
+
 				if(getResult(next.getAnswer(),a)<=k) {
 					k=getResult(next.getAnswer(),a);
 					MatchQoa = next;
@@ -279,7 +440,7 @@ public class MsgServiceImpl implements MsgService{
 					MatchQoa = next;
 				}
 			}
-			
+
 			reply = reply + "匹配答案 : " + MatchQoa.getAnswer() + "\r\n";
 			ReplyMsg replyMsg = new ReplyMsg();
 			replyMsg.setReply(reply);
@@ -291,6 +452,7 @@ public class MsgServiceImpl implements MsgService{
 			return replyMsg;
 		}
 		}
+	
 	//	handAddRankName
 	private ReplyMsg handAddRankName(ReceiveMsg receiveMsg) {
 		ReplyMsg replyMsg = new ReplyMsg();
@@ -313,7 +475,7 @@ public class MsgServiceImpl implements MsgService{
 		}
 		return replyMsg;
 	}
-
+	
 	private ReplyMsg handLegionRank(ReceiveMsg receiveMsg) {
 		ReplyMsg replyMsg = new ReplyMsg();
 		String raw_message = receiveMsg.getRaw_message();
@@ -323,7 +485,7 @@ public class MsgServiceImpl implements MsgService{
 		if(raw_message.equals("")) {
 			RankInfo rankInfo = rankInfoRepository.getInfoByUserId(receiveMsg.getUser_id());
 			if(rankInfo==null) {
-				replyMsg.setReply("请先绑定角色\r\n" + 
+				replyMsg.setReply("请先绑定角色\r\n" +
 						"例如：查询绑定badeling");
 				return replyMsg;
 			}else {
@@ -335,7 +497,7 @@ public class MsgServiceImpl implements MsgService{
     		String findNumber = receiveMsg.getRaw_message().substring(aIndex,bIndex);
     		RankInfo rankInfo = rankInfoRepository.getInfoByUserId(findNumber);
     		if(rankInfo==null) {
-				replyMsg.setReply("请先绑定角色\r\n" + 
+				replyMsg.setReply("请先绑定角色\r\n" +
 						"例如：查询绑定badeling");
 				return replyMsg;
 			}else {
@@ -347,26 +509,27 @@ public class MsgServiceImpl implements MsgService{
 
 			String legionForBtOrLara = rankService.getRank(name);
 			replyMsg.setReply(legionForBtOrLara);
-		
+
 		GroupMsg groupMsg = new GroupMsg();
 		groupMsg.setAuto_escape(false);
 		groupMsg.setGroup_id(Long.parseLong(receiveMsg.getGroup_id()));
 		groupMsg.setMessage(replyMsg.getReply());
 		groupMsgService.sendGroupMsg(groupMsg);
-		
+
 		return null;
 	}
 
+	
 	private void handReplyMsg(ReceiveMsg receiveMsg) {
 		List<MsgNoPrefix> result = msgNoPrefixRepository.findMsgNPList();
 		for(MsgNoPrefix m : result) {
 			if(m.isExact()&&receiveMsg.getRaw_message().equals(m.getQuestion())) {
-				GroupMsg groupMsg = new GroupMsg();
-    			groupMsg.setMessage(m.getAnswer());
-    			groupMsg.setGroup_id(Long.parseLong(receiveMsg.getGroup_id()));
-    			groupMsgService.sendGroupMsg(groupMsg);
-    			System.err.println(groupMsg.toString());
-    			break;
+					GroupMsg groupMsg = new GroupMsg();
+					groupMsg.setMessage(m.getAnswer());
+					groupMsg.setGroup_id(Long.parseLong(receiveMsg.getGroup_id()));
+					groupMsgService.sendGroupMsg(groupMsg);
+					System.err.println(groupMsg.toString());
+					break;
 			}
 			if(!m.isExact()&&receiveMsg.getRaw_message().contains(m.getQuestion())) {
 				GroupMsg groupMsg = new GroupMsg();
@@ -375,20 +538,19 @@ public class MsgServiceImpl implements MsgService{
     			groupMsgService.sendGroupMsg(groupMsg);
     			System.err.println(groupMsg.toString());
     			break;
-    			
+
 			}
 		}
 	}
-
+	
 	private ReplyMsg handlePrivateMsg(ReceiveMsg receiveMsg) {
-		
+
 		if(receiveMsg.getRaw_message().length()>=2&&receiveMsg.getRaw_message().substring(0,2).contains(MsbotConst.botName)) {
         	return handleNameMsg(receiveMsg);
         }
 		ReplyMsg replyMsg = privateService.handlePrivateMsg(receiveMsg);
 		return replyMsg;
 	}
-	
 	
 	private ReplyMsg handRecognize3(ReceiveMsg receiveMsg) {
 		//识图
@@ -411,7 +573,7 @@ public class MsgServiceImpl implements MsgService{
 		replyMsg.setReply(raw_message);
 		return replyMsg;
 }
-
+	
 	private ReplyMsg handRecognize2(ReceiveMsg receiveMsg) {
 				//识图
 				String[] result = mvpImageService.handHigherImageMsg(receiveMsg);
@@ -433,8 +595,7 @@ public class MsgServiceImpl implements MsgService{
 				replyMsg.setReply(raw_message);
 				return replyMsg;
 	}
-
-
+	
 	private ReplyMsg handRereadMsg(ReceiveMsg receiveMsg) {
 		// receiveMsg.getRaw_message().contains("[CQ:image,file=")
 		HashMap<String, ReReadMsg> map = ReRead.getMap();
@@ -442,7 +603,7 @@ public class MsgServiceImpl implements MsgService{
 			map = new HashMap<String, ReReadMsg>();
 		}
 		ReReadMsg reReadMsg = map.get(receiveMsg.getGroup_id());
-		
+
 		boolean isBreakReread = false;
 		//图片信息判定是否相同
 		if(reReadMsg!=null) {
@@ -453,14 +614,14 @@ public class MsgServiceImpl implements MsgService{
 			}else {
 				isBreakReread = !reReadMsg.getRaw_message().equals(receiveMsg.getRaw_message());
 			}
-			
+
 			if(!isBreakReread) {
 				if(reReadMsg.getReread_id().equals(receiveMsg.getUser_id())) {
 					return null;
 				}
 			}
 		}
-		
+
 		if(reReadMsg==null || isBreakReread) {
 			//第一次打开
 			if(reReadMsg==null) {
@@ -526,12 +687,12 @@ public class MsgServiceImpl implements MsgService{
 			}else {
 				rereadTimeRepository.modifyReread(rereadTime.getId(),rereadTime.getCount()+1);
 			}
-			
+
 		}
 
 		if(reReadMsg.getMes_count()>300&&reReadMsg.getCount()==1) {
 			reReadMsg.setMes_count(1);
-			
+
 			Random r = new Random();
 			//随机回复auto
 			List<Msg> msgList = msgRepository.findMsgByExtQuestion("随机回复auto");
@@ -557,15 +718,14 @@ public class MsgServiceImpl implements MsgService{
 			rm.setAuto_escape(false);
 			rm.setReply(msg.getAnswer());
 			return rm;
-				
+
 		}
 
 		reReadMsg.setMes_count(reReadMsg.getMes_count()+1);
 		map.put(receiveMsg.getGroup_id(), reReadMsg);
 		return null;
 	}
-
-
+	
 	private ReplyMsg handTransMsg(ReceiveMsg receiveMsg) {
 		String transResult;
 		ReplyMsg replyMsg = new ReplyMsg();
@@ -579,12 +739,11 @@ public class MsgServiceImpl implements MsgService{
 //			transResult = Sensitive.replaceSensitiveWords(transResult);
 	        replyMsg.setReply(transResult);
 	        return replyMsg;
-	        
+
 		} catch (IOException e) {
 		}
 		return null;
 	}
-
 	
 	private ReplyMsg handRecognize(ReceiveMsg receiveMsg) {
 		//识图
@@ -639,7 +798,7 @@ public class MsgServiceImpl implements MsgService{
 					int questionIndex = raw_message.indexOf("问");
 					int answerIndex = raw_message.indexOf(" 答");
 					String theQuestion = raw_message.substring(questionIndex+1, answerIndex);
-					
+
 					String answer = raw_message;
 					while(answer.contains("[CQ:image")) {
 						String imageName = mvpImageService.saveImage(answer);
@@ -658,14 +817,14 @@ public class MsgServiceImpl implements MsgService{
 						}catch (Exception e) {
 							replyMsg.setReply("出现了一个意料之外的错误");
 						}
-						
+
 					}else {
 						replyMsg.setReply("宁是什么东西也配命令老娘？爬爬爬！");
 					}
 
 					return replyMsg;
 				}
-		
+
 		//正则学习
 		if(raw_message.contains("学习")&&raw_message.contains("正则问")&&raw_message.contains("答")) {
 			if(receiveMsg.getUser_id().equalsIgnoreCase(MsbotConst.masterId)||isAdminMsg(receiveMsg.getUser_id())) {
@@ -677,7 +836,7 @@ public class MsgServiceImpl implements MsgService{
 						replyMsg.setReply("你的权限不足，添加固定回复词条所需权限22，你当前权限21");
 						return replyMsg;
 					}
-					
+
 					String[] qList = theQuestion.split("\\|");
 					String answer = raw_message;
 					while(answer.contains("[CQ:image")) {
@@ -688,7 +847,7 @@ public class MsgServiceImpl implements MsgService{
 						answer = answer.replace(imageCq, "");
 					}
 					String ans = raw_message.substring(answerIndex+2);
-					
+
 					for(String a : qList) {
 						Msg newMsg = new Msg();
 						newMsg.setQuestion(a);
@@ -706,14 +865,14 @@ public class MsgServiceImpl implements MsgService{
 						}catch (Exception e) {
 							replyMsg.setReply("出现了一个意料之外的错误");
 						}
-						
+
 					}else {
 						replyMsg.setReply("宁是什么东西也配命令老娘？爬爬爬！");
 					}
 
 					return replyMsg;
 				}
-		
+
 		//学习
 		if(raw_message.contains("学习")&&raw_message.contains("问")&&raw_message.contains("答")) {
 			if(receiveMsg.getUser_id().equalsIgnoreCase(MsbotConst.masterId)||isAdminMsg(receiveMsg.getUser_id())) {
@@ -752,7 +911,7 @@ public class MsgServiceImpl implements MsgService{
 						}catch (Exception e) {
 							replyMsg.setReply("出现了一个意料之外的错误");
 						}
-						
+
 					}else {
 						replyMsg.setReply("宁是什么东西也配命令老娘？爬爬爬！");
 					}
@@ -763,7 +922,7 @@ public class MsgServiceImpl implements MsgService{
 		//查询
 		Set<Msg> set = msgRepository.findAllQuestion();
 		Iterator<Msg> it = set.iterator();
-		
+
 		if((raw_message.startsWith(MsbotConst.botName+"查询")||raw_message.startsWith(MsbotConst.botName+" 查询"))&&(receiveMsg.getUser_id().equalsIgnoreCase(MsbotConst.masterId)||isAdminMsg(receiveMsg.getUser_id()))) {
 			try {
 				int index = raw_message.indexOf("查询");
@@ -775,7 +934,7 @@ public class MsgServiceImpl implements MsgService{
 					replyMsg.setReply("查询结果为空");
 					return replyMsg;
 				}
-				
+
 				while(it2.hasNext()) {
 					oldMsg = it2.next();
 					if(oldMsg.getAnswer().contains("[CQ:record")) {
@@ -796,7 +955,7 @@ public class MsgServiceImpl implements MsgService{
 			}
 			return replyMsg;
 		}
-		
+
 		//删除
 		if(raw_message.startsWith(MsbotConst.botName+"删除问题")||raw_message.startsWith(MsbotConst.botName+" 删除问题")) {
 			if(receiveMsg.getUser_id().equalsIgnoreCase(MsbotConst.masterId)||isAdminMsg(receiveMsg.getUser_id())) {
@@ -818,13 +977,13 @@ public class MsgServiceImpl implements MsgService{
 				}catch (Exception e) {
 					replyMsg.setReply("出现异常");
 				}
-				
+
 			}else {
 				replyMsg.setReply("宁是什么东西也配命令老娘？爬爬爬！");
 			}
 			return replyMsg;
 		}
-		
+
 		//伤害信息
 		if(raw_message.contains("伤害")&&(raw_message.contains("boss")||raw_message.contains("BOSS"))) {
 			String[] split = raw_message.split(" ");
@@ -870,10 +1029,10 @@ public class MsgServiceImpl implements MsgService{
 				replyMsg.setReply("出现了一个意料之外的错误");
 				return replyMsg;
 			}
-			
+
 		}
-		
-		
+
+
 		//怪物查询
 		if(raw_message.startsWith(MsbotConst.botName+"怪物")||raw_message.startsWith(MsbotConst.botName+" 怪物")) {
 			if(raw_message.equals(MsbotConst.botName+"怪物")||raw_message.equals(MsbotConst.botName+" 怪物")) {
@@ -905,11 +1064,11 @@ public class MsgServiceImpl implements MsgService{
 					}
 					wzXmlService.searchMob(raw_message,receiveMsg.getGroup_id(),receiveMsg.getUser_id());
 					return null;
-					
+
 				}else {
-					
+
 				}
-				
+
 			}
 		}
 		//测试字体
@@ -924,8 +1083,8 @@ public class MsgServiceImpl implements MsgService{
 				return replyMsg;
 			}
 		}
-		
-	
+
+
 		//无视计算
 		if(raw_message.contains("无视")&&(raw_message.contains("+")||raw_message.contains("-"))) {
 			try {
@@ -935,13 +1094,13 @@ public class MsgServiceImpl implements MsgService{
 				raw_message = raw_message.replace(" ", "");
 				raw_message = raw_message.replace("=", "");
 				raw_message = raw_message.replace("无视", "");
-				double ign = 0;		
+				double ign = 0;
 				double ign_before = 0;
 				double ign2 = 0;
 				double ign_before2 = 0;
 				//短消息回复
 //				String shortMsg = "";
-				
+
 				if(raw_message.contains("+")&&!raw_message.contains("-")) {
 					String[] getInt = raw_message.split("\\+");
 					for(int i=0;i<getInt.length;i++) {
@@ -979,7 +1138,7 @@ public class MsgServiceImpl implements MsgService{
 					replyMsg.setReply("又是加又是减，你可摇了我吧");
 					return replyMsg;
 				}
-				
+
 				RoleDmg roleDmg = roleDmgRepository.findRoleBynumber(receiveMsg.getSender().getUser_id());
 				if(roleDmg == null) {
 					//查询无角色
@@ -1007,32 +1166,32 @@ public class MsgServiceImpl implements MsgService{
 					groupMsg.setMessage("[CQ:at,qq="+ receiveMsg.getSender().getUser_id() +"]"+"未查询到角色信息，默认伤害100,boss伤200。你可通过指令【"+MsbotConst.botName+" 伤害50 boss300】命令修改角色信息");
 					groupMsgService.sendGroupMsg(groupMsg);
 				}
-				
+
 //				shortMsg += " = " + String.format("%.2f", ign) + "%";
 //				shortMsg += "\r\n为防止刷屏，详细计算的部分将以私聊的形式发送于您。";
-				
+
 				ign2 = ign + (100-ign)*20/100;
 				String replyM = "你之前的无视：" + ign_before + "%(" + ign_before2 + "%)\r\n" + "计算后的无视：" + String.format("%.2f", ign) + "%(" + String.format("%.2f", ign2) + "%)\r\n";
 				replyM += "角色数据 伤害:" + roleDmg.getCommonDmg() + "% boss:" + roleDmg.getBossDmg() + "%\r\n(括号为核心20%无视加成结果)\r\n";
-				
+
 				replyM += "//----超高防对比-----//\r\n";
 				replyM += "塞伦提升率（380超高防）：" + String.format("%.2f", (defAndign(380, ign)/defAndign(380, ign_before)-1)*100) + "%(" + String.format("%.2f", (defAndign(380, ign2)/defAndign(380, ign_before2)-1)*100) + "%)\r\n";
 				replyM += "原伤害" + defAndign(380, ign_before) + "%(" + defAndign(380, ign_before2) + "%)\r\n";
 				replyM += "现伤害" + defAndign(380, ign) + "%(" + defAndign(380, ign2) +  "%)\r\n";
 				replyM += "相当于提升了" + String.format("%.2f",(defAndign(380, ign)/defAndign(380, ign_before)-1)*(100+roleDmg.getCommonDmg()+roleDmg.getBossDmg())) + "%(" + String.format("%.2f", (defAndign(380, ign2)/defAndign(380, ign_before2)-1)*(100+roleDmg.getCommonDmg()+roleDmg.getBossDmg())) + "%)点boss伤害\r\n";
-				
+
 				replyM += "//-----高防对比-----//\r\n";
 				replyM += "斯乌提升率（300高防）：" + String.format("%.2f", (defAndign(300, ign)/defAndign(300, ign_before)-1)*100) + "%(" + String.format("%.2f", (defAndign(300, ign2)/defAndign(300, ign_before2)-1)*100) + "%)\r\n";
 				replyM += "原伤害" + defAndign(300, ign_before) + "%(" + defAndign(300, ign_before2) + "%)\r\n";
 				replyM += "现伤害" + defAndign(300, ign) + "%(" + defAndign(300, ign2) +  "%)\r\n";
 				replyM += "相当于提升了" + String.format("%.2f",(defAndign(300, ign)/defAndign(300, ign_before)-1)*(100+roleDmg.getCommonDmg()+roleDmg.getBossDmg())) + "%(" + String.format("%.2f", (defAndign(300, ign2)/defAndign(300, ign_before2)-1)*(100+roleDmg.getCommonDmg()+roleDmg.getBossDmg())) + "%)点boss伤害\r\n";
-				
+
 				replyM += "//-----中防对比-----//\r\n";
 				replyM += "进阶贝伦提升率（200中防）：" + String.format("%.2f", (defAndign(200, ign)/defAndign(200, ign_before)-1)*100) + "%(" + String.format("%.2f", (defAndign(200, ign2)/defAndign(200, ign_before2)-1)*100) + "%)\r\n";
 				replyM += "原伤害" + defAndign(200, ign_before) + "%(" + defAndign(200, ign_before2) + "%)\r\n";
 				replyM += "现伤害" + defAndign(200, ign) + "%(" + defAndign(200, ign2) +  "%)\r\n";
 				replyM += "相当于提升了" + String.format("%.2f",(defAndign(200, ign)/defAndign(200, ign_before)-1)*(100+roleDmg.getCommonDmg()+roleDmg.getBossDmg())) + "%(" + String.format("%.2f", (defAndign(200, ign2)/defAndign(200, ign_before2)-1)*(100+roleDmg.getCommonDmg()+roleDmg.getBossDmg())) + "%)点boss伤害";
-				
+
 				replyMsg.setReply(replyM);
 				String reply = null;
 				try {
@@ -1052,7 +1211,7 @@ public class MsgServiceImpl implements MsgService{
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			
+
 		}
 
 		if(raw_message.contains("复读机周报")) {
@@ -1075,19 +1234,19 @@ public class MsgServiceImpl implements MsgService{
 					map.put(a, c);
 				}
 			}
-			
+
 			String message = "本周最长的复读长龙是：\r\n";
 					RereadSentence rereadSentence = rereadSentenceRepository.findMaxByGroup(receiveMsg.getGroup_id());
 					if(rereadSentence!=null) {
-						message += rereadSentence.getMessage() + "\r\n" + 
-						"此金句出自———————"+ map.get(rereadSentence.getUser_id()) + "\r\n" + 
+						message += rereadSentence.getMessage() + "\r\n" +
+						"此金句出自———————"+ map.get(rereadSentence.getUser_id()) + "\r\n" +
 						"当时被复读机们连续复读了" + rereadSentence.getReadTime() + "次！\r\n";
 						List<RereadTime> list = rereadTimeRepository.find3thByGroup(receiveMsg.getGroup_id());
 						if(list!=null) {
-							message += "——————————————————\r\n" + 
-									"本周最佳复读机的称号授予" + map.get(list.get(0).getUser_id()) + "！\r\n" + 
-									"他在过去的一周里疯狂复读" + list.get(0).getCount() + "次！简直太丧病了。\r\n" + 
-									"——————————————————\r\n" + 
+							message += "——————————————————\r\n" +
+									"本周最佳复读机的称号授予" + map.get(list.get(0).getUser_id()) + "！\r\n" +
+									"他在过去的一周里疯狂复读" + list.get(0).getCount() + "次！简直太丧病了。\r\n" +
+									"——————————————————\r\n" +
 									"此外，以下两名成员获得了亚军和季军，也是非常优秀的复读机：\r\n";
 									if(list.size()>1) {
 										message += map.get(list.get(1).getUser_id()) + " 复读次数："+list.get(1).getCount() + "\r\n";
@@ -1110,15 +1269,15 @@ public class MsgServiceImpl implements MsgService{
 			replyMsg.setAt_sender(false);
 			return replyMsg;
 		}
-		
-		
+
+
 		//测试接口
 		if(raw_message.startsWith(MsbotConst.botName+"跟我读")&&receiveMsg.getUser_id().equals(MsbotConst.masterId)) {
 			replyMsg.setAt_sender(false);
 			replyMsg.setReply(raw_message.substring(5));
 			return replyMsg;
 		}
-		
+
 		//扔xxx
 		if(raw_message.startsWith(MsbotConst.botName+"扔")&&raw_message.contains("[CQ:at")) {
     		try {
@@ -1147,7 +1306,7 @@ public class MsgServiceImpl implements MsgService{
 				e.printStackTrace();
 			}
 		}
-		
+
 		try {
 			//逆推星星[等级][主属][火花主属][总攻击][火花攻击][当前星星]
 			/**
@@ -1158,9 +1317,9 @@ public class MsgServiceImpl implements MsgService{
 			 	总攻击：
 			 	火花攻击：
 			 	当前星星：
-			 	
+
 			 	蠢猫 150级16星
-			 	
+
 			 	蠢猫 160级13星428攻
 		}
 			 */
@@ -1175,7 +1334,7 @@ public class MsgServiceImpl implements MsgService{
 //				int fireAtt = Integer.parseInt(split[5].substring(5));
 				int fireAtt = 0;
 				int nowStar = Integer.parseInt(raw_message.substring(raw_message.indexOf("级")+1,raw_message.indexOf("星")));
-				
+
 				if(level!=130&&level!=140&&level!=150&&level!=160&&level!=200) {
 					replyMsg.setReply("只能计算等级为130,140,150,160,200的装备");
 					return replyMsg;
@@ -1188,7 +1347,7 @@ public class MsgServiceImpl implements MsgService{
 					replyMsg.setReply("数据不能为负");
 					return replyMsg;
 				}
-				
+
 				int[] starForce = starForceDesc(level,stat-fireStat,att-fireAtt,nowStar);
 //				int finalStat = starForce[0]+fireStat;
 				int finalAtt = starForce[1]+fireAtt;
@@ -1202,12 +1361,12 @@ public class MsgServiceImpl implements MsgService{
 				return replyMsg;
 			}
 
-			
+
 			//正推星星
 			if(raw_message.contains("级")&&raw_message.contains("星")) {
 				raw_message = raw_message.replaceAll(" ", "").substring(2);
 				//level 130 140 150 160 200
-				//蠢猫武器160 
+				//蠢猫武器160
 				//星星武器[等级][主属][火花主属][总攻击][火花攻击][当前星星][目标星星]
 				/**
 			 	正推星星
@@ -1219,7 +1378,7 @@ public class MsgServiceImpl implements MsgService{
 			 	火花攻击：
 			 	当前星星：
 			 	目标星星：
-			 	
+
 			 	蠢猫 150级16星
 			 */
 				boolean isWeapon = false;
@@ -1266,13 +1425,13 @@ public class MsgServiceImpl implements MsgService{
 
 			}
 		} catch (Exception e) {
-			replyMsg.setReply("输入数据异常\r\n防具正推：蠢猫[等级][星星]\r\n" + 
-					"eg：蠢猫150级17星\r\n" + 
-					"武器逆推：蠢猫[等级][星星][攻击]\r\n" + 
+			replyMsg.setReply("输入数据异常\r\n防具正推：蠢猫[等级][星星]\r\n" +
+					"eg：蠢猫150级17星\r\n" +
+					"武器逆推：蠢猫[等级][星星][攻击]\r\n" +
 					"eg：蠢猫160级13星428攻");
 			return replyMsg;
 		}
-				
+
 		//打xxx
 		if((raw_message.startsWith(MsbotConst.botName+"揍")||raw_message.startsWith(MsbotConst.botName+"打"))&&raw_message.contains("[CQ:at")) {
     		try {
@@ -1580,7 +1739,7 @@ public class MsgServiceImpl implements MsgService{
 			return replyMsg;
 
 		}
-		
+
 		//官网
 		if(raw_message.startsWith(MsbotConst.botName+"官网")||raw_message.startsWith(MsbotConst.botName+" 官网")) {
 			raw_message = raw_message.replaceAll("官网", "");
@@ -1590,19 +1749,19 @@ public class MsgServiceImpl implements MsgService{
 				replyMsg.setReply("输入【官网+项目】，查询游戏官网最新资讯。常见项目有：周日冒险岛、维护、敲敲乐、礼品袋");
 				return replyMsg;
 			}
-			
-/**			
+
+/**
  * 			这一段代码本来是因为最近周日冒险岛没加索引 所以添加一个新从首页查询 再搜索查询
  * 			但是我写完之后发现周日冒险岛从首页挤出去了 现在首页也找不到
  * 			所以先放在这
   			 */
-			
+
 //			//官网首页找
 //			try {
 //				String url = "http://mxd.web.sdo.com/web6/home/index.asp";
 //				Document doc = Jsoup.connect(url).get();
 //				Elements eleList = doc.select("div.news-list");
-//				
+//
 //				for(Element element : eleList) {
 //					Elements elementsByTag2 = element.getElementsByTag("li");
 //					for(Element tempElement : elementsByTag2) {
@@ -1616,7 +1775,7 @@ public class MsgServiceImpl implements MsgService{
 //							}
 //							url = "http://mxd.sdo.com/web6" + element.getElementsByAttribute("href").first().attr("href").replaceAll("&amp;", "&").substring(2);
 //							Document doc2 = Jsoup.connect(url).get();
-//							
+//
 //							Element ele1 = doc2.getElementsByClass("innerTitle").first();
 //							Element ele2 = doc2.getElementsByClass("innerText").first();
 //							String message = "";
@@ -1629,14 +1788,14 @@ public class MsgServiceImpl implements MsgService{
 //							}else {
 //								message = message + ele2.text();
 //							}
-//							
+//
 //							if(ele2.getElementsByTag("img").toString().length()>0) {
 //								Elements elementsByTag = ele2.getElementsByTag("img");
 //								for(Element temp : elementsByTag) {
 //									String imageUrl = mvpImageService.saveTempImage(temp.attr("src"));
 //									message = message + "[CQ:image,file="+imageUrl+"]";
 //								}
-//								
+//
 //							}
 //							System.out.println(message);
 //							replyMsg.setReply(message);
@@ -1649,14 +1808,14 @@ public class MsgServiceImpl implements MsgService{
 //			}
 			//搜索页面找
 			String url = "http://mxd.sdo.com/web6/news/newsList.asp?wd=" + raw_message +"&CategoryID=a";
-			
+
 			try {
 				Document doc = Jsoup.connect(url).get();
 				Element element = doc.select(".newList").first();
 				element.getElementsByAttribute("href").first();
 				url = "http://mxd.sdo.com/web6" + element.getElementsByAttribute("href").first().attr("href").replaceAll("&amp;", "&").substring(2);
 				Document doc2 = Jsoup.connect(url).get();
-				
+
 				Element ele1 = doc2.getElementsByClass("innerTitle").first();
 				Element ele2 = doc2.getElementsByClass("innerText").first();
 				String message = "";
@@ -1758,7 +1917,7 @@ public class MsgServiceImpl implements MsgService{
 			replyMsg.setReply(reply);
 			return replyMsg;
 		}
-		
+
 		if(raw_message.contains("世界组队")) {
 			String[] list = {"月妙","废都","艾琳森林","女神塔","沙漠","木之公园"};
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -1833,7 +1992,7 @@ public class MsgServiceImpl implements MsgService{
 			replyMsg.setReply("(ﾉﾟ▽ﾟ)ﾉ我在哦~");
 			return replyMsg;
 		}
-		
+
 		if(raw_message.replaceAll(MsbotConst.botName, "").replaceAll(" ","").equals("")) {
 			raw_message = raw_message.replaceAll(" ","");
 			raw_message = raw_message.replaceFirst(MsbotConst.botName, "");
@@ -1866,11 +2025,11 @@ public class MsgServiceImpl implements MsgService{
 			replyMsg.setReply(MsbotConst.botName.substring(0,1)+"nm");
 			return replyMsg;
 		}
-		
+
 		if(raw_message.replaceAll(MsbotConst.botName, "").replaceAll(" ","").replaceAll("？","").equals("")) {
 			raw_message = MsbotConst.botName+"固定回复问号";
 		}
-	
+
 		//占卜
 		if(raw_message.startsWith(MsbotConst.botName+"占卜")||raw_message.startsWith(MsbotConst.botName+" 占卜")) {
 			GroupMsg groupMsg = new GroupMsg();
@@ -1884,15 +2043,15 @@ public class MsgServiceImpl implements MsgService{
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			
+
 			return null;
-			
+
 //			String reply = new String();
 //			reply = msgZbCalculate.msgZb(receiveMsg.getUser_id());
 //			replyMsg.setReply(reply);
 //			return replyMsg;
 		}
-		
+
 		try {
 			if(raw_message.contains("^")) {
 				replyMsg.setReply(MsbotConst.botName+"不支持平方计算");
@@ -1918,9 +2077,9 @@ public class MsgServiceImpl implements MsgService{
 				return replyMsg;
 			}
 		}catch (Exception e) {
-		
+
 		}
-		
+
 		//查找答案
 		List<Msg> list = new ArrayList<Msg>();
 		List<Msg> rep = new ArrayList<Msg>();
@@ -1977,12 +2136,12 @@ public class MsgServiceImpl implements MsgService{
 
 			 return replyMsg;
 		 }
-		 
+
 		 if(MsbotConst.moliKey2!=null&&MsbotConst.moliSecret2!=null&&!MsbotConst.moliKey2.isEmpty()&&!MsbotConst.moliSecret2.isEmpty()) {
 			 if(!raw_message.contains("[CQ")) {
 					String tuLingMsg = groupMsgService.MoliMsg2(command, Math.abs(receiveMsg.getUser_id().hashCode())+"", receiveMsg.getSender().getNickname());
 					@SuppressWarnings("unchecked")
-					Map<String,Object> result = (Map<String, Object>) JSON.parse(tuLingMsg); 
+					Map<String,Object> result = (Map<String, Object>) JSON.parse(tuLingMsg);
 					System.out.println(tuLingMsg);
 					if((result.get("message")+"").contains("请求成功")) {
 						String reply = tuLingMsg.substring(tuLingMsg.indexOf("content")+10,tuLingMsg.indexOf("\",\"typed\":"));
@@ -1991,9 +2150,9 @@ public class MsgServiceImpl implements MsgService{
 					}
 				}
 			}
-		
-		 
-		 
+
+
+
 //		if(!raw_message.contains("[CQ")) {
 //			//图灵机器人
 //			HashMap<String, Object> map = new HashMap<>();
@@ -2017,11 +2176,11 @@ public class MsgServiceImpl implements MsgService{
 //			System.out.println(tuLingMsg);
 //			//图灵消息返回 读取消息
 //			@SuppressWarnings("unchecked")
-//			Map<String,Object> result = (Map<String, Object>) JSON.parse(tuLingMsg); 
-//			
+//			Map<String,Object> result = (Map<String, Object>) JSON.parse(tuLingMsg);
+//
 //			@SuppressWarnings("unchecked")
-//			Map<String,Object> intent = (Map<String, Object>) result.get("intent"); 
-//			Integer code = (Integer) intent.get("code"); 
+//			Map<String,Object> intent = (Map<String, Object>) result.get("intent");
+//			Integer code = (Integer) intent.get("code");
 //			if(code>9000||code<3000) {
 //				@SuppressWarnings("unchecked")
 //				List<Map<String,Object>> results = (List<Map<String,Object>>) result.get("results");
@@ -2036,10 +2195,10 @@ public class MsgServiceImpl implements MsgService{
 //				return replyMsg;
 //			}
 //		}
-//			
-		
-		
-		
+//
+
+
+
 		Random r = new Random();
 		int random = r.nextInt(6) + 1;
 		if(random==1) {
@@ -2063,129 +2222,7 @@ public class MsgServiceImpl implements MsgService{
 		}
         return replyMsg;
 	}
-	
-	public static int[] starForceDesc(int level,int stat,int att,int star) {
-		Map<Integer, Map<String, int[]>> starForceDataAfter16 = starForceDataAfter16();
-		Map<String, int[]> map = starForceDataAfter16.get(level);
-		while(star>0) {
-			stat = starForceStatDesc(star, stat, map.get("stat"));
-			att = starForceAttDesc(star,att,map.get("attWeapon"));
-			star--;
-		}
-		return new int[]{stat,att};
-	}
-	
-	public static int[] starForce(int level,int stat,int att,int nowStar,int targetStar,Boolean isWeapon) {
-		Map<Integer, Map<String, int[]>> starForceDataAfter16 = starForceDataAfter16();
-		Map<String, int[]> map = starForceDataAfter16.get(level);
-		if(isWeapon) {
-			while(nowStar<targetStar) {
-				stat = starForceStat(nowStar,stat,map.get("stat"));
-				att = starForceAtt(nowStar,att,map.get("attWeapon"));
-				nowStar++;
-			}
-		}else {
-			while(nowStar<targetStar) {
-				stat = starForceStat(nowStar,stat,map.get("stat"));
-				att = starForceAttNotWeapon(nowStar,att,map.get("att"));
-				nowStar++;
-			}
-		}
-		return new int[]{stat,att};
-	}
-	
-	private static int starForceStat(int star,int totalStat,int[] stat16) {
-		if(star<5) {
-			totalStat = totalStat + 2;
-		}else if(star<15) {
-			totalStat = totalStat + 3;
-		}else{
-			totalStat = totalStat + stat16[star-15];
-		}
-		return totalStat;
-	}
-	
-	private static int starForceStatDesc(int star,int totalStat,int[] stat16) {
-		if(star<=5) {
-			totalStat = totalStat - 2;
-		}else if(star<=15) {
-			totalStat = totalStat - 3;
-		}else{
-			totalStat = totalStat - stat16[star-16];
-		}
-		return totalStat;
-	}
-	
-	private static int starForceAttNotWeapon(int star,int totalAtt,int[] att16) {
-		if(star>=15) {
-			totalAtt = totalAtt + att16[star-15];
-		}
-		return totalAtt;
-	}
-	
-	private static int starForceAtt(int star,int totalAtt,int[] att16) {
-		if(star<15) {
-			totalAtt = totalAtt + totalAtt/50 + 1;
-		}else {
-			totalAtt = totalAtt + att16[star-15];
-		}
-		return totalAtt;
-	}
-	
-	private static int starForceAttDesc(int star,int totalAtt,int[] att16) {
-		int before = totalAtt;
-		if(star<=15) {
-			if(totalAtt%50<totalAtt/50) {
-				totalAtt = totalAtt - totalAtt/50;
-			}else {
-				totalAtt = totalAtt - totalAtt/50 - 1;
-			}
-			
-		}else {
-			totalAtt = totalAtt - att16[star-16];
-		}
-		System.out.println("star:" + star + " " + totalAtt + " = " + before + " " + (before-totalAtt));
-		return totalAtt;
-	}
-	
-	private static Map<Integer, Map<String, int[]>> starForceDataAfter16() {
-		Map<Integer,Map<String,int[]>> map = new HashMap<>();
-		
-		Map<String, int[]> map130 = new HashMap<>();
-		map130.put("stat", new int[] {7,7,7,7,7});
- 		map130.put("att", new int[] {7,8,9,10,11});
- 		map130.put("attWeapon", new int[] {6,7,7,8,9});
- 		map.put(130, map130);
- 		
- 		Map<String,int[]> map140 = new HashMap<>();
-		map140.put("stat", new int[] {9,9,9,9,9,9,9,0,0,0});
- 		map140.put("att", new int[] {8,9,10,11,12,13,15,17,19,21});
- 		map140.put("attWeapon", new int[] {7,8,8,9,10,11,12,30,31,32});
- 		map.put(140, map140);
- 		
- 		Map<String,int[]> map150 = new HashMap<>();
-		map150.put("stat", new int[] {11,11,11,11,11,11,11,0,0,0});
- 		map150.put("att", new int[] {9,10,11,12,13,14,16,18,20,22});
- 		map150.put("attWeapon", new int[] {8,9,9,10,11,12,13,31,32,33});
- 		map.put(150, map150);
- 		
- 		Map<String,int[]> map160 = new HashMap<>();
- 		map160.put("stat", new int[] {13,13,13,13,13,13,13,0,0,0});
- 		map160.put("att", new int[] {10,11,12,13,14,15,17,19,21,23});
- 		map160.put("attWeapon", new int[] {9,9,10,11,12,13,14,32,33,34});
- 		map.put(160, map160);
- 		
- 		Map<String,int[]> map200 = new HashMap<>();
- 		map200.put("stat", new int[] {15,15,15,15,15,15,15,0,0,0});
- 		map200.put("att", new int[] {12,13,14,15,16,17,19,21,23,25});
- 		map200.put("attWeapon", new int[] {13,13,14,14,15,16,17,34,35,36});
- 		map.put(200, map200);
-		
-		return map;
-	}
-	
-	
-	
+
 	private boolean isAdminMsg(String user_id) {
 		for(String temp : MsbotConst.managerId) {
 			if(temp.equals(user_id)) {
@@ -2195,7 +2232,6 @@ public class MsgServiceImpl implements MsgService{
 		return false;
 	}
 	
-
 	//someone leave
 	private ReplyMsg handLeave(NoticeMsg noticeMsg) {
 		if(!noticeMsg.getSub_type().equals("leave")) {
@@ -2209,14 +2245,14 @@ public class MsgServiceImpl implements MsgService{
 		groupMsgService.sendGroupMsg(groupMsg);
 		return null;
 	}
-	
+
 	//欢迎新成员
 	private ReplyMsg handWelcome(NoticeMsg noticeMsg) {
 //		群发消息
 		if(!noticeMsg.getSub_type().equals("approve")) {
 			return null;
 		}
-		
+
 //		GroupMsg groupMsg = new GroupMsg();
 //		String message = "";
 		//添加新成员
@@ -2225,45 +2261,12 @@ public class MsgServiceImpl implements MsgService{
 		List<Msg> msgList = msgRepository.findMsgByExtQuestion("固定回复welcome");
 		int random = r.nextInt(msgList.size());
 		Msg msg = msgList.get(random);
-		
+
 		GroupMsg gm = new GroupMsg();
 		gm.setMessage(msg.getAnswer());
 		gm.setGroup_id(Long.parseLong(noticeMsg.getGroup_id()));
 		groupMsgService.sendGroupMsg(gm);
 		return null;
 	}
-	
-	private static double defAndign(double def, double ign) {
-		double i = Double.parseDouble(String.format("%.2f", 100-(def-ign*def/100)));
-		if(i<0) {
-			i=0;
-		}
-		if(i>100) {
-			i=100;
-		}
-		return i;
-	}
-	 public static int getResult(String A, String B) {
-	        if(A.equals(B)) {
-	            return 0;
-	        }
-	        //dp[i][j]表示源串A位置i到目标串B位置j处最低需要操作的次数
-	        int[][] dp = new int[A.length() + 1][B.length() + 1];
-	        for(int i = 1;i <= A.length();i++)
-	            dp[i][0] = i;
-	        for(int j = 1;j <= B.length();j++)
-	            dp[0][j] = j;
-	        for(int i = 1;i <= A.length();i++) {
-	            for(int j = 1;j <= B.length();j++) {
-	                if(A.charAt(i - 1) == B.charAt(j - 1))
-	                    dp[i][j] = dp[i - 1][j - 1];
-	                else {
-	                    dp[i][j] = Math.min(dp[i - 1][j] + 1,
-	                            Math.min(dp[i][j - 1] + 1, dp[i - 1][j - 1] + 1));
-	                }
-	            }
-	        }
-	        return dp[A.length()][B.length()];
-	    }
 	
 }
