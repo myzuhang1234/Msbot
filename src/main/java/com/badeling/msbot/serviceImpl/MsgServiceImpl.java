@@ -1985,6 +1985,42 @@ public class MsgServiceImpl implements MsgService{
 
 			return replyMsg;
 		}
+		//解除禁言
+		if(raw_message.startsWith(MsbotConst.botName+"解除禁言")&&raw_message.contains("[CQ:at")) {
+			if(receiveMsg.getUser_id().equalsIgnoreCase(MsbotConst.masterId)||isAdminMsg(receiveMsg.getUser_id())) {
+				try {
+					int aIndex = receiveMsg.getRaw_message().indexOf("[CQ:at,qq=")+10;
+					int bIndex = receiveMsg.getRaw_message().indexOf("]");
+					String findNumber = receiveMsg.getRaw_message().substring(aIndex,bIndex);
+					if(findNumber.equals(MsbotConst.masterId)||findNumber.equals(MsbotConst.botId)||findNumber.equals("2419570484")) {
+						replyMsg.setReply("防御");
+					}
+					else {
+						String imageName = "[CQ:image,file=save/AB59F6053D317B67646AA3B363B87415]";
+						replyMsg.setAt_sender(false);
+						String url = "http://127.0.0.1:5700/set_group_ban";
+						JSONObject postData = new JSONObject();
+						postData.put("group_id",receiveMsg.getGroup_id());
+						postData.put("user_id",findNumber);
+						postData.put("duration",0);
+						RestTemplate client = new RestTemplate();
+						JSONObject json = client.postForEntity(url, postData, JSONObject.class).getBody();
+						System.out.println(json);
+						//replyMsg.setBan(true);
+						replyMsg.setReply("[CQ:at,qq=" + findNumber + "]"+"要乖噢～");
+					}
+				}
+				catch (Exception e) {
+					replyMsg.setReply("出现异常");
+				}
+			}
+			else {
+				replyMsg.setReply("宁是什么东西也配命令老娘？爬爬爬！");
+			}
+
+			return replyMsg;
+		}
+
 
 		if(raw_message.replace(" ", "").equals(MsbotConst.botName)) {
 			replyMsg.setAuto_escape(false);
