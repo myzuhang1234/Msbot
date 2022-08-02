@@ -352,7 +352,10 @@ public class MsgServiceImpl implements MsgService{
 		for(MsgNoPrefix m : result) {
 			if(m.isExact()&&receiveMsg.getRaw_message().contains(m.getQuestion())) {
 				System.out.println(m.getAnswer());
-				if (m.getAnswer().equals("禁言")){
+				if (m.getQuestion().contains("md") && receiveMsg.getRaw_message().contains("md5")){
+					break;
+				}
+				else if (m.getAnswer().equals("禁言")){
 					ReplyMsg replyMsg = new ReplyMsg();
 					replyMsg.setAt_sender(true);
 					replyMsg.setAuto_escape(false);
