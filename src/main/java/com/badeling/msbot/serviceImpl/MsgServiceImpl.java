@@ -301,6 +301,25 @@ public class MsgServiceImpl implements MsgService{
         	}
         }
 
+		//禁言信息
+		List<MsgNoPrefix> result = msgNoPrefixRepository.findMsgNPList();
+		for(MsgNoPrefix m : result) {
+			if(m.isExact()&&receiveMsg.getRaw_message().contains(m.getQuestion())) {
+				System.out.println(m.getAnswer());
+				if (m.getQuestion().contains("md") && receiveMsg.getRaw_message().contains("md5")){
+					break;
+				}
+				else if (m.getAnswer().equals("禁言")){
+					ReplyMsg replyMsg = new ReplyMsg();
+					replyMsg.setAt_sender(true);
+					replyMsg.setAuto_escape(false);
+					replyMsg.setBan(true);
+					replyMsg.setReply("[CQ:image,file=save/AB59F6053D317B67646AA3B363B87415]");
+					System.out.println(replyMsg);
+					return replyMsg;
+				}
+			}
+		}
 
 		if (receiveMsg.getRaw_message().startsWith(MsbotConst.botName)) {
 			System.out.println(receiveMsg.toString());
@@ -347,29 +366,9 @@ public class MsgServiceImpl implements MsgService{
 //    		handMemberSellAndBuy(receiveMsg);
 //    	}
 
-		//禁言信息
-		List<MsgNoPrefix> result = msgNoPrefixRepository.findMsgNPList();
-		for(MsgNoPrefix m : result) {
-			if(m.isExact()&&receiveMsg.getRaw_message().contains(m.getQuestion())) {
-				System.out.println(m.getAnswer());
-				if (m.getQuestion().contains("md") && receiveMsg.getRaw_message().contains("md5")){
-					break;
-				}
-				else if (m.getAnswer().equals("禁言")){
-					ReplyMsg replyMsg = new ReplyMsg();
-					replyMsg.setAt_sender(true);
-					replyMsg.setAuto_escape(false);
-					replyMsg.setBan(true);
-					replyMsg.setReply("[CQ:image,file=save/AB59F6053D317B67646AA3B363B87415]");
-					System.out.println(replyMsg);
-					return replyMsg;
-				}
-				else{
-					handReplyMsg(receiveMsg);
-				}
-			}
-		}
-    	//re-read
+		handReplyMsg(receiveMsg);
+
+		//re-read
     	receiveMsg.setRaw_message(receiveMsg.getMessage());
     	return handRereadMsg(receiveMsg);
 
