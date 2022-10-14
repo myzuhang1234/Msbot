@@ -793,6 +793,65 @@ public class MsgServiceImpl implements MsgService{
 			return null;
 		}
 
+		//识图
+		if(raw_message.contains(MsbotConst.botName+"识图")) {
+			//识图
+			String[] result = mvpImageService.handImageMsg(receiveMsg);
+			raw_message = "";
+
+			//接受数据
+			try {
+				@SuppressWarnings("unchecked")
+				Map<String,Object> backMessage = (Map<String, Object>) JSONObject.parse(result[0]);
+				@SuppressWarnings("unchecked")
+				List<Map<String,String>> list = (List<Map<String, String>>) backMessage.get("words_result");
+				for(Map<String,String> a : list) {
+					raw_message = raw_message + a.get("words")+"\r\n";
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+				return null;
+			}
+			replyMsg.setReply(raw_message);
+			return replyMsg;
+		}
+
+		//高精度识图
+		if(raw_message.contains(MsbotConst.botName+"高精度识图")){
+			//识图
+			String[] result = mvpImageService.handHigherImageMsg(receiveMsg);
+			//接受数据
+			raw_message = "高精度识图结果：\r\n";
+			try {
+				@SuppressWarnings("unchecked")
+				Map<String,Object> backMessage = (Map<String, Object>) JSONObject.parse(result[0]);
+				@SuppressWarnings("unchecked")
+				List<Map<String,String>> list = (List<Map<String, String>>) backMessage.get("words_result");
+				for(Map<String,String> a : list) {
+					raw_message = raw_message + a.get("words")+"\r\n";
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+				return null;
+			}
+			replyMsg.setReply(raw_message);
+			return replyMsg;
+		}
+
+		//roll点
+		if(raw_message.contains(MsbotConst.botName+"roll")){
+			try {
+				Random r = new Random();
+				int roll = r.nextInt(100)+1;
+				replyMsg.setReply("点数为:"+roll);
+				return replyMsg;
+			} catch (Exception e) {
+				replyMsg.setReply("出现了一个意料之外的错误");
+				e.printStackTrace();
+				return replyMsg;
+			}
+		}
+		
 		//布尔学习
 		if(raw_message.contains("学习")&&raw_message.contains("布尔问")&&raw_message.contains("答")) {
 			if(receiveMsg.getUser_id().equalsIgnoreCase(MsbotConst.masterId)) {
