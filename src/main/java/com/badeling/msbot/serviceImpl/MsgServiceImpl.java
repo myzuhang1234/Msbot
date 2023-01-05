@@ -851,7 +851,7 @@ public class MsgServiceImpl implements MsgService{
 				return replyMsg;
 			}
 		}
-		
+
 		//布尔学习
 		if(raw_message.contains("学习")&&raw_message.contains("布尔问")&&raw_message.contains("答")) {
 			if(receiveMsg.getUser_id().equalsIgnoreCase(MsbotConst.masterId)) {
@@ -1527,8 +1527,8 @@ public class MsgServiceImpl implements MsgService{
 				e.printStackTrace();
 			}
 		}
-		/**
-		if(raw_message.contains("抽卡")) {
+
+		if(raw_message.contains("抽蠢猫")) {
 			String mes;
 			try {
 				mes = drawService.kemomimiDraw();
@@ -1538,7 +1538,7 @@ public class MsgServiceImpl implements MsgService{
 			}
 			replyMsg.setReply(mes);
 			return replyMsg;
-		}**/
+		}
 
 		if(raw_message.startsWith(MsbotConst.botName+"结账")){
 			if (raw_message.contains("[CQ:at")){
