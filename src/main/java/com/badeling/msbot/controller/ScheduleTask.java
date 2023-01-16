@@ -137,8 +137,26 @@ public class ScheduleTask {
 			rereadTimeRepository.deleteAll();
 		}
 
+		@Scheduled(cron="0 0 20,21,22 ? * SUN")
+		private void paoqiReport(){
+			List<String> groupList = monvTimeRepository.findEveryGroup();
+			if(groupList!=null) {
+				try {
+					for(String group_id:groupList) {
+						String message = "[CQ:at,qq=all] 周日啦，跑旗水路抓紧啦";
+						GroupMsg groupMsg = new GroupMsg();
+						groupMsg.setAuto_escape(false);
+						groupMsg.setMessage(message);
+						groupMsg.setGroup_id(Long.parseLong((group_id)));
+						groupMsgService.sendGroupMsg(groupMsg);
+					}
+				}catch (Exception e) {
+					e.printStackTrace();
+				}
+			}else {}
+		}
 
-	    @Scheduled(cron="0 0 12 * * ?")
+		@Scheduled(cron="0 0 12 * * ?")
 		private void monvReport(){
 			List<String> groupList = monvTimeRepository.findEveryGroup();
 			if(groupList!=null) {

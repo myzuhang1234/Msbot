@@ -1275,6 +1275,7 @@ public class MsgServiceImpl implements MsgService{
 
 		}
 
+		//复读机周报
 		if(raw_message.contains("复读机周报")) {
 			//得到群成员信息
 			GroupMsg gp = new GroupMsg();
@@ -1338,6 +1339,8 @@ public class MsgServiceImpl implements MsgService{
 			replyMsg.setReply(raw_message.substring(5));
 			return replyMsg;
 		}
+
+
 
 		//扔xxx
 		if(raw_message.startsWith(MsbotConst.botName+"扔")&&raw_message.contains("[CQ:at")) {
