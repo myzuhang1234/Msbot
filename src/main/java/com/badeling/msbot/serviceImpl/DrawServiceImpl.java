@@ -1,5 +1,26 @@
 package com.badeling.msbot.serviceImpl;
 
+import com.alibaba.fastjson.JSON;
+import com.badeling.msbot.config.MsbotConst;
+import com.badeling.msbot.controller.NewImageUtils;
+import com.badeling.msbot.domain.Photo;
+import com.badeling.msbot.entity.Friends;
+import com.badeling.msbot.entity.MonvTime;
+import com.badeling.msbot.repository.FriendsRepository;
+import com.badeling.msbot.repository.MonvTimeRepository;
+import com.badeling.msbot.service.DrawService;
+import com.badeling.msbot.util.Loadfont;
+import com.badeling.msbot.util.Loadfont2;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
@@ -9,40 +30,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
-import java.util.UUID;
-
-import javax.imageio.ImageIO;
-
-import com.badeling.msbot.entity.MonvTime;
-import com.badeling.msbot.repository.MonvTimeRepository;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import com.alibaba.fastjson.JSON;
-import com.badeling.msbot.config.MsbotConst;
-import com.badeling.msbot.controller.NewImageUtils;
-import com.badeling.msbot.domain.Photo;
-import com.badeling.msbot.entity.Friends;
-import com.badeling.msbot.repository.FriendsRepository;
-import com.badeling.msbot.service.DrawService;
-import com.badeling.msbot.util.Loadfont;
-import com.badeling.msbot.util.Loadfont2;
-
-import java.awt.AlphaComposite;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.geom.AffineTransform;
+import java.util.*;
 
 
 
@@ -836,7 +825,7 @@ public class DrawServiceImpl implements DrawService{
 
 		@Override
 		public String startDrawMs(MonvTime monvTime) throws Exception {
-			 int prize_1=0;
+			int prize_1=0;
 			int prize_2=0;
 			int prize_3=0;
 			int prize_4=0;

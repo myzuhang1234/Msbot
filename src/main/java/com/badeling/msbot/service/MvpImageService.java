@@ -4,6 +4,8 @@ import org.springframework.stereotype.Service;
 
 import com.badeling.msbot.domain.ReceiveMsg;
 
+import java.io.IOException;
+
 
 @Service
 public interface MvpImageService {
@@ -17,4 +19,9 @@ public interface MvpImageService {
 	String saveFlagRaceImage(String today, String time);
 
 	String[] handHigherImageMsg(ReceiveMsg receiveMsg);
+
+	String handColorImageMsg(ReceiveMsg receiveMsg) throws IOException;
+
+	String handAnimeImageMsg(ReceiveMsg receiveMsg) throws IOException;
+
 }

@@ -1,30 +1,25 @@
 package com.badeling.msbot.serviceImpl;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLEncoder;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import org.json.JSONObject;
-import org.springframework.stereotype.Component;
-
 import com.badeling.msbot.config.MsbotConst;
 import com.badeling.msbot.domain.ReceiveMsg;
 import com.badeling.msbot.service.MvpImageService;
 import com.badeling.msbot.util.Base64Util;
 import com.badeling.msbot.util.FileUtil;
 import com.badeling.msbot.util.HttpUtil;
+import org.json.JSONObject;
+import org.springframework.stereotype.Component;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
+import java.util.Base64;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 
 
@@ -284,6 +279,71 @@ public class MvpImageServiceImpl implements MvpImageService{
         return result;
     }
 
+    @Override
+    public String handColorImageMsg(ReceiveMsg receiveMsg) throws IOException {
+        String raw_message = receiveMsg.getMessage();
+        int questionIndex = raw_message.indexOf(",url=")+5;
+        int answerIndex = raw_message.indexOf("]");
+        String imageName = UUID.randomUUID().toString().replaceAll("-", "")+".jpg";
+        String imageUrl = raw_message.substring(questionIndex, answerIndex);
+
+        try {
+            download(imageUrl, imageName,MsbotConst.imageUrl,imageName);
+        } catch (Exception e) {
+            return null;
+        }
+
+        String back = colourize(MsbotConst.imageUrl+imageName);
+
+        String[] result = new String [2];
+        result[0] = back;
+        result[1] = imageName;
+
+        //TODO Base64编码->png result[0]
+        String uuid = UUID.randomUUID().toString().replaceAll("-", "");
+        com.alibaba.fastjson.JSONObject result_json = com.alibaba.fastjson.JSONObject.parseObject(result[0]);
+        byte[] bytes = Base64.getDecoder().decode(result_json.getString("image"));
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
+        BufferedImage newBufferedImage = ImageIO.read(inputStream);
+        ImageIO.write(newBufferedImage,"jpg",new File(MsbotConst.imageUrl +uuid +".jpg"));
+        String saveFilePath = MsbotConst.imageUrl + uuid +".png";
+        generateWaterFile(newBufferedImage, saveFilePath);
+
+        return "[CQ:image,file=" + uuid +".jpg]";
+    }
+
+    public String handAnimeImageMsg(ReceiveMsg receiveMsg) throws IOException {
+        String raw_message = receiveMsg.getMessage();
+        int questionIndex = raw_message.indexOf(",url=")+5;
+        int answerIndex = raw_message.indexOf("]");
+        String imageName = UUID.randomUUID().toString().replaceAll("-", "")+".jpg";
+        String imageUrl = raw_message.substring(questionIndex, answerIndex);
+
+        try {
+            download(imageUrl, imageName,MsbotConst.imageUrl,imageName);
+        } catch (Exception e) {
+            return null;
+        }
+
+        String back = selfieAnime(MsbotConst.imageUrl+imageName);
+
+        String[] result = new String [2];
+        result[0] = back;
+        result[1] = imageName;
+
+        //TODO Base64编码->png result[0]
+        String uuid = UUID.randomUUID().toString().replaceAll("-", "");
+        com.alibaba.fastjson.JSONObject result_json = com.alibaba.fastjson.JSONObject.parseObject(result[0]);
+        byte[] bytes = Base64.getDecoder().decode(result_json.getString("image"));
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
+        BufferedImage newBufferedImage = ImageIO.read(inputStream);
+        ImageIO.write(newBufferedImage,"jpg",new File(MsbotConst.imageUrl +uuid +".jpg"));
+        String saveFilePath = MsbotConst.imageUrl + uuid +".png";
+        generateWaterFile(newBufferedImage, saveFilePath);
+
+        return "[CQ:image,file=" + uuid +".jpg]";
+    }
+
     private String generalBasic2(String imgUrl) {
         // 请求url
         String url = "https://aip.baidubce.com/rest/2.0/ocr/v1/accurate_basic";
@@ -300,6 +360,51 @@ public class MvpImageServiceImpl implements MvpImageService{
             String accessToken = getAuth();
 
             String result = HttpUtil.post(url, accessToken, param);
+            return result;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public String colourize(String imgUrl) {
+        // 请求url
+        String url = "https://aip.baidubce.com/rest/2.0/image-process/v1/colourize";
+        try {
+            // 本地文件路径
+            String filePath = imgUrl;
+            byte[] imgData = FileUtil.readFileByBytes(filePath);
+            String imgStr = Base64Util.encode(imgData);
+            String imgParam = URLEncoder.encode(imgStr, "UTF-8");
+
+            String param = "image=" + imgParam;
+
+            // 注意这里仅为了简化编码每一次请求都去获取access_token，线上环境access_token有过期时间， 客户端可自行缓存，过期后重新获取。
+            String accessToken = getAuth();
+            String result = HttpUtil.post(url, accessToken, param);
+
+            return result;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public String selfieAnime(String imgUrl) {
+        // 请求url
+        String url = "https://aip.baidubce.com/rest/2.0/image-process/v1/selfie_anime";
+        try {
+            // 本地文件路径
+            String filePath = imgUrl;
+            byte[] imgData = FileUtil.readFileByBytes(filePath);
+            String imgStr = Base64Util.encode(imgData);
+            String imgParam = URLEncoder.encode(imgStr, "UTF-8");
+            String param = "image=" + imgParam;
+
+            // 注意这里仅为了简化编码每一次请求都去获取access_token，线上环境access_token有过期时间， 客户端可自行缓存，过期后重新获取。
+            String accessToken = getAuth();
+            String result = HttpUtil.post(url, accessToken, param);
+
             return result;
         } catch (Exception e) {
             e.printStackTrace();
@@ -336,5 +441,13 @@ public class MvpImageServiceImpl implements MvpImageService{
         return null;
     }
 
+    private static void generateWaterFile(BufferedImage buffImg, String savePath) {
+        int temp = savePath.lastIndexOf(".") + 1;
+        try {
+            ImageIO.write(buffImg, savePath.substring(temp), new File(savePath));
+        } catch (Exception e1) {
+            e1.printStackTrace();
+        }
+    }
 
 }

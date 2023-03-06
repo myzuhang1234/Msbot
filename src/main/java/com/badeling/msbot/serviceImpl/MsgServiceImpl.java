@@ -1,62 +1,31 @@
 package com.badeling.msbot.serviceImpl;
 
-import java.io.IOException;
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.TreeSet;
-import java.sql.Timestamp;
-
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.badeling.msbot.config.MsbotConst;
+import com.badeling.msbot.controller.MsgZbCalculate;
+import com.badeling.msbot.domain.*;
+import com.badeling.msbot.entity.*;
 import com.badeling.msbot.repository.*;
+import com.badeling.msbot.service.*;
+import com.badeling.msbot.util.Loadfont2;
+import com.badeling.msbot.util.TranslateUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-import com.badeling.msbot.config.MsbotConst;
-import com.badeling.msbot.controller.MsgZbCalculate;
-import com.badeling.msbot.domain.GlobalVariable;
-import com.badeling.msbot.domain.GroupMsg;
-import com.badeling.msbot.domain.NoticeMsg;
-import com.badeling.msbot.domain.ReRead;
-import com.badeling.msbot.domain.ReReadMsg;
-import com.badeling.msbot.domain.ReceiveMsg;
-import com.badeling.msbot.domain.ReplyMsg;
-import com.badeling.msbot.domain.Result;
-import com.badeling.msbot.entity.Msg;
-import com.badeling.msbot.entity.MsgNoPrefix;
-import com.badeling.msbot.entity.QuizOzAnswer;
-import com.badeling.msbot.entity.QuizOzQuestion;
-import com.badeling.msbot.entity.RankInfo;
-import com.badeling.msbot.entity.RereadSentence;
-import com.badeling.msbot.entity.RereadTime;
-import com.badeling.msbot.entity.RoleDmg;
-import com.badeling.msbot.entity.MonvTime;
-import com.badeling.msbot.service.ChannelService;
-import com.badeling.msbot.service.DrawService;
-import com.badeling.msbot.service.GroupMsgService;
-import com.badeling.msbot.service.MsgService;
-import com.badeling.msbot.service.MvpImageService;
-import com.badeling.msbot.service.PrivateService;
-import com.badeling.msbot.service.RankService;
-import com.badeling.msbot.service.WzXmlService;
-import com.badeling.msbot.util.Loadfont2;
-import com.badeling.msbot.util.TranslateUtil;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.client.RestTemplate;
+
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import java.io.IOException;
+import java.sql.Timestamp;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 @Component
 public class MsgServiceImpl implements MsgService{
@@ -791,6 +760,37 @@ public class MsgServiceImpl implements MsgService{
 			} catch (IOException e) {
 			}
 			return null;
+		}
+
+		//上色
+		if(raw_message.contains(MsbotConst.botName+"上色")) {
+
+			try {
+				raw_message = "上色结果：\r\n";
+				String result = mvpImageService.handColorImageMsg(receiveMsg);
+				replyMsg.setReply(raw_message+result);
+
+			} catch (Exception e) {
+				e.printStackTrace();
+				replyMsg.setReply("上色失败");
+			}
+			replyMsg.setAt_sender(true);
+			return replyMsg;
+		}
+
+		//画头像
+		if(raw_message.contains(MsbotConst.botName+"画头像")) {
+			try {
+				raw_message = "绘画结果：\r\n";
+				String result = mvpImageService.handAnimeImageMsg(receiveMsg);
+				replyMsg.setReply(raw_message+result);
+
+			} catch (Exception e) {
+				e.printStackTrace();
+				replyMsg.setReply("绘画失败");
+			}
+			replyMsg.setAt_sender(true);
+			return replyMsg;
 		}
 
 		//识图
