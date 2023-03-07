@@ -67,7 +67,9 @@ public class MsgServiceImpl implements MsgService{
 	private MsgNoPrefixRepository msgNoPrefixRepository;
 	@Autowired
 	private MonvTimeRepository monvTimeRepository;
-	
+	@Autowired
+	private BanTimeRepository banTimeRepository;
+
 	public static int[] starForceDesc(int level,int stat,int att,int star) {
 		Map<Integer, Map<String, int[]>> starForceDataAfter16 = starForceDataAfter16();
 		Map<String, int[]> map = starForceDataAfter16.get(level);
@@ -282,7 +284,49 @@ public class MsgServiceImpl implements MsgService{
 					break;
 				}
 				else if (m.getAnswer().equals("禁言")){
+
+					Timestamp time_now = new Timestamp(System.currentTimeMillis());
+					SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+					String date_now = df.format(time_now);
+
+					BanTime banTime = banTimeRepository.findRoleBynumber(receiveMsg.getSender().getUser_id(),date_now,receiveMsg.getGroup_id());
+					if(banTime == null) {
+						//查询无角色
+						banTime = new BanTime();
+						//设置群名片 如果没有 设置昵称
+						if(receiveMsg.getSender().getCard()==null || receiveMsg.getSender().getCard().equals("")) {
+							banTime.setName(receiveMsg.getSender().getNickname());
+						}else {
+							banTime.setName(receiveMsg.getSender().getCard());
+						}
+						//设置QQ号
+						banTime.setUser_id(receiveMsg.getSender().getUser_id());
+						//设置群号
+						if(receiveMsg.getGroup_id().contains("101577006")) {
+							banTime.setGroup_id("398359236");
+						}else {
+							banTime.setGroup_id(receiveMsg.getGroup_id());
+						}
+						Timestamp timestamp = new Timestamp(0);
+						banTime.setUpdateTime(timestamp);
+						banTime.setDate(date_now);
+						banTime.setBan_times(0);
+						banTime = banTimeRepository.save(banTime);
+					}
+
+					banTimeRepository.modifyUpdateBanTimes(
+							banTime.getId(),
+							banTime.getBan_times()+1,
+							time_now
+					);
+
+					List<BanTime> list = banTimeRepository.findBanTimesByGroup(receiveMsg.getSender().getUser_id(),receiveMsg.getGroup_id());
+					int ban_times=0;
+					for (int i = 0; i < list.size(); i++) {
+						ban_times += list.get(i).getBan_times();
+					}
 					ReplyMsg replyMsg = new ReplyMsg();
+					replyMsg.setBan_duration((ban_times/5+1)*30*60);
 					replyMsg.setAt_sender(true);
 					replyMsg.setAuto_escape(false);
 					replyMsg.setBan(true);
@@ -764,6 +808,7 @@ public class MsgServiceImpl implements MsgService{
 			}
 			return null;
 		}
+
 		//说
 		if(raw_message.contains(MsbotConst.botName+"说")){
 			raw_message = raw_message.substring(raw_message.indexOf("说")+1);
@@ -783,6 +828,7 @@ public class MsgServiceImpl implements MsgService{
 			replyMsg.setAt_sender(false);
 			return replyMsg;
 		}
+
 		//上色
 		if(raw_message.contains(MsbotConst.botName+"上色")) {
 			try {
@@ -1361,7 +1407,6 @@ public class MsgServiceImpl implements MsgService{
 		}
 
 
-
 		//扔xxx
 		if(raw_message.startsWith(MsbotConst.botName+"扔")&&raw_message.contains("[CQ:at")) {
     		try {
@@ -1697,7 +1742,6 @@ public class MsgServiceImpl implements MsgService{
 			}
 		}
 
-
 		if (raw_message.contains("抽奖日报")||raw_message.contains("魔女日报")||raw_message.contains("百分百日报")) {
 			//得到群成员信息
 			GroupMsg gp = new GroupMsg();
@@ -1822,6 +1866,119 @@ public class MsgServiceImpl implements MsgService{
 			replyMsg.setReply(mes);
 			return replyMsg;
 
+		}
+
+		if(raw_message.startsWith(MsbotConst.botName+"禁言统计")){
+			if (raw_message.contains("[CQ:at")){
+				try {
+					int aIndex = receiveMsg.getRaw_message().indexOf("[CQ:at,qq=")+10;
+					int bIndex = receiveMsg.getRaw_message().indexOf("]");
+					String findNumber = receiveMsg.getRaw_message().substring(aIndex,bIndex);
+
+					if(receiveMsg.getUser_id().equalsIgnoreCase(MsbotConst.masterId)||isAdminMsg(receiveMsg.getUser_id())) {
+						List<BanTime>list = banTimeRepository.findBanTimesByGroup(findNumber,receiveMsg.getGroup_id());
+
+						//得到群成员信息
+						GroupMsg gp = new GroupMsg();
+						gp.setGroup_id(Long.parseLong(receiveMsg.getGroup_id()));
+						Result<?> groupMember = groupMsgService.getGroupMember(gp);
+
+						@SuppressWarnings("unchecked")
+						List<Map<String,Object>> data = (List<Map<String, Object>>) groupMember.getData();
+						Map<String,String> map = new HashMap<>();
+						for(Map<String,Object> temp:data) {
+							String a = temp.get("user_id")+"";
+							String b = (String) temp.get("nickname");
+							String c = (String) temp.get("card");
+							if(c.equals("")) {
+								//无群名片
+								map.put(a, b);
+							}else {
+								//有群名片
+								map.put(a, c);
+							}
+						}
+
+						String mes = "\r\n";
+						if(list.size() == 0) {
+							mes += "未查到: "+ map.get(findNumber) +" 的禁言记录";
+							replyMsg.setAt_sender(true);
+							replyMsg.setReply(mes);
+						}
+						else {
+							mes += "成员: "+map.get(list.get(0).getUser_id()) +"\r\n";
+							int ban_times=0;
+							for (int i = 0; i < list.size(); i++) {
+								ban_times += list.get(i).getBan_times();
+							}
+							mes += "禁言次数："+ban_times+"\r\n";
+							mes += "处罚时间："+(ban_times/5+1)*30+" 分钟\r\n";
+
+							replyMsg.setAt_sender(true);
+							replyMsg.setReply(mes);
+						}
+					}
+					else {
+						replyMsg.setAt_sender(false);
+						replyMsg.setReply("[CQ:at,qq=" + receiveMsg.getUser_id()  + "]" + "宁是什么东西也配命令老娘？爬爬爬！");
+					}
+					return replyMsg;
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			else {
+				try {
+					String findNumber = receiveMsg.getUser_id();
+					List<BanTime> list = banTimeRepository.findBanTimesByGroup(findNumber,receiveMsg.getGroup_id());
+
+					//得到群成员信息
+					GroupMsg gp = new GroupMsg();
+					gp.setGroup_id(Long.parseLong(receiveMsg.getGroup_id()));
+					Result<?> groupMember = groupMsgService.getGroupMember(gp);
+
+					@SuppressWarnings("unchecked")
+					List<Map<String,Object>> data = (List<Map<String, Object>>) groupMember.getData();
+					Map<String,String> map = new HashMap<>();
+					for(Map<String,Object> temp:data) {
+						String a = temp.get("user_id")+"";
+						String b = (String) temp.get("nickname");
+						String c = (String) temp.get("card");
+						if(c.equals("")) {
+							//无群名片
+							map.put(a, b);
+						}
+						else {
+							//有群名片
+							map.put(a, c);
+						}
+					}
+
+					String mes = "\r\n";
+
+					if(list.size() == 0) {
+						mes += "未查到: "+ map.get(findNumber) +" 的禁言记录";
+						replyMsg.setAt_sender(true);
+						replyMsg.setReply(mes);
+					}
+					else {
+						mes += "成员: "+map.get(list.get(0).getUser_id()) +"\r\n";
+						int ban_times=0;
+						for (int i = 0; i < list.size(); i++) {
+							ban_times += list.get(i).getBan_times();
+						}
+						mes += "禁言次数："+ban_times+"\r\n";
+						mes += "处罚时间："+(ban_times/5+1)*30+" 分钟\r\n";
+
+						replyMsg.setAt_sender(true);
+						replyMsg.setReply(mes);
+					}
+
+					return replyMsg;
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
 		}
 
 		//官网

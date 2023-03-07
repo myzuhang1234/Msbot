@@ -1,7 +1,5 @@
 package com.badeling.msbot.repository;
 
-import com.badeling.msbot.entity.RereadSentence;
-import com.badeling.msbot.entity.RereadTime;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -20,7 +18,7 @@ public interface MonvTimeRepository extends CrudRepository<MonvTime, Long>{
             " FROM monv_time mt1 WHERE (group_id  = ?1 AND TO_DAYS(NOW()) - TO_DAYS(mt1.`date`) <=0) ORDER BY gold DESC LIMIT 0,3 ",nativeQuery=true)
     List <MonvTime> find3thCostByGroup(String group_id);
 
-    @Query(value = "SELECT * FROM monv_time mt WHERE user_id  =?1 AND group_id = ?2 ",nativeQuery=true)
+    @Query(value = "SELECT * FROM monv_time WHERE user_id  =?1 AND group_id = ?2 ",nativeQuery=true)
     List <MonvTime> findCostByGroup(String user_id,String group_id);
 
     @Query(value = "SELECT * FROM monv_time WHERE (group_id =?1 AND TO_DAYS(NOW()) - TO_DAYS(`date`) <=0) " +
