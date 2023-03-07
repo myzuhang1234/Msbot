@@ -44,6 +44,9 @@ public class MsgServiceImpl implements MsgService{
 	private GroupMsgService groupMsgService;
 	@Autowired
 	private MvpImageService mvpImageService;
+
+	@Autowired
+	private RecordService recordService;
 	@Autowired
 	private DrawService drawService;
 	@Autowired
@@ -761,10 +764,27 @@ public class MsgServiceImpl implements MsgService{
 			}
 			return null;
 		}
+		//说
+		if(raw_message.contains(MsbotConst.botName+"说")){
+			raw_message = raw_message.substring(raw_message.indexOf("说")+1);
+			raw_message = raw_message.replaceAll("\r",".");
+			raw_message = raw_message.replaceAll("\n",".");
+			System.out.println(raw_message);
 
+			try {
+				String result = recordService.sendRecordMsg(raw_message);
+				replyMsg.setReply(result);
+
+
+			} catch (Exception e) {
+				e.printStackTrace();
+				replyMsg.setReply("失败");
+			}
+			replyMsg.setAt_sender(false);
+			return replyMsg;
+		}
 		//上色
 		if(raw_message.contains(MsbotConst.botName+"上色")) {
-
 			try {
 				raw_message = "上色结果：\r\n";
 				String result = mvpImageService.handColorImageMsg(receiveMsg);

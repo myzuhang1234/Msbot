@@ -312,6 +312,7 @@ public class MvpImageServiceImpl implements MvpImageService{
         return "[CQ:image,file=" + uuid +".jpg]";
     }
 
+    @Override
     public String handAnimeImageMsg(ReceiveMsg receiveMsg) throws IOException {
         String raw_message = receiveMsg.getMessage();
         int questionIndex = raw_message.indexOf(",url=")+5;
