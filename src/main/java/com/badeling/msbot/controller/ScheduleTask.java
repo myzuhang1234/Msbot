@@ -1,26 +1,25 @@
 package com.badeling.msbot.controller;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import com.badeling.msbot.config.MsbotConst;
+import com.badeling.msbot.domain.GroupMsg;
+import com.badeling.msbot.domain.Result;
 import com.badeling.msbot.entity.MonvTime;
+import com.badeling.msbot.entity.RereadSentence;
+import com.badeling.msbot.entity.RereadTime;
 import com.badeling.msbot.repository.MonvTimeRepository;
+import com.badeling.msbot.repository.RereadSentenceRepository;
+import com.badeling.msbot.repository.RereadTimeRepository;
+import com.badeling.msbot.service.GroupMsgService;
+import com.badeling.msbot.util.CosSdk;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import com.badeling.msbot.config.MsbotConst;
-import com.badeling.msbot.domain.GroupMsg;
-import com.badeling.msbot.domain.Result;
-import com.badeling.msbot.entity.RereadSentence;
-import com.badeling.msbot.entity.RereadTime;
-import com.badeling.msbot.repository.RereadSentenceRepository;
-import com.badeling.msbot.repository.RereadTimeRepository;
-import com.badeling.msbot.service.GroupMsgService;
-import com.badeling.msbot.util.CosSdk;
+import java.io.File;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @EnableScheduling
 @Component
@@ -248,6 +247,20 @@ public class ScheduleTask {
 					e.printStackTrace();
 				}
 			}else {}
+		}
+
+	    @Scheduled(cron="0 0 0 * * ?")
+		private void deleteRecord(){
+			String url = MsbotConst.voiceUrl;
+			File file = new File(url);
+			String[] fileList = file.list();
+
+			for(String a : fileList) {
+				File file2 = new File(url,a);
+				if(file2.isFile()&&!file2.getName().contains(MsbotConst.channelBotId)) {
+					file2.delete();
+				}
+			}
 		}
 
 

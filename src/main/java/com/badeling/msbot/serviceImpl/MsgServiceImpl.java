@@ -46,6 +46,9 @@ public class MsgServiceImpl implements MsgService{
 	private MvpImageService mvpImageService;
 
 	@Autowired
+	private BanService banService;
+
+	@Autowired
 	private RecordService recordService;
 	@Autowired
 	private DrawService drawService;
@@ -276,6 +279,58 @@ public class MsgServiceImpl implements MsgService{
         }
 
 		//禁言信息
+		String checkResult = banService.getCheckResult(receiveMsg.getRaw_message());
+		if (checkResult.equals("禁言")){
+			Timestamp time_now = new Timestamp(System.currentTimeMillis());
+			SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+			String date_now = df.format(time_now);
+
+			BanTime banTime = banTimeRepository.findRoleBynumber(receiveMsg.getSender().getUser_id(),date_now,receiveMsg.getGroup_id());
+			if(banTime == null) {
+				//查询无角色
+				banTime = new BanTime();
+				//设置群名片 如果没有 设置昵称
+				if(receiveMsg.getSender().getCard()==null || receiveMsg.getSender().getCard().equals("")) {
+					banTime.setName(receiveMsg.getSender().getNickname());
+				}else {
+					banTime.setName(receiveMsg.getSender().getCard());
+				}
+				//设置QQ号
+				banTime.setUser_id(receiveMsg.getSender().getUser_id());
+				//设置群号
+				if(receiveMsg.getGroup_id().contains("101577006")) {
+					banTime.setGroup_id("398359236");
+				}else {
+					banTime.setGroup_id(receiveMsg.getGroup_id());
+				}
+				Timestamp timestamp = new Timestamp(0);
+				banTime.setUpdateTime(timestamp);
+				banTime.setDate(date_now);
+				banTime.setBan_times(0);
+				banTime = banTimeRepository.save(banTime);
+			}
+
+			banTimeRepository.modifyUpdateBanTimes(
+					banTime.getId(),
+					banTime.getBan_times()+1,
+					time_now
+			);
+
+			List<BanTime> list = banTimeRepository.findBanTimesByGroup(receiveMsg.getSender().getUser_id(),receiveMsg.getGroup_id());
+			int ban_times=0;
+			for (int i =0; i < list.size(); i++) {
+				ban_times += list.get(i).getBan_times();
+			}
+			ReplyMsg replyMsg = new ReplyMsg();
+			replyMsg.setBan_duration((ban_times/5+1)*30*60);
+			replyMsg.setAt_sender(true);
+			replyMsg.setAuto_escape(false);
+			replyMsg.setBan(true);
+			replyMsg.setReply("[CQ:image,file=save/AB59F6053D317B67646AA3B363B87415]");
+			System.out.println(replyMsg);
+			return replyMsg;
+		}
+		/**
 		List<MsgNoPrefix> result = msgNoPrefixRepository.findMsgNPList();
 		for(MsgNoPrefix m : result) {
 			if(m.isExact()&&receiveMsg.getRaw_message().contains(m.getQuestion())) {
@@ -335,7 +390,7 @@ public class MsgServiceImpl implements MsgService{
 					return replyMsg;
 				}
 			}
-		}
+		}**/
 
 		if (receiveMsg.getRaw_message().startsWith(MsbotConst.botName)) {
 			System.out.println(receiveMsg.toString());
