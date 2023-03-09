@@ -280,6 +280,7 @@ public class MsgServiceImpl implements MsgService{
 
 		//禁言信息
 		String checkResult = banService.getCheckResult(receiveMsg.getRaw_message());
+
 		if (checkResult.equals("禁言")){
 			Timestamp time_now = new Timestamp(System.currentTimeMillis());
 			SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
