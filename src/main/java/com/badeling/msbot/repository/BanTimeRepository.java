@@ -16,16 +16,21 @@ public interface BanTimeRepository extends CrudRepository<BanTime, Long> {
     @Query(value = "SELECT * FROM ban_time WHERE user_id  =?1 AND group_id = ?2 ",nativeQuery=true)
     List<BanTime> findBanTimesByGroup(String user_id, String group_id);
 
+    @Query(value = "SELECT * FROM ban_time WHERE user_id  =?1 AND group_id = ?2 AND (TO_DAYS(NOW()) - TO_DAYS(`date`) <=0) LIMIT 1",nativeQuery=true)
+    BanTime findBanTimesTodayByGroup(String user_id, String group_id);
+
     @Modifying
     @Transactional
     @Query(value = "update ban_time set updated_at = ?2 where id = ?1",nativeQuery=true)
     void modifyUpdateTime(Long id, Timestamp updated_at);
 
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Transactional
     @Query(value = "update ban_time set ban_times = ?2,updated_at = ?3 where id = ?1",nativeQuery=true)
     void modifyUpdateBanTimes(Long id, Integer ban_times,Timestamp updated_at);
 
     @Query(value = "select distinct group_id FROM ban_times WHERE (TO_DAYS(NOW()) - TO_DAYS(`date`) <=0)",nativeQuery=true)
     List <String> findEveryGroup();
+
+
 }

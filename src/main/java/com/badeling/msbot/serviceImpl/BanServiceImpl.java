@@ -64,7 +64,10 @@ public class BanServiceImpl implements BanService {
         if (word.contains("[CQ:image,file=")){
             int count = word.split("\\[CQ:image,file=", -1).length-1;
             for (int i=0;i<count;i++){
-                String substring = word.substring(word.indexOf("[CQ:image,file="), word.indexOf("]")+1);
+                int start = word.indexOf("[CQ:image,file=");
+                int end = word.indexOf("]",start);
+
+                String substring = word.substring(start, end+1);
                 word = word.replace(substring, "");
             }
         }

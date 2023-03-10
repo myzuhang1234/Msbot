@@ -280,7 +280,6 @@ public class MsgServiceImpl implements MsgService{
 
 		//禁言信息
 		String checkResult = banService.getCheckResult(receiveMsg.getRaw_message());
-
 		if (checkResult.equals("禁言")){
 			Timestamp time_now = new Timestamp(System.currentTimeMillis());
 			SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
@@ -317,20 +316,28 @@ public class MsgServiceImpl implements MsgService{
 					time_now
 			);
 
-			List<BanTime> list = banTimeRepository.findBanTimesByGroup(receiveMsg.getSender().getUser_id(),receiveMsg.getGroup_id());
-			int ban_times=0;
-			for (int i =0; i < list.size(); i++) {
-				ban_times += list.get(i).getBan_times();
-			}
+			BanTime banTime1 = banTimeRepository.findBanTimesTodayByGroup(receiveMsg.getSender().getUser_id(),receiveMsg.getGroup_id());
 			ReplyMsg replyMsg = new ReplyMsg();
-			replyMsg.setBan_duration((ban_times/5+1)*30*60);
+			if (banTime1.getBan_times()==1){
+				replyMsg.setReply("每日第一次禁言会被赦免,要乖噢～");
+			}
+			else {
+				List<BanTime> list = banTimeRepository.findBanTimesByGroup(receiveMsg.getSender().getUser_id(),receiveMsg.getGroup_id());
+				int ban_times=0;
+				for (int i =0; i < list.size(); i++) {
+					ban_times += list.get(i).getBan_times();
+				}
+				replyMsg.setBan_duration((ban_times/5+1)*30*60);
+				replyMsg.setBan(true);
+				replyMsg.setReply("[CQ:image,file=save/AB59F6053D317B67646AA3B363B87415]");
+			}
+
 			replyMsg.setAt_sender(true);
 			replyMsg.setAuto_escape(false);
-			replyMsg.setBan(true);
-			replyMsg.setReply("[CQ:image,file=save/AB59F6053D317B67646AA3B363B87415]");
 			System.out.println(replyMsg);
 			return replyMsg;
 		}
+
 		/**
 		List<MsgNoPrefix> result = msgNoPrefixRepository.findMsgNPList();
 		for(MsgNoPrefix m : result) {

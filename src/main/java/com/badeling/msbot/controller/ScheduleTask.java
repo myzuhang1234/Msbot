@@ -6,6 +6,7 @@ import com.badeling.msbot.domain.Result;
 import com.badeling.msbot.entity.MonvTime;
 import com.badeling.msbot.entity.RereadSentence;
 import com.badeling.msbot.entity.RereadTime;
+import com.badeling.msbot.repository.BanTimeRepository;
 import com.badeling.msbot.repository.MonvTimeRepository;
 import com.badeling.msbot.repository.RereadSentenceRepository;
 import com.badeling.msbot.repository.RereadTimeRepository;
@@ -34,6 +35,9 @@ public class ScheduleTask {
 	@Autowired
 	private RereadTimeRepository rereadTimeRepository;
 
+
+	@Autowired
+	private BanTimeRepository banTimeRepository;
 	@Autowired
 	private MonvTimeRepository monvTimeRepository;
 	
@@ -134,6 +138,7 @@ public class ScheduleTask {
 			}
 			rereadSentenceRepository.deleteAll();
 			rereadTimeRepository.deleteAll();
+			banTimeRepository.deleteAll();
 		}
 
 		@Scheduled(cron="0 0 20,21,22 ? * SUN")
