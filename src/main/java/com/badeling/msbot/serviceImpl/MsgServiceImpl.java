@@ -2261,7 +2261,7 @@ public class MsgServiceImpl implements MsgService{
 					int aIndex = receiveMsg.getRaw_message().indexOf("[CQ:at,qq=")+10;
 					int bIndex = receiveMsg.getRaw_message().indexOf("]");
 					String findNumber = receiveMsg.getRaw_message().substring(aIndex,bIndex);
-					if(findNumber.equals(MsbotConst.masterId)||findNumber.equals(MsbotConst.botId)||findNumber.equals("2419570484")) {
+					if(isAdminMsg(findNumber)|| findNumber.equals(MsbotConst.masterId)||findNumber.equals(MsbotConst.botId)||findNumber.equals("2419570484")) {
 						replyMsg.setReply("禁言防御");
 					}
 					else {
@@ -2296,7 +2296,7 @@ public class MsgServiceImpl implements MsgService{
 					int aIndex = receiveMsg.getRaw_message().indexOf("[CQ:at,qq=")+10;
 					int bIndex = receiveMsg.getRaw_message().indexOf("]");
 					String findNumber = receiveMsg.getRaw_message().substring(aIndex,bIndex);
-					if(findNumber.equals(MsbotConst.masterId)||findNumber.equals(MsbotConst.botId)||findNumber.equals("2419570484")) {
+					if(isAdminMsg(findNumber)|| findNumber.equals(MsbotConst.masterId)||findNumber.equals(MsbotConst.botId)||findNumber.equals("2419570484")) {
 						replyMsg.setReply("防御");
 					}
 					else {
