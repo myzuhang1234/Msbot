@@ -3,6 +3,7 @@ package com.badeling.msbot.controller;
 import com.badeling.msbot.config.MsbotConst;
 import com.badeling.msbot.domain.GroupMsg;
 import com.badeling.msbot.domain.Result;
+import com.badeling.msbot.entity.BanTime;
 import com.badeling.msbot.entity.MonvTime;
 import com.badeling.msbot.entity.RereadSentence;
 import com.badeling.msbot.entity.RereadTime;
@@ -40,8 +41,6 @@ public class ScheduleTask {
 	private BanTimeRepository banTimeRepository;
 	@Autowired
 	private MonvTimeRepository monvTimeRepository;
-	
-	
 		//清除图片缓存
 		@Scheduled(cron="0 30 4 ? * MON")
 		private void delete() {
@@ -140,6 +139,61 @@ public class ScheduleTask {
 			rereadTimeRepository.deleteAll();
 			banTimeRepository.deleteAll();
 		}
+
+		@Scheduled(cron="0 0 0 ? * MON")
+		private void banReport() {
+			List<String> groupList = banTimeRepository.findEveryGroup();
+			if(groupList!=null) {
+				try {
+					for(String group_id:groupList) {
+						//得到群成员信息
+						GroupMsg gp = new GroupMsg();
+						gp.setGroup_id(Long.parseLong(group_id));
+						Result<?> groupMember = groupMsgService.getGroupMember(gp);
+						@SuppressWarnings("unchecked")
+						List<Map<String,Object>> data = (List<Map<String, Object>>) groupMember.getData();
+						Map<String,String> map = new HashMap<>();
+						for(Map<String,Object> temp:data) {
+							String a = temp.get("user_id")+"";
+							String b = (String) temp.get("nickname");
+							String c = (String) temp.get("card");
+							if(c.equals("")) {
+								//无群名片
+								map.put(a, b);
+							}else {
+								//有群名片
+								map.put(a, c);
+							}
+						}
+
+						List<BanTime> list = banTimeRepository.findBanTimesWeeklyByGroup(group_id);
+						String message="本周禁言榜榜首是：\r\n";
+						if(list.size()>0) {
+							for (int i = 0; i < list.size(); i++) {
+								if (i==1){
+									message += "此外，以下成员也榜上有名：\r\n";
+								}
+								message += map.get(list.get(i).getUser_id()) + "  被禁言次数: "+ list.get(i).getBan_times() +"\r\n";
+							}
+						}
+						else {
+							message += "虚位以待\r\n";
+						}
+
+						message += "——————————————————\r\n已上群友新的一周要乖噢～！uwu";
+						GroupMsg groupMsg = new GroupMsg();
+						groupMsg.setAuto_escape(false);
+						groupMsg.setMessage(message);
+						groupMsg.setGroup_id(Long.parseLong((group_id)));
+						groupMsgService.sendGroupMsg(groupMsg);
+					}
+				}catch (Exception e) {
+					e.printStackTrace();
+				}
+			}else {}
+
+			banTimeRepository.deleteAll();
+	}
 
 		@Scheduled(cron="0 0 20,21,22 ? * SUN")
 		private void paoqiReport(){

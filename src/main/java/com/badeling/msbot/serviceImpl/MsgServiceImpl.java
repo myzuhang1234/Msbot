@@ -1804,6 +1804,46 @@ public class MsgServiceImpl implements MsgService{
 				}
 			}
 		}
+		if (raw_message.contains("禁言周报")) {
+			//得到群成员信息
+			GroupMsg gp = new GroupMsg();
+			gp.setGroup_id(Long.parseLong(receiveMsg.getGroup_id()));
+			Result<?> groupMember = groupMsgService.getGroupMember(gp);
+
+			@SuppressWarnings("unchecked")
+			List<Map<String,Object>> data = (List<Map<String, Object>>) groupMember.getData();
+			Map<String,String> map = new HashMap<>();
+			for(Map<String,Object> temp:data) {
+				String a = temp.get("user_id")+"";
+				String b = (String) temp.get("nickname");
+				String c = (String) temp.get("card");
+				if(c.equals("")) {
+					//无群名片
+					map.put(a, b);
+				}else {
+					//有群名片
+					map.put(a, c);
+				}
+			}
+
+			List<BanTime> list = banTimeRepository.findBanTimesWeeklyByGroup(receiveMsg.getGroup_id());
+			String message="本周禁言榜榜首是：\r\n";
+			if(list.size()>0) {
+				for (int i = 0; i < list.size(); i++) {
+					if (i==1){
+						message += "此外，以下成员也榜上有名：\r\n";
+					}
+					message += map.get(list.get(i).getUser_id()) + "  被禁言次数: "+ list.get(i).getBan_times() +"\r\n";
+				}
+			}
+			else {
+				message += "虚位以待\r\n";
+			}
+
+			message += "——————————————————\r\n已上群友新的一周要乖噢～！uwu";
+			replyMsg.setReply(message);
+			return replyMsg;
+		}
 
 		if (raw_message.contains("抽奖日报")||raw_message.contains("魔女日报")||raw_message.contains("百分百日报")) {
 			//得到群成员信息

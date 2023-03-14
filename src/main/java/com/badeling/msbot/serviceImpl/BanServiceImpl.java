@@ -61,16 +61,19 @@ public class BanServiceImpl implements BanService {
     }
 
     public String getCheckResult(String word) {
-        if (word.contains("[CQ:image,file=")){
-            int count = word.split("\\[CQ:image,file=", -1).length-1;
+        if (word.contains("[CQ:")){
+            int count = word.split("\\[CQ:", -1).length-1;
             for (int i=0;i<count;i++){
-                int start = word.indexOf("[CQ:image,file=");
+                int start = word.indexOf("[CQ:");
                 int end = word.indexOf("]",start);
 
                 String substring = word.substring(start, end+1);
                 word = word.replace(substring, "");
+                word = word.replaceAll("\r|\n|\t","");
             }
         }
+        //System.out.println("word:"+word);
+
         String url = "https://aip.baidubce.com/rest/2.0/solution/v1/text_censor/v2/user_defined";
         if (word.length() != 0){
             try {
@@ -79,10 +82,14 @@ public class BanServiceImpl implements BanService {
                 String result = HttpUtil.post(url, accessToken, param);
                 //System.out.println(result);
                 JSONObject result_json= new JSONObject(result);
-                //System.out.println(result_json.get("conclusion"));
+                //System.out.println(result_json);
 
-                if(result_json.get("conclusion").equals("不合规")){
-                    return "禁言";
+                if (result_json.has("conclusion")){
+                    if(result_json.get("conclusion").equals("不合规")){
+                        return "禁言";
+                    }
+                    else
+                        return "不禁言";
                 }
                 else
                     return "不禁言";
