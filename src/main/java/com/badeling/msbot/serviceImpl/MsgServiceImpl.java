@@ -279,8 +279,10 @@ public class MsgServiceImpl implements MsgService{
         }
 
 		//禁言信息
+		String checkResultImage = banService.getCheckResultImage(receiveMsg.getRaw_message());
+
 		String checkResult = banService.getCheckResult(receiveMsg.getRaw_message());
-		if (checkResult.equals("禁言")){
+		if (checkResult.equals("禁言") || checkResultImage.equals("禁言")){
 			Timestamp time_now = new Timestamp(System.currentTimeMillis());
 			SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 			String date_now = df.format(time_now);
@@ -1827,7 +1829,7 @@ public class MsgServiceImpl implements MsgService{
 			}
 
 			List<BanTime> list = banTimeRepository.findBanTimesWeeklyByGroup(receiveMsg.getGroup_id());
-			String message="本周禁言榜榜首是：\r\n";
+			String message="本周艹艹榜榜首是：\r\n";
 			if(list.size()>0) {
 				for (int i = 0; i < list.size(); i++) {
 					if (i==1){
@@ -1840,7 +1842,7 @@ public class MsgServiceImpl implements MsgService{
 				message += "虚位以待\r\n";
 			}
 
-			message += "——————————————————\r\n已上群友新的一周要乖噢～！uwu";
+			message += "——————————————————\r\n以上群友新的一周要乖噢～！uwu";
 			replyMsg.setReply(message);
 			return replyMsg;
 		}

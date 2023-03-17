@@ -101,4 +101,39 @@ public class BanServiceImpl implements BanService {
         return "不禁言";
     }
 
+    public String getCheckResultImage(String word){
+        if (word.contains("[CQ:image")){
+            String url = "https://aip.baidubce.com/rest/2.0/solution/v1/img_censor/v2/user_defined";
+
+            int count = word.split("\\[CQ:image", -1).length-1;
+            for (int i=0;i<count;i++){
+                int start_CQ = word.indexOf("[CQ:image");
+                int start = word.indexOf("url=",start_CQ)+4;
+                int end = word.indexOf("]",start);
+                String substring = word.substring(start, end);
+                //System.out.println("substring:"+substring);
+                try {
+                    String param = "imgUrl=" + substring;
+                    String accessToken = getAuth();
+                    String result = HttpUtil.post(url, accessToken, param);
+                    JSONObject result_json= new JSONObject(result);
+                    System.out.println("result_json:"+result_json);
+                    if (result_json.has("conclusion")){
+                        if(result_json.get("conclusion").equals("不合规")){
+                            return "禁言";
+                        }
+                        else
+                            return "不禁言";
+                    }
+                    else
+                        return "不禁言";
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return "不禁言";
+    }
+
 }

@@ -180,7 +180,7 @@ public class ScheduleTask {
 							message += "虚位以待\r\n";
 						}
 
-						message += "——————————————————\r\n已上群友新的一周要乖噢～！uwu";
+						message += "——————————————————\r\n以上群友新的一周要乖噢～！uwu";
 						GroupMsg groupMsg = new GroupMsg();
 						groupMsg.setAuto_escape(false);
 						groupMsg.setMessage(message);
