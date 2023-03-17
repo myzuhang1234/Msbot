@@ -1829,7 +1829,7 @@ public class MsgServiceImpl implements MsgService{
 			}
 
 			List<BanTime> list = banTimeRepository.findBanTimesWeeklyByGroup(receiveMsg.getGroup_id());
-			String message="本周艹艹榜榜首是：\r\n";
+			String message="本周禁言榜榜首是：\r\n";
 			if(list.size()>0) {
 				for (int i = 0; i < list.size(); i++) {
 					if (i==1){
