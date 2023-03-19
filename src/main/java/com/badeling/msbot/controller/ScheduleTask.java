@@ -137,7 +137,6 @@ public class ScheduleTask {
 			}
 			rereadSentenceRepository.deleteAll();
 			rereadTimeRepository.deleteAll();
-			banTimeRepository.deleteAll();
 		}
 
 		@Scheduled(cron="0 0 0 ? * MON")
