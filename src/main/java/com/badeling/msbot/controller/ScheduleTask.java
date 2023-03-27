@@ -135,16 +135,11 @@ public class ScheduleTask {
 			}else {
 				
 			}
-			rereadSentenceRepository.deleteAll();
-			rereadTimeRepository.deleteAll();
-		}
 
-		@Scheduled(cron="0 0 0 ? * MON")
-		private void banReport() {
-			List<String> groupList = banTimeRepository.findEveryGroup();
-			if(groupList!=null) {
+			List<String> groupList2 = banTimeRepository.findEveryGroup();
+			if(groupList2!=null) {
 				try {
-					for(String group_id:groupList) {
+					for(String group_id:groupList2) {
 						//得到群成员信息
 						GroupMsg gp = new GroupMsg();
 						gp.setGroup_id(Long.parseLong(group_id));
@@ -192,7 +187,9 @@ public class ScheduleTask {
 			}else {}
 
 			banTimeRepository.deleteAll();
-	}
+			rereadSentenceRepository.deleteAll();
+			rereadTimeRepository.deleteAll();
+		}
 
 		@Scheduled(cron="0 0 20,21,22 ? * SUN")
 		private void paoqiReport(){
