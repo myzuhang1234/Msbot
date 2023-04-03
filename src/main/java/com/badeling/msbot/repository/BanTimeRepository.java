@@ -29,7 +29,7 @@ public interface BanTimeRepository extends CrudRepository<BanTime, Long> {
     @Query(value = "update ban_time set ban_times = ?2,updated_at = ?3 where id = ?1",nativeQuery=true)
     void modifyUpdateBanTimes(Long id, Integer ban_times,Timestamp updated_at);
 
-    @Query(value = "select distinct group_id FROM ban_times",nativeQuery=true)
+    @Query(value = "select distinct group_id FROM ban_time",nativeQuery=true)
     List <String> findEveryGroup();
 
     @Query(value = "SELECT user_id ,MIN(id) AS id,MIN(`date`) AS `date`,MIN(group_id) AS group_id,MIN(updated_at) AS updated_at,MIN(name) AS name,SUM(ban_times) AS ban_times FROM ban_time bt "+

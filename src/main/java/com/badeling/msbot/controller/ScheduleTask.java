@@ -67,7 +67,6 @@ public class ScheduleTask {
 		//复读机周报
 		@Scheduled(cron="0 0 0 ? * MON")
 		private void rereadReport() {
-			
 			List<String> groupList = rereadSentenceRepository.findMaxEveryGroup();
 			if(groupList!=null) {
 				try {
@@ -133,13 +132,19 @@ public class ScheduleTask {
 					e.printStackTrace();
 				}
 			}else {
-				
+
 			}
 
-			List<String> groupList2 = banTimeRepository.findEveryGroup();
-			if(groupList2!=null) {
+			rereadSentenceRepository.deleteAll();
+			rereadTimeRepository.deleteAll();
+		}
+
+		@Scheduled(cron="0 0 0 ? * MON")
+		private void banReport(){
+			List<String> groupList = banTimeRepository.findEveryGroup();
+			if(groupList!=null) {
 				try {
-					for(String group_id:groupList2) {
+					for(String group_id:groupList) {
 						//得到群成员信息
 						GroupMsg gp = new GroupMsg();
 						gp.setGroup_id(Long.parseLong(group_id));
@@ -187,10 +192,7 @@ public class ScheduleTask {
 			}else {}
 
 			banTimeRepository.deleteAll();
-			rereadSentenceRepository.deleteAll();
-			rereadTimeRepository.deleteAll();
 		}
-
 		@Scheduled(cron="0 0 20,21,22 ? * SUN")
 		private void paoqiReport(){
 			List<String> groupList = monvTimeRepository.findEveryGroup();
