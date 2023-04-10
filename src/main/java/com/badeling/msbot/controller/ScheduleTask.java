@@ -139,7 +139,7 @@ public class ScheduleTask {
 			rereadTimeRepository.deleteAll();
 		}
 
-		@Scheduled(cron="0 0 0 ? * MON")
+		@Scheduled(cron="1 0 0 ? * MON")
 		private void banReport(){
 			List<String> groupList = banTimeRepository.findEveryGroup();
 			if(groupList!=null) {

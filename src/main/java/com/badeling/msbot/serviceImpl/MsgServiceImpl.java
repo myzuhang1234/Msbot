@@ -280,9 +280,9 @@ public class MsgServiceImpl implements MsgService{
 
 		//禁言信息
 		String checkResultImage = banService.getCheckResultImage(receiveMsg.getRaw_message());
-		String checkResult = banService.getCheckResult(receiveMsg.getRaw_message());
+		//String checkResult = banService.getCheckResult(receiveMsg.getRaw_message());
 
-		if (checkResult.equals("禁言") || checkResultImage.equals("禁言")){
+		if (checkResultImage.equals("禁言")){
 			Timestamp time_now = new Timestamp(System.currentTimeMillis());
 			SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 			String date_now = df.format(time_now);
@@ -340,7 +340,6 @@ public class MsgServiceImpl implements MsgService{
 			return replyMsg;
 		}
 
-		/**
 		List<MsgNoPrefix> result = msgNoPrefixRepository.findMsgNPList();
 		for(MsgNoPrefix m : result) {
 			if(m.isExact()&&receiveMsg.getRaw_message().contains(m.getQuestion())) {
@@ -400,7 +399,7 @@ public class MsgServiceImpl implements MsgService{
 					return replyMsg;
 				}
 			}
-		}**/
+		}
 
 		if (receiveMsg.getRaw_message().startsWith(MsbotConst.botName)) {
 			System.out.println(receiveMsg.toString());
