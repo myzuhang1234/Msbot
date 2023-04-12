@@ -277,17 +277,33 @@ public class MsgServiceImpl implements MsgService{
         		return null;
         	}
         }
+		//处理禁言延时
+		Timestamp time_now = new Timestamp(System.currentTimeMillis());
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+		String date_now = df.format(time_now);
+		BanTime banTime = banTimeRepository.findRoleBynumber(receiveMsg.getSender().getUser_id(),date_now,receiveMsg.getGroup_id());
+
+		if(banTime != null) {
+			long delay_time = (time_now.getTime()-banTime.getUpdateTime().getTime())/ 1000;
+			if (delay_time<=120){
+				String url = "http://127.0.0.1:5700/delete_msg";
+				JSONObject postData = new JSONObject();
+				postData.put("message_id",receiveMsg.getMessage_id());
+				RestTemplate client = new RestTemplate();
+				JSONObject json = client.postForEntity(url, postData, JSONObject.class).getBody();
+				System.out.println(json);
+				return null;
+			}
+		}
 
 		//禁言信息
 		String checkResultImage = banService.getCheckResultImage(receiveMsg.getRaw_message());
-		//String checkResult = banService.getCheckResult(receiveMsg.getRaw_message());
 
 		if (checkResultImage.equals("禁言")){
-			Timestamp time_now = new Timestamp(System.currentTimeMillis());
-			SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-			String date_now = df.format(time_now);
-
-			BanTime banTime = banTimeRepository.findRoleBynumber(receiveMsg.getSender().getUser_id(),date_now,receiveMsg.getGroup_id());
+			time_now = new Timestamp(System.currentTimeMillis());
+			df = new SimpleDateFormat("yyyy-MM-dd");
+			date_now = df.format(time_now);
+			banTime = banTimeRepository.findRoleBynumber(receiveMsg.getSender().getUser_id(),date_now,receiveMsg.getGroup_id());
 			if(banTime == null) {
 				//查询无角色
 				banTime = new BanTime();
@@ -349,11 +365,11 @@ public class MsgServiceImpl implements MsgService{
 				}
 				else if (m.getAnswer().equals("禁言")){
 
-					Timestamp time_now = new Timestamp(System.currentTimeMillis());
-					SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-					String date_now = df.format(time_now);
+					time_now = new Timestamp(System.currentTimeMillis());
+					df = new SimpleDateFormat("yyyy-MM-dd");
+					date_now = df.format(time_now);
 
-					BanTime banTime = banTimeRepository.findRoleBynumber(receiveMsg.getSender().getUser_id(),date_now,receiveMsg.getGroup_id());
+					banTime = banTimeRepository.findRoleBynumber(receiveMsg.getSender().getUser_id(),date_now,receiveMsg.getGroup_id());
 					if(banTime == null) {
 						//查询无角色
 						banTime = new BanTime();
@@ -2327,7 +2343,6 @@ public class MsgServiceImpl implements MsgService{
 			else {
 				replyMsg.setReply("宁是什么东西也配命令老娘？爬爬爬！");
 			}
-
 			return replyMsg;
 		}
 		//解除禁言
