@@ -10,6 +10,7 @@ import java.sql.Timestamp;
 import java.util.List;
 
 public interface BanTimeRepository extends CrudRepository<BanTime, Long> {
+    @Transactional
     @Query(value = "select * from ban_time where user_id = ?1 and date = ?2 and group_id=?3",nativeQuery=true)
     BanTime findRoleBynumber(String user_id, String date, String group_id );
 
@@ -19,7 +20,7 @@ public interface BanTimeRepository extends CrudRepository<BanTime, Long> {
     @Query(value = "SELECT * FROM ban_time WHERE user_id  =?1 AND group_id = ?2 AND (TO_DAYS(NOW()) - TO_DAYS(`date`) <=0) LIMIT 1",nativeQuery=true)
     BanTime findBanTimesTodayByGroup(String user_id, String group_id);
 
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Transactional
     @Query(value = "update ban_time set updated_at = ?2 where id = ?1",nativeQuery=true)
     void modifyUpdateTime(Long id, Timestamp updated_at);

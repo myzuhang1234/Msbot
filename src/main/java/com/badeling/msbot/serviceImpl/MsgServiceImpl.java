@@ -228,7 +228,7 @@ public class MsgServiceImpl implements MsgService{
 	    }
 
 	@Override
-	public ReplyMsg receive(String msg) {
+	public synchronized ReplyMsg receive(String msg) {
 		ReceiveMsg receiveMsg = null;
 		//判定是否有重复请求
 		TreeSet<String> msgList = GlobalVariable.getMsgList();
@@ -285,13 +285,13 @@ public class MsgServiceImpl implements MsgService{
 
 		if(banTime != null) {
 			long delay_time = (time_now.getTime()-banTime.getUpdateTime().getTime())/ 1000;
-			if (delay_time<=5 && banTime.getBan_times() != 1 ){
+			if (delay_time <= 15 && banTime.getBan_times() != 1 ){
+				System.out.println("message_id:"+receiveMsg.getMessage_id());
 				String url = "http://127.0.0.1:5700/delete_msg";
 				JSONObject postData = new JSONObject();
 				postData.put("message_id",receiveMsg.getMessage_id());
 				RestTemplate client = new RestTemplate();
 				JSONObject json = client.postForEntity(url, postData, JSONObject.class).getBody();
-				System.out.println(json);
 				return null;
 			}
 		}
@@ -300,9 +300,6 @@ public class MsgServiceImpl implements MsgService{
 		String checkResultImage = banService.getCheckResultImage(receiveMsg.getRaw_message());
 
 		if (checkResultImage.equals("禁言")){
-			time_now = new Timestamp(System.currentTimeMillis());
-			df = new SimpleDateFormat("yyyy-MM-dd");
-			date_now = df.format(time_now);
 			banTime = banTimeRepository.findRoleBynumber(receiveMsg.getSender().getUser_id(),date_now,receiveMsg.getGroup_id());
 			if(banTime == null) {
 				//查询无角色
@@ -325,10 +322,26 @@ public class MsgServiceImpl implements MsgService{
 				banTime.setUpdateTime(timestamp);
 				banTime.setDate(date_now);
 				banTime.setBan_times(0);
-				banTime = banTimeRepository.save(banTime);
+				banTimeRepository.save(banTime);
 			}
+
+			banTime = banTimeRepository.findRoleBynumber(receiveMsg.getSender().getUser_id(),date_now,receiveMsg.getGroup_id());
+
 			long delay_time = (time_now.getTime()-banTime.getUpdateTime().getTime())/ 1000;
-			if (delay_time<=5){
+
+			 df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+			System.out.println("time_now:"+ df.format(time_now.getTime()));
+			System.out.println("bantime:"+df.format(banTime.getUpdateTime().getTime()));
+			System.out.println("delay_time2:"+delay_time);
+
+			if (delay_time<=15){
+				System.out.println("message_id:"+receiveMsg.getMessage_id());
+				String url = "http://127.0.0.1:5700/delete_msg";
+				JSONObject postData = new JSONObject();
+				postData.put("message_id",receiveMsg.getMessage_id());
+				RestTemplate client = new RestTemplate();
+				JSONObject json = client.postForEntity(url, postData, JSONObject.class).getBody();
 				return null;
 			}
 			else {
@@ -337,10 +350,12 @@ public class MsgServiceImpl implements MsgService{
 						banTime.getBan_times()+1,
 						time_now
 				);
+				time_now = new Timestamp(System.currentTimeMillis());
 
-				BanTime banTime1 = banTimeRepository.findBanTimesTodayByGroup(receiveMsg.getSender().getUser_id(),receiveMsg.getGroup_id());
+				System.out.println("写入完成:"+df.format(time_now));
+
 				ReplyMsg replyMsg = new ReplyMsg();
-				if (banTime1.getBan_times()==1){
+				if (banTime.getBan_times()==1){
 					replyMsg.setReply("每日第一次禁言会被赦免,要乖噢～");
 				}
 				else {
@@ -363,7 +378,6 @@ public class MsgServiceImpl implements MsgService{
 		List<MsgNoPrefix> result = msgNoPrefixRepository.findMsgNPList();
 		for(MsgNoPrefix m : result) {
 			if(m.isExact()&&receiveMsg.getRaw_message().contains(m.getQuestion())) {
-				System.out.println(m.getAnswer());
 				if (m.getQuestion().contains("md") && receiveMsg.getRaw_message().contains("md5")){
 					break;
 				}
