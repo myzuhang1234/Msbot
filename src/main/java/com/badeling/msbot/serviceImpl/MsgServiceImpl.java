@@ -325,45 +325,32 @@ public class MsgServiceImpl implements MsgService{
 				banTimeRepository.save(banTime);
 			}
 
+			banTimeRepository.modifyUpdateBanTimes(
+					banTime.getId(),
+					banTime.getBan_times()+1,
+					time_now
+			);
 			banTime = banTimeRepository.findRoleBynumber(receiveMsg.getSender().getUser_id(),date_now,receiveMsg.getGroup_id());
 
-			long delay_time = (time_now.getTime()-banTime.getUpdateTime().getTime())/ 1000;
-
-			if (delay_time<=15){
-				String url = "http://127.0.0.1:5700/delete_msg";
-				JSONObject postData = new JSONObject();
-				postData.put("message_id",receiveMsg.getMessage_id());
-				RestTemplate client = new RestTemplate();
-				JSONObject json = client.postForEntity(url, postData, JSONObject.class).getBody();
-				return null;
+			ReplyMsg replyMsg = new ReplyMsg();
+			if (banTime.getBan_times()==1){
+					replyMsg.setReply("每日第一次禁言会被赦免,要乖噢～");
 			}
 			else {
-				banTimeRepository.modifyUpdateBanTimes(
-						banTime.getId(),
-						banTime.getBan_times()+1,
-						time_now
-				);
-
-				banTime = banTimeRepository.findRoleBynumber(receiveMsg.getSender().getUser_id(),date_now,receiveMsg.getGroup_id());
-				ReplyMsg replyMsg = new ReplyMsg();
-				if (banTime.getBan_times()==1){
-					replyMsg.setReply("每日第一次禁言会被赦免,要乖噢～");
-				}
-				else {
-					List<BanTime> list = banTimeRepository.findBanTimesByGroup(receiveMsg.getSender().getUser_id(),receiveMsg.getGroup_id());
-					int ban_times=0;
-					for (int i =0; i < list.size(); i++) {
+				List<BanTime> list = banTimeRepository.findBanTimesByGroup(receiveMsg.getSender().getUser_id(),receiveMsg.getGroup_id());
+				int ban_times=0;
+				for (int i =0; i < list.size(); i++) {
 						ban_times += list.get(i).getBan_times();
-					}
-					replyMsg.setBan_duration((ban_times/5+1)*30*60);
-					replyMsg.setBan(true);
-					replyMsg.setReply("[CQ:image,file=save/AB59F6053D317B67646AA3B363B87415]");
 				}
-				replyMsg.setAt_sender(true);
-				replyMsg.setAuto_escape(false);
-				System.out.println(replyMsg);
-				return replyMsg;
+				replyMsg.setBan_duration((ban_times/5+1)*30*60);
+				replyMsg.setBan(true);
+				replyMsg.setReply("[CQ:image,file=save/AB59F6053D317B67646AA3B363B87415]");
 			}
+			replyMsg.setAt_sender(true);
+			replyMsg.setAuto_escape(false);
+			System.out.println(replyMsg);
+			return replyMsg;
+
 		}
 
 		List<MsgNoPrefix> result = msgNoPrefixRepository.findMsgNPList();
@@ -399,7 +386,6 @@ public class MsgServiceImpl implements MsgService{
 						banTime.setBan_times(0);
 						banTime = banTimeRepository.save(banTime);
 					}
-
 					banTimeRepository.modifyUpdateBanTimes(
 							banTime.getId(),
 							banTime.getBan_times()+1,
