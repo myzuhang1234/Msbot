@@ -335,7 +335,7 @@ public class MsgServiceImpl implements MsgService{
 			System.out.println("bantime:"+df.format(banTime.getUpdateTime().getTime()));
 			System.out.println("delay_time2:"+delay_time);
 
-			if (delay_time<=15){
+			if (delay_time<=15 && banTime.getBan_times() != 1){
 				System.out.println("message_id:"+receiveMsg.getMessage_id());
 				String url = "http://127.0.0.1:5700/delete_msg";
 				JSONObject postData = new JSONObject();
