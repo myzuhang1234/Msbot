@@ -13,12 +13,10 @@ import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.badeling.msbot.config.MsbotConst;
 import com.badeling.msbot.domain.ChannelReplyMsg;
 import com.badeling.msbot.domain.GroupMsg;
-import com.badeling.msbot.domain.NoticeMsg;
 import com.badeling.msbot.domain.PrivateMsg;
 import com.badeling.msbot.domain.Result;
 import com.badeling.msbot.service.GroupMsgService;
@@ -28,7 +26,6 @@ public class GroupMsgServiceImpl implements GroupMsgService{
 
 	@Autowired
     RestTemplate restTemplate;
-	
 	
 //  @LoadBalanced
 	@Bean
@@ -68,7 +65,13 @@ public class GroupMsgServiceImpl implements GroupMsgService{
 		Result<?> result = restTemplate.postForObject("http://127.0.0.1:5700/send_guild_channel_msg", channelReplyMsg, Result.class);
         return result;
 	}
-
+	
+	@Override
+	public Result<?> getGroupList() {
+		Result<?> result = restTemplate.postForObject("http://127.0.0.1:5700/get_group_list", null, Result.class);
+        return result;
+	}
+	
 	@Override
 	public Result<?> getGroupMember(GroupMsg groupMsg) {
 		Result<?> result = restTemplate.postForObject("http://127.0.0.1:5700/get_group_member_list", groupMsg, Result.class);

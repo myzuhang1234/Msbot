@@ -3,35 +3,26 @@ package com.badeling.msbot.serviceImpl;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
 import javax.imageio.ImageIO;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.alibaba.fastjson.JSON;
 import com.badeling.msbot.config.MsbotConst;
 import com.badeling.msbot.controller.NewImageUtils;
-import com.badeling.msbot.domain.Photo;
-import com.badeling.msbot.entity.Friends;
-import com.badeling.msbot.repository.FriendsRepository;
 import com.badeling.msbot.service.DrawService;
+import com.badeling.msbot.service.MvpImageService;
 import com.badeling.msbot.util.Loadfont;
 import com.badeling.msbot.util.Loadfont2;
 
@@ -48,392 +39,8 @@ import java.awt.geom.AffineTransform;
 public class DrawServiceImpl implements DrawService{
 	
 	@Autowired
-	FriendsRepository friendsRepository;
+	MvpImageService mvpImageService;
 	
-	public static void main(String[] args) throws Exception {
-		String a1 = "您今日的运势指数为★☆☆☆☆";
-		String a2 = "运势最好的频道是7频道哦！";
-		String a3 = "寒风水冷隐作痛，鸡犬相闻闹晨曦。";
-		String a4 = "宜：爬起源之塔";
-		String a5 = "喜提4级克制之戒";
-		String a6 = "忌：肝活动";
-		String a7 = "这活动是人玩的吗？？";
-		String a8 = "今日最佳玄学地图是：";
-		String a9 = "林中之城，韧性之林";
-		
-		String roleUrl = "";
-		
-		File f = new File("D:\\go-cqhttp\\data\\images\\class");
-		File[] listFiles = f.listFiles();
-		for(File file : listFiles) {
-			roleUrl = file.getParent() + "\\" +file.getName();
-			System.out.println(roleUrl);
-			String imageUrl = "D:\\go-cqhttp\\data\\images\\zb\\19.jpg";
-			String sourceFilePath = MsbotConst.imageUrl + "zb/background.png";
-
-			String uuid = UUID.randomUUID().toString().replaceAll("-", "");
-	        String saveFilePath = MsbotConst.imageUrl + uuid +".png";
-	        BufferedImage sourceFile = ImageIO.read(new File(sourceFilePath));
-	        
-	        //紫色条形框
-	        BufferedImage buffImg1 = ImageIO.read(new File(MsbotConst.imageUrl + "zb/a1.png"));
-	        
-	        //人物
-	        BufferedImage roleImg = ImageIO.read(new File(roleUrl));
-	        roleImg = NewImageUtils.resizeBufferedImage(roleImg,188,210,false);
-	        sourceFile = watermark(sourceFile, roleImg , 550, 30, 1.0f);
-	        
-	        //地图
-	        BufferedImage mapImg = ImageIO.read(new File(imageUrl));
-	        mapImg = NewImageUtils.resizeBufferedImage(mapImg,370,180,false);
-	        mapImg = NewImageUtils.setRadius(mapImg,30,0,0);
-	        sourceFile = watermark(sourceFile, buffImg1 , 450, 230, 1.0f);
-	        sourceFile = watermark(sourceFile, mapImg , 460, 350, 1.0f);
-	        
-	        
-	        Graphics2D g = sourceFile.createGraphics();
-	        Font font = Loadfont2.Font(22);
-	        g.setFont(font);
-	        g.setColor(new Color(230,230,230));
-	        //指数
-	        g.drawString(a1,65,65);
-	        //频道
-	        g.drawString(a2,65,65+65);
-	        //事件
-	       
-	        if(a3.length()>16) {
-	        	 g.drawString(a3.substring(0,16),65,65+65+35);
-	        	 g.drawString(a3.substring(16),65,65+65+35+35);
-	        }else {
-	        	 g.drawString(a3,65,65+65+35);
-	        }
-	        //宜
-	        g.drawString(a4,65,65+65+30+110);
-	        //宜事件
-	        if(a5.length()>16) {
-	        	g.drawString(a5.substring(0,16),65,65+65+30+110+35);
-	            g.drawString(a5.substring(16),65,65+65+30+110+35+35);
-	        }else {
-	        	g.drawString(a5,65,65+65+30+110+35);
-	        }
-	        
-	        
-	        //忌
-	        g.drawString(a6,65,65+65+30+110+30+130);
-	        //忌事件
-	        if(a7.length()>16) {
-	        	g.drawString(a7.substring(0,16),65,65+65+30+110+30+130+35);
-	            g.drawString(a7.substring(16),65,65+65+30+110+30+130+35+35);
-	        }else {
-	        	g.drawString(a7,65,65+65+30+110+30+130+35);
-	        }
-	        
-	        
-	        //地图
-	        g.drawString(a8,480,65+65+30+110);
-	        //地图名
-	        g.drawString(a9,480,65+65+30+110+35);
-	        
-	        g.dispose();
-	        
-//	        buffImg = resizeBufferedImage(buffImg,buffImg.getWidth()/2,buffImg.getHeight()/2,true);
-	     // TYPE_INT_RGB:创建一个RBG图像，24位深度，成功将32位图转化成24位
-	        BufferedImage newBufferedImage = new BufferedImage(
-	        		sourceFile.getWidth(), sourceFile.getHeight(),
-	                BufferedImage.TYPE_INT_RGB);
-	        newBufferedImage.createGraphics().drawImage(sourceFile, 0, 0,
-	            Color.WHITE, null);
-	        // write to jpeg file
-//	        ImageIO.write(newBufferedImage, "jpg", new File(MsbotConst.imageUrl + "bfb/mn1.jpg"));
-	        ImageIO.write(newBufferedImage, "jpg", new File(MsbotConst.imageUrl +uuid +".jpg"));
-	        generateWaterFile(newBufferedImage, saveFilePath);
-		}
-		
-	}
-	
-	
-	
-	@Override
-	public String startDraw() throws Exception {
-		Random r = new Random();
-        HashSet<Integer> rr = new HashSet<>();
-		boolean has4Frends =false;
-        //系统生成随机数
-        while (rr.size() < 10) {
-        	int i = r.nextInt(10000)+1;
-        	if(i<200) {
-        		has4Frends = true;
-        	}
-            rr.add(i);
-        }
-		//创建浮莲子
-		String sourceFilePath;
-		if(has4Frends) {
-			sourceFilePath = MsbotConst.imageUrl + "kf3/" + "2.png";
-		}else {
-			sourceFilePath = MsbotConst.imageUrl + "kf3/" + "1.png";
-		}
-		String uuid = UUID.randomUUID().toString().replaceAll("-", "");
-        String saveFilePath = MsbotConst.imageUrl + uuid +".png";
-        BufferedImage sourceFile = ImageIO.read(new File(sourceFilePath));
-        BufferedImage buffImg = null;
-        //获取各个等级浮莲子的数量
-        int f2 = Integer.parseInt(friendsRepository.getFriendsNum("2"));
-        int f3 = Integer.parseInt(friendsRepository.getFriendsNum("3"));
-        int f4 = Integer.parseInt(friendsRepository.getFriendsNum("4"));
-        int p2 = Integer.parseInt(friendsRepository.getPhotoNum("2"));
-        int p3 = Integer.parseInt(friendsRepository.getPhotoNum("3"));
-        int p4 = Integer.parseInt(friendsRepository.getPhotoNum("4"));
-		 // 构建叠加层
-        int count =1;
-        for(int random:rr){
-        	
-			Friends f;
-			if(count<9) {
-				if(random<200) {
-					int random2 = r.nextInt(f4);
-					f = friendsRepository.findFriendsByStar("4",random2);
-				}else if(random<200+400) {
-					int random2 = r.nextInt(f3);
-					f = friendsRepository.findFriendsByStar("3",random2);
-				}else if(random<200+400+2500) {
-					int random2 = r.nextInt(f2);
-					f = friendsRepository.findFriendsByStar("2",random2);
-				}else if(random<200+400+2500+700) {
-					int random2 = r.nextInt(p4);
-					f = friendsRepository.findPhotoByStar("4",random2);
-				}else if(random<200+400+2500+700+2000) {
-					int random2 = r.nextInt(p3);
-					f = friendsRepository.findPhotoByStar("3",random2);
-				}else {
-					int random2 = r.nextInt(p2);
-					f = friendsRepository.findPhotoByStar("2",random2);
-				}
-			}else if(count==9){
-				if(random<200) {
-					int random2 = r.nextInt(f4);
-					f = friendsRepository.findFriendsByStar("4",random2);
-				}else if(random<200+400) {
-					int random2 = r.nextInt(f3);
-					f = friendsRepository.findFriendsByStar("3",random2);
-				}else{
-					int random2 = r.nextInt(f2);
-					f = friendsRepository.findFriendsByStar("2",random2);
-				}
-			}else {
-				if(random<200) {
-					int random2 = r.nextInt(f4);
-					f = friendsRepository.findFriendsByStar("4",random2);
-				}else if(random<200+2900) {
-					int random2 = r.nextInt(f3);
-					f = friendsRepository.findFriendsByStar("3",random2);
-				}else if(random<200+2900+700) {
-					int random2 = r.nextInt(p4);
-					f = friendsRepository.findPhotoByStar("4",random2);
-				}else{
-					int random2 = r.nextInt(p3);
-					f = friendsRepository.findPhotoByStar("3",random2);
-				}
-			}
-        	BufferedImage friends = createFriends(f.getId(),f.getAtr(),f.getStar(),f.getStarBlank());
-       	 if(count<=5) {
-       		 buffImg = NewImageUtils.watermark(sourceFile, friends, 141+210*(count-1) , 179, 1.0f);
-       	 }else {
-       		 buffImg = NewImageUtils.watermark(sourceFile, friends, 141+210*(count-6) , 369, 1.0f);
-       	 }
-   		 count = count + 1;
-        }
-//        buffImg = resizeBufferedImage(buffImg,buffImg.getWidth()/2,buffImg.getHeight()/2,true);
-     // TYPE_INT_RGB:创建一个RBG图像，24位深度，成功将32位图转化成24位
-        BufferedImage newBufferedImage = new BufferedImage(
-        		buffImg.getWidth(), buffImg.getHeight(),
-                BufferedImage.TYPE_INT_RGB);
-        newBufferedImage.createGraphics().drawImage(buffImg, 0, 0,
-            Color.WHITE, null);
-        // write to jpeg file
-        ImageIO.write(newBufferedImage, "jpg", new File(MsbotConst.imageUrl + uuid +".jpg"));
-        generateWaterFile(newBufferedImage, saveFilePath);
-		return "[CQ:image,file=" + uuid +".jpg]";
-	}
-	
-	//生成十连图片
-	private BufferedImage createFriends(String id,String atr,String Star,String Star_blank) throws Exception {
-		String sourceFilePath = MsbotConst.imageUrl + "kf3/" + "charaicon_base.png";
-		String waterFilePath;
-		if(Star_blank.equals("0")) {
-			waterFilePath = MsbotConst.imageUrl + "kf3/" + "icon_photo_" + id + ".png";
-		}else {
-			waterFilePath = MsbotConst.imageUrl + "kf3/" + "icon_chara_" + id + ".png";
-		}
-        // 构建叠加层
-        BufferedImage buffImg = NewImageUtils.watermark(new File(sourceFilePath), new File(waterFilePath), 0, 0, 1.0f);
-        //加属性
-        waterFilePath = MsbotConst.imageUrl + "kf3/" + "icon_atr_"+ atr +".png";
-        buffImg = NewImageUtils.watermark(buffImg, new File(waterFilePath), 5, 5, 1.0f);
-        //加边框
-        if(Star_blank.equals("0")) {
-        	waterFilePath = MsbotConst.imageUrl + "kf3/" + "charaicon_frame.png";
-        }else {
-        	waterFilePath = MsbotConst.imageUrl + "kf3/" + "charaicon_frame_kiseki.png";
-        }
-        buffImg = NewImageUtils.watermark(buffImg, new File(waterFilePath), 0, 0, 1.0f);
-        //加星星
-	     BufferedImage starImg = makeStar(Integer.parseInt(Star),Integer.parseInt(Star_blank));
-        buffImg = NewImageUtils.watermark(buffImg, starImg , 0, 135, 1.0f);
-        // 输出水印图片
-//        generateWaterFile(buffImg, saveFilePath);
-		return buffImg;
-	}
-
-
-	//抓取浮莲子的数据
-	@Override
-	public String updateFriends() {
-		String url = "https://sandstar.site/kf3_db/friends/";
-		String returnMsg = "增加数据";
-		String addMsg = "";
-		int countFriends = 0;
-		try {
-			Document doc = Jsoup.connect(url).get();
-			Elements elements = doc.select("div[class~=^friends-grid]");
-
-			for(Element ele : elements) {
-				String content = ele.toString();
-				Friends friends = new Friends();
-				int index1 = content.indexOf("alt");
-				int count = 0;
-				int starNum = 0;
-				int starBlankNum = 0;
-				while(true) {
-					index1 = content.indexOf("alt",index1);
-					if(index1 == -1) {
-						break;
-					}
-					int index2 = content.indexOf("\"",index1+1);
-					int index3 = content.indexOf("\"",index2+1);
-					if(count==1) {
-						friends.setId(content.substring(index2+1, index3));
-					}else if(count==3) {
-						friends.setAtr(content.substring(index2+1, index3));
-					}else if(count>3) {
-						String a = content.substring(index2+1, index3);
-						if(a.contains("★")) {
-							starNum = starNum + 1;
-						}else if(a.contains("☆")) {
-							starBlankNum = starBlankNum + 1;
-						}else {
-							
-						}
-						
-					}
-					count = count + 1;
-					index1 = index3;
-				}
-				
-				friends.setStar(starNum+"");
-				friends.setStarBlank(starBlankNum+"");
-				friends.setName(content.substring(content.indexOf("<b>")+3,content.indexOf("</b>")));
-				if(!friends.getId().contains("★")&&!friends.getAtr().contains("★")) {
-					Friends findById = friendsRepository.findFriendsById(friends.getId());
-					if(findById==null) {
-						friendsRepository.save(friends);
-						countFriends = countFriends + 1;
-						addMsg = addMsg + "\r\nID:" +  friends.getId()+ " rare:" + friends.getStar() + " name:" + friends.getName();
-					}
-				}
-				
-			}
-		} catch (Exception e) {
-			System.out.println("err");
-		}
-		returnMsg = returnMsg + countFriends + "条" + addMsg;
-		return returnMsg;
-	}
-	
-	//抓取照片的数据
-	@Override
-	public String updatePhoto() {
-		StringBuilder json = new StringBuilder();
-		String returnMsg = "增加数据";
-		String addMsg = "";
-		int count = 0;
-        try {  
-            URL urlObject = new URL("https://sandstar.site/static/kf3_db/photo/PHOTO_DATA_cn.json");  
-            URLConnection uc = urlObject.openConnection();  
-            BufferedReader in = new BufferedReader(new InputStreamReader(uc.getInputStream(),"UTF-8"));  
-            String inputLine = null;  
-            while ( (inputLine = in.readLine()) != null) {  
-                json.append(inputLine);  
-            }  
-            in.close();  
-        } catch (Exception e) {  
-            System.out.println(e);
-        }
-        String jsonData = json.toString().replace(" ", "");
-        List<Photo> list = JSON.parseArray(jsonData, Photo.class);
-        for(Photo a:list) {
-        	Friends friends = new Friends();
-        	if(a.getHead().equals("0")||a.getLevel().equals("0")) {
-        		continue;
-        	}
-        	friends.setId(a.getId());
-        	if(a.getType().equals("1")) {
-        		friends.setAtr("parameter");
-        	}else if(a.getType().equals("2")){
-        		friends.setAtr("ability");
-        	}else {
-        		continue;
-        	}
-        	friends.setStar(a.getRarity());
-        	friends.setStarBlank("0");
-        	friends.setName(a.getName());
-        	
-			Friends findById = friendsRepository.findFriendsById(friends.getId());
-			if(findById==null) {
-				friendsRepository.save(friends);
-				addMsg = addMsg + "\r\nID:" +  friends.getId()+ " rare:" + friends.getStar() + " name:" + friends.getName();
-				count = count + 1;
-			}
-			
-        }
-        returnMsg = returnMsg + count + "条" + addMsg;
-		return returnMsg;
-		
-	}
-	//创建星星
-	private static BufferedImage makeStar(int i, int j) throws Exception {
-		String sourceFilePath = MsbotConst.imageUrl + "kf3/" + "star" + (i+j) +".png";
-        String waterFilePath = MsbotConst.imageUrl + "kf3/" + "icon_rankstar.png";
-        String waterFilePath_b = MsbotConst.imageUrl + "kf3/" + "icon_rankstar_blank.png";
-        BufferedImage background = ImageIO.read(new File(sourceFilePath));
-        BufferedImage star = ImageIO.read(new File(waterFilePath));
-        BufferedImage star_b = ImageIO.read(new File(waterFilePath_b));
-		//画的总星
-		int count = 1;
-		//画的实星
-		int count_true = 1;
-        // 构建叠加层
-        BufferedImage buffImg = NewImageUtils.watermark(background, star , (162-27*(i+j))/2 + 27*count, 0, 1.0f);
-//		BufferedImage buffImg = NewImageUtils.watermark(new File(sourceFilePath), new File(waterFilePath) , 0, 0, 1.0f);
-        while(count<i+j) {
-        	if(count_true<i) {
-        		buffImg = NewImageUtils.watermark(buffImg, star, (162-27*(i+j))/2 + 27*count , 0, 1.0f);
-        		count = count + 1;
-        		count_true = count_true + 1;
-        	}else {
-        		buffImg = NewImageUtils.watermark(buffImg, star_b, (162-27*(i+j))/2 + 27*count , 0, 1.0f);
-        		count = count + 1;
-        	}
-        }
-	return buffImg;
-}
-
-
-
-
-
-
-
 	/**
 	      * 
 	      * @Title: 构造图片
@@ -541,7 +148,8 @@ public class DrawServiceImpl implements DrawService{
 //     return buffImg;
 //}
 
-	 	private static BufferedImage resizeBufferedImage(BufferedImage source, int targetW, int targetH, boolean flag) {
+	 	@SuppressWarnings("unused")
+		private static BufferedImage resizeBufferedImage(BufferedImage source, int targetW, int targetH, boolean flag) {
 	 		int type = source.getType();
 	 		BufferedImage target = null;
 	 		double sx = (double) targetW / source.getWidth();
@@ -828,6 +436,7 @@ public class DrawServiceImpl implements DrawService{
 //	        ImageIO.write(newBufferedImage, "jpg", new File(CoolQconst.imageUrl + uuid +".jpg"));
 	        ImageIO.write(sourceFile, "jpg", new File(saveFilePath));
 	        generateWaterFile(sourceFile, saveFilePath);
+	        g.dispose();
 			return "[CQ:image,file=" + uuid +".jpg]";
 		}
 
@@ -992,4 +601,311 @@ public class DrawServiceImpl implements DrawService{
 		}
 
 
+
+		@Override
+		public String drawRankImage(Map<String, Object> mapler) throws Exception {
+			//判断是否有经验数据
+			@SuppressWarnings("unchecked")
+			List<Map<String,Object>> gd = (List<Map<String, Object>>) mapler.get("GraphData");
+			String sourceFilePath = MsbotConst.imageUrl + "lm/background2.jpg";
+			if(gd!=null&&gd.size()>1) {
+				sourceFilePath = MsbotConst.imageUrl + "lm/background1.jpg";
+			}
+			String uuid = UUID.randomUUID().toString().replaceAll("-", "");
+	        String saveFilePath = MsbotConst.imageUrl + uuid +".png";
+	        BufferedImage sourceFile = ImageIO.read(new File(sourceFilePath));
+	        
+	        String imageUrl = (String) mapler.get("CharacterImageURL");
+	        List<String> images = new ArrayList<>();
+	        images.add(imageUrl);
+	        BufferedImage imageImg = null;
+	        if(imageUrl!=null) {
+	        	try {
+	        		String imageName = mvpImageService.saveTempImage(imageUrl);
+	        		imageImg = ImageIO.read(new File(MsbotConst.imageUrl + imageName));
+//	        		imageImg = ImageIO.read(new File("D:\\go-cqhttp\\data\\images\\lm\\1.png"));
+	        		imageImg = NewImageUtils.mirrorImage(imageImg);
+	        		imageImg = NewImageUtils.resizeBufferedImage(imageImg, 200, 200, true);
+	        		sourceFile = watermark(sourceFile, imageImg , 75, 25, 1.0f);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+	        
+	        Graphics2D g = sourceFile.createGraphics();
+	        Font font = Loadfont2.Font(22);
+	        g.setFont(font);
+	        g.setColor(new Color(0,0,0));
+	        
+	        int startX = 65;
+	        int startY = 265;
+//	        int intervalX = 
+	        int interval = 30;
+	        
+	        g.drawString("角色：" + mapler.get("Name"),startX,startY);
+	        g.drawString("服务器：" + mapler.get("Server"),startX,startY+interval*2);
+	        g.drawString("等级：" + mapler.get("Level") + " - " + mapler.get("EXPPercent") + "%",startX,startY+interval*4);
+	        g.drawString("(排名" + mapler.get("ServerRank") + ")",startX,startY+interval*5);
+	        g.drawString("职业：" + mapler.get("Class"),startX,startY+interval*6);
+	        g.drawString("(排名" + mapler.get("ServerClassRanking") +")",startX,startY+interval*7);
+			
+	        
+	        if(mapler.get("LegionCoinsPerDay")==null) {
+				g.drawString("非联盟最高角色，无法查",startX,startY+interval*9);
+				g.drawString("询联盟信息",startX,startY+interval*10);
+			}else {
+				g.drawString("联盟等级：" + mapler.get("LegionLevel"),startX,startY+interval*8);
+				g.drawString("(排名" + mapler.get("LegionRank") +")",startX,startY+interval*9);
+				g.drawString("联盟战斗力：" + mapler.get("LegionPower"),startX,startY+interval*10);
+				g.drawString("(每天" + mapler.get("LegionCoinsPerDay") +"币)",startX,startY+interval*11);
+			}
+	        
+	        
+	        startX = 425;
+	        startY = 265;
+	        
+	        if(gd!=null) {
+				Long expYesterday = Long.parseLong("0");
+		        Long expLastWeek = Long.parseLong("0");
+		        Long totalOverallExp = Long.parseLong("0");
+		        Long maxExp = Long.parseLong("0");
+		        int count = 0;
+				Collections.reverse(gd);
+				//角色图
+				try {
+					for(Map<String,Object> temp : gd) {
+						String avatar = temp.get("AvatarURL")+"";
+						if(!images.contains(avatar)) {
+							images.add(avatar);
+						}
+					}
+					if(images.size()==1) {
+						imageImg = NewImageUtils.mirrorImage(imageImg);
+		        		sourceFile = watermark(sourceFile, imageImg , 425, 25, 1.0f);
+					}else {
+						Random r = new Random();
+						int a = r.nextInt(images.size()-1)+1;
+						imageUrl = images.get(a);
+		        		try {
+		        			String imageName = mvpImageService.saveTempImage(imageUrl);
+		        			imageImg = ImageIO.read(new File(MsbotConst.imageUrl + imageName));
+						} catch (Exception e) {
+							imageImg = NewImageUtils.mirrorImage(imageImg);
+						}
+//						imageImg = ImageIO.read(new File("D:\\go-cqhttp\\data\\images\\lm\\1.png"));
+		        		imageImg = NewImageUtils.resizeBufferedImage(imageImg, 200, 200, true);
+		        		sourceFile = watermark(sourceFile, imageImg , 425, 25, 1.0f);
+					}
+				} catch (Exception e) {
+					System.out.println("角色2图加载失败");
+				}
+				
+				//经验
+				for(int i=0;i<gd.size()-1;i++) {
+					if(count<7) {
+						Long exp = Long.parseLong(gd.get(i+1).get("EXPDifference")+"");
+						Long exp2 = Long.parseLong("0");
+						
+						if(i==0) {
+							expYesterday = exp;
+							totalOverallExp = Long.parseLong(gd.get(0).get("TotalOverallEXP")+"");
+							System.out.println("当前经验"+totalOverallExp);
+						}
+						if(maxExp<exp) {
+							maxExp = exp;
+						}
+						expLastWeek = expLastWeek + exp;
+						
+						String expString = exp+"";
+						if(exp>10000) {
+							exp2 = exp%10000/100;
+							exp = exp/10000;
+							expString = exp + "."+exp2+"w";
+							if(exp>10000) {
+								exp2 = exp%10000/100;
+								exp = exp/10000;
+								expString = exp + "."+exp2+"e";
+								if(exp>10000) {
+									exp2 = exp%10000/100;
+									exp = exp/10000;
+									expString = exp + "."+exp2+"t";
+								}
+							}
+						}
+						g.drawString(gd.get(i).get("DateLabel") + ":" + expString,startX,startY);
+						startY = startY + 30;
+						count++;
+					}else {
+						break;
+					}
+				}
+				if(gd.size()>1) {
+					int nextLevel = nextLevel(Integer.parseInt(mapler.get("Level")+""));
+					Long nextExp = nextLevelExp(nextLevel);
+					String day1 = null;
+					if(expYesterday==0l) {
+						day1 = "∞";
+					}else {
+						day1 = (nextExp - totalOverallExp)/expYesterday + "";
+					}
+					g.drawString("按照最近1天的进度，还需要"+day1+"天到达"+nextLevel+"级",startX,startY);
+					startY = startY + 30;
+					if(count>1) {
+						String day2 = null;
+						if(expLastWeek/count==0l) {
+							day2 = "∞";
+						}else {
+							day2 = (nextExp - totalOverallExp)/(expLastWeek/count)+"";
+						}
+						g.drawString("按照最近"+count+"天的进度，还需要"+day2+"天到达"+nextLevel+"级",startX,startY);
+						startY = startY + 30;
+					}
+					if(nextLevel<300) {
+						nextExp = nextLevelExp(300);
+						String day3 = null;
+						if(maxExp==0l){
+							day3 = "∞";
+						}else {
+							day3 = (nextExp - totalOverallExp)/maxExp + "";
+						}
+						
+						startY = startY + 30;
+						g.drawString("按照目前的进度，还需要"+day3+"天到达"+"300级",startX,startY);
+						
+					}
+				}
+			}
+			
+			
+
+	        //事件
+	        g.dispose();
+	        
+//	        buffImg = resizeBufferedImage(buffImg,buffImg.getWidth()/2,buffImg.getHeight()/2,true);
+	     // TYPE_INT_RGB:创建一个RBG图像，24位深度，成功将32位图转化成24位
+	        BufferedImage newBufferedImage = new BufferedImage(
+	        		sourceFile.getWidth(), sourceFile.getHeight(),
+	                BufferedImage.TYPE_INT_RGB);
+	        newBufferedImage.createGraphics().drawImage(sourceFile, 0, 0,
+	            Color.WHITE, null);
+	        // write to jpeg file
+//	        ImageIO.write(newBufferedImage, "jpg", new File(MsbotConst.imageUrl + "bfb/mn1.jpg"));
+	        ImageIO.write(newBufferedImage, "jpg", new File(MsbotConst.imageUrl +uuid +".jpg"));
+	        generateWaterFile(newBufferedImage, saveFilePath);
+	        return "[CQ:image,file=" + uuid +".jpg]";
+			
+		}
+		
+		@Override
+		public String getRankList(List<String> richList, List<String> poorList) throws Exception {
+			 //画一个圆角矩形
+//	      g.drawRoundRect(10,10,150,70,40,25);
+	      //涂一个圆角矩形块
+//	      g.fillRoundRect(80,100,150,70,60,40);
+			
+			//创建图片对象
+	        BufferedImage image = new BufferedImage(900, 400, BufferedImage.TYPE_INT_RGB);
+	        Graphics2D g = image.createGraphics();
+	        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+	        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+	        Font font = Loadfont2.Font(22);
+	        Font font2 = Loadfont2.Font(14);
+	        g.setBackground(new Color(247,250,231));
+	        g.clearRect(0,0,image.getWidth(),image.getHeight());
+	        
+	        g.setColor(new Color(230,245,252));
+	        g.fillRoundRect(33,20,400,360,40,25);
+	        g.setColor(new Color(0,0,0));
+	        g.setFont(font);
+	        g.drawString("排行榜", 180,50);
+	        g.setFont(font2);
+	        for(int i=0;i<richList.size();i++) {
+	        	g.drawString(richList.get(i), 60, 50+28*(i+1));
+	        }
+	        
+	        g.setColor(new Color(230,245,252));
+	        g.fillRoundRect(466,20,400,360,40,25);
+	        g.setColor(new Color(0,0,0));
+	        g.setFont(font);
+	        g.drawString("负债榜", 180+433,50);
+	        g.setFont(font2);
+	        for(int i=0;i<poorList.size();i++) {
+	        	g.drawString(poorList.get(i), 60+433, 50+28*(i+1));
+	        }
+	        g.dispose();
+	        
+	        String uuid = UUID.randomUUID().toString().replaceAll("-", "");
+	        ImageIO.write(image, "jpg", new File(MsbotConst.imageUrl +uuid +".jpg"));
+//	        generateWaterFile(image, saveFilePath);
+	        return "[CQ:image,file=" + uuid +".jpg]";
+		}
+		
+		private static int nextLevel(int level) {
+			if(level<220) {
+				return 220;
+			}
+			if(level<230) {
+				return 230;
+			}
+			if(level<240) {
+				return 240;
+			}
+			if(level<250) {
+				return 250;
+			}
+			if(level<260) {
+				return 260;
+			}
+			if(level<270) {
+				return 270;
+			}
+			if(level<275) {
+				return 275;
+			}
+			if(level<280) {
+				return 280;
+			}
+			if(level<285) {
+				return 285;
+			}
+			if(level<290) {
+				return 290;
+			}
+			if(level<295) {
+				return 295;
+			}
+			return 300;
+		}
+		private static Long nextLevelExp(int level) {
+			switch (level) {
+			case 220:
+				return 226834057694l;
+			case 230:
+				return 888805728115l;
+			case 240:
+				return 2780379685705l;
+			case 250:
+				return 7764453421743l;
+			case 260:
+				return 19276710581130l;
+			case 270:
+				return 49642521336419l;
+			case 275:
+				return 82351036260243l;
+			case 280:
+				return 164638698169785l;
+			case 285:
+				return 408002977089330l;
+			case 290:
+				return 1127748451436850l;
+			case 295:
+				return 3256382736401070l;
+			case 300:
+				return 10100775367634700l;
+			default:
+				return 0l;
+			}
+		}
+
+		
 }

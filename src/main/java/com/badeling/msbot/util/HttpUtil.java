@@ -49,7 +49,8 @@ public class HttpUtil {
         return HttpUtil.postGeneralUrl(url, contentType, params, encoding);
     }
 
-    public static String postGeneralUrl(String generalUrl, String contentType, String params, String encoding)
+    @SuppressWarnings("unused")
+	public static String postGeneralUrl(String generalUrl, String contentType, String params, String encoding)
             throws Exception {
         URL url = new URL(generalUrl);
         

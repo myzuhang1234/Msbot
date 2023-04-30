@@ -1,5 +1,6 @@
 package com.badeling.msbot.entity;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -11,8 +12,10 @@ public class Msg {
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
 	private String question;
+	@Column(name="answer",columnDefinition="VARCHAR(1275)")
 	private String answer;
 	private String createId;
+	@Column(name="link",columnDefinition="VARCHAR(1275)")
 	private String link;
 	public Msg() {
 		

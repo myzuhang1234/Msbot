@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 
 import com.badeling.msbot.domain.ChannelReplyMsg;
 import com.badeling.msbot.domain.GroupMsg;
-import com.badeling.msbot.domain.NoticeMsg;
 import com.badeling.msbot.domain.PrivateMsg;
 import com.badeling.msbot.domain.Result;
 
@@ -21,6 +20,8 @@ public interface GroupMsgService {
 	
 	Result<?> sendChannelMsg(ChannelReplyMsg channelReplyMsg);
 	
+	Result<?> getGroupList();
+	
 	Result<?> getGroupMember(GroupMsg groupMsg);
 
 	Result<?> deleteMsg(HashMap<String, Integer> map);
@@ -30,4 +31,6 @@ public interface GroupMsgService {
 	String MoliMsg(String content, String user_id, String name);
 
 	String MoliMsg2(String content, String user_id, String name);
+
+	
 }

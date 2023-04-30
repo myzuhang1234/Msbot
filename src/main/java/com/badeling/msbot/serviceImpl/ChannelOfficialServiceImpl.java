@@ -22,11 +22,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.badeling.msbot.config.MsbotConst;
 import com.badeling.msbot.controller.MsgZbCalculate;
-import com.badeling.msbot.domain.ChannelMsg;
-import com.badeling.msbot.domain.ChannelReplyMsg;
 import com.badeling.msbot.domain.GlobalVariable;
 import com.badeling.msbot.domain.ReplyMsg;
 import com.badeling.msbot.entity.Msg;
@@ -38,7 +35,6 @@ import com.badeling.msbot.service.DrawService;
 import com.badeling.msbot.service.GroupMsgService;
 import com.badeling.msbot.service.MvpImageService;
 import com.badeling.msbot.service.RankService;
-import com.badeling.msbot.service.WzXmlService;
 import com.badeling.msbot.util.CosSdk;
 import com.badeling.msbot.util.Loadfont2;
 
@@ -60,8 +56,6 @@ public class ChannelOfficialServiceImpl implements ChannelOfficialService{
 	@Autowired
 	MsgZbCalculate msgZbCalculate;
 	
-	@Autowired
-	WzXmlService wzXmlService;
 	
 	@Autowired
 	RankService rankService;
@@ -73,6 +67,7 @@ public class ChannelOfficialServiceImpl implements ChannelOfficialService{
 		
 	}
 	
+	@SuppressWarnings("unused")
 	@Override
 	public String receive(String msg) {
 		Map<String, Object> map = (Map<String, Object>)JSON.parseObject(msg);
@@ -279,7 +274,7 @@ public class ChannelOfficialServiceImpl implements ChannelOfficialService{
 				replyM += "角色数据 伤害:" + roleDmg.getCommonDmg() + "% boss:" + roleDmg.getBossDmg() + "%\r\n(括号为核心20%无视加成结果)\r\n";
 				
 				replyM += "//----超高防对比-----//\r\n";
-				replyM += "塞伦提升率（380超高防）：" + String.format("%.2f", (defAndign(380, ign)/defAndign(380, ign_before)-1)*100) + "%(" + String.format("%.2f", (defAndign(380, ign2)/defAndign(380, ign_before2)-1)*100) + "%)\r\n";
+				replyM += "卡琳提升率（380超高防）：" + String.format("%.2f", (defAndign(380, ign)/defAndign(380, ign_before)-1)*100) + "%(" + String.format("%.2f", (defAndign(380, ign2)/defAndign(380, ign_before2)-1)*100) + "%)\r\n";
 				replyM += "原伤害" + defAndign(380, ign_before) + "%(" + defAndign(380, ign_before2) + "%)\r\n";
 				replyM += "现伤害" + defAndign(380, ign) + "%(" + defAndign(380, ign2) +  "%)\r\n";
 				replyM += "相当于提升了" + String.format("%.2f",(defAndign(380, ign)/defAndign(380, ign_before)-1)*(100+roleDmg.getCommonDmg()+roleDmg.getBossDmg())) + "%(" + String.format("%.2f", (defAndign(380, ign2)/defAndign(380, ign_before2)-1)*(100+roleDmg.getCommonDmg()+roleDmg.getBossDmg())) + "%)点boss伤害\r\n";
@@ -412,7 +407,6 @@ public class ChannelOfficialServiceImpl implements ChannelOfficialService{
 				}
 				
 				int[] starForce = MsgServiceImpl.starForceDesc(level,stat-fireStat,att-fireAtt,nowStar);
-				int finalStat = starForce[0]+fireStat;
 				int finalAtt = starForce[1]+fireAtt;
 //				String result = "数据：等级"+level+" 主属" + stat + " 火花主属" + fireStat + "\r\n"
 //						+ "攻击" + att + " 火花攻击" + fireAtt + " 星星" + nowStar + "\r\n"
@@ -663,7 +657,6 @@ public class ChannelOfficialServiceImpl implements ChannelOfficialService{
 				replyMsg.setAt_sender(true);
 				return replyMsg;
 			} catch (Exception e) {
-				// TODO 自动生成的 catch 块
 				e.printStackTrace();
 			}
 			return null;
@@ -686,9 +679,6 @@ public class ChannelOfficialServiceImpl implements ChannelOfficialService{
 		
 		}
 		
-		//转小写
-		String message = raw_message.toLowerCase();
-
 		//查找答案
 		List<Msg> list = new ArrayList<Msg>();
 		List<Msg> rep = new ArrayList<Msg>();
@@ -726,7 +716,6 @@ public class ChannelOfficialServiceImpl implements ChannelOfficialService{
 						
 				 String[] split = msg2.getLink().split("#abcde#");
 				 for(String temp : split) {
-					ChannelReplyMsg crm2 = new ChannelReplyMsg();
 					msgReply += "\r\n" + temp;
 				 }
 				 replyMsg.setReply(msgReply);

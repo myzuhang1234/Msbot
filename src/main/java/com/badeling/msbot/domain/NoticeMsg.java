@@ -12,15 +12,11 @@ public class NoticeMsg {
 	String post_type;
 	String notice_type;
 	String duration;
+	String card_new;
+	String card_old;
+	
 	public NoticeMsg() {
 		
-	}
-	
-	@Override
-	public String toString() {
-		return "NoticeMsg [type=" + type + ", self_id=" + self_id + ", sub_type=" + sub_type + ", group_id=" + group_id
-				+ ", operator_id=" + operator_id + ", user_id=" + user_id + ", time=" + time + ", post_type="
-				+ post_type + ", notice_type=" + notice_type + "]";
 	}
 	
 	public String getDuration() {
@@ -85,6 +81,17 @@ public class NoticeMsg {
 	public void setNotice_type(String notice_type) {
 		this.notice_type = notice_type;
 	}
-	
+	public String getCard_new() {
+		return card_new;
+	}
+	public void setCard_new(String card_new) {
+		this.card_new = card_new;
+	}
+	public String getCard_old() {
+		return card_old;
+	}
+	public void setCard_old(String card_old) {
+		this.card_old = card_old;
+	}
 	
 }

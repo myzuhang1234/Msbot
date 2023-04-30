@@ -1,10 +1,8 @@
 package com.badeling.msbot.serviceImpl;
 
-import java.net.InetAddress;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.badeling.msbot.config.MsbotConst;
 import com.badeling.msbot.controller.MsgZbCalculate;
 import com.badeling.msbot.domain.ChannelMsg;
@@ -38,7 +35,6 @@ import com.badeling.msbot.service.ChannelService;
 import com.badeling.msbot.service.DrawService;
 import com.badeling.msbot.service.GroupMsgService;
 import com.badeling.msbot.service.MvpImageService;
-import com.badeling.msbot.service.WzXmlService;
 import com.badeling.msbot.util.Loadfont2;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -65,9 +61,6 @@ public class ChannelServiceImpl implements ChannelService{
 	MsgZbCalculate msgZbCalculate;
 	
 	@Autowired
-	WzXmlService wzXmlService;
-	
-	@Autowired
 	MsgNoPrefixRepository msgNoPrefixRepository;
 	
 	@Override
@@ -76,7 +69,6 @@ public class ChannelServiceImpl implements ChannelService{
 		try {
 			channelMsg = new ObjectMapper().readValue(msg, ChannelMsg.class);
 		} catch (JsonProcessingException e) {
-			// TODO 自动生成的 catch 块
 			e.printStackTrace();
 		}
 		boolean isbotChannel = false;
@@ -246,7 +238,7 @@ public class ChannelServiceImpl implements ChannelService{
 				replyM += "角色数据 伤害:" + roleDmg.getCommonDmg() + "% boss:" + roleDmg.getBossDmg() + "%\r\n(括号为核心20%无视加成结果)\r\n";
 				
 				replyM += "//----超高防对比-----//\r\n";
-				replyM += "塞伦提升率（380超高防）：" + String.format("%.2f", (defAndign(380, ign)/defAndign(380, ign_before)-1)*100) + "%(" + String.format("%.2f", (defAndign(380, ign2)/defAndign(380, ign_before2)-1)*100) + "%)\r\n";
+				replyM += "卡琳提升率（380超高防）：" + String.format("%.2f", (defAndign(380, ign)/defAndign(380, ign_before)-1)*100) + "%(" + String.format("%.2f", (defAndign(380, ign2)/defAndign(380, ign_before2)-1)*100) + "%)\r\n";
 				replyM += "原伤害" + defAndign(380, ign_before) + "%(" + defAndign(380, ign_before2) + "%)\r\n";
 				replyM += "现伤害" + defAndign(380, ign) + "%(" + defAndign(380, ign2) +  "%)\r\n";
 				replyM += "相当于提升了" + String.format("%.2f",(defAndign(380, ign)/defAndign(380, ign_before)-1)*(100+roleDmg.getCommonDmg()+roleDmg.getBossDmg())) + "%(" + String.format("%.2f", (defAndign(380, ign2)/defAndign(380, ign_before2)-1)*(100+roleDmg.getCommonDmg()+roleDmg.getBossDmg())) + "%)点boss伤害\r\n";
@@ -345,7 +337,6 @@ public class ChannelServiceImpl implements ChannelService{
 				}
 				
 				int[] starForce = MsgServiceImpl.starForceDesc(level,stat-fireStat,att-fireAtt,nowStar);
-				int finalStat = starForce[0]+fireStat;
 				int finalAtt = starForce[1]+fireAtt;
 				String result = "0星状态下满卷攻击为：" + finalAtt;
 				replyMsg.setReply(result);
@@ -553,36 +544,6 @@ public class ChannelServiceImpl implements ChannelService{
 			replyMsg.setReply("蠢nm");
 			return replyMsg;
 		}
-		//怪物查询
-		if(raw_message.startsWith(MsbotConst.botName+"怪物")||raw_message.startsWith(MsbotConst.botName+" 怪物")) {
-			if(raw_message.equals(MsbotConst.botName+"怪物")||raw_message.equals(MsbotConst.botName+" 怪物")) {
-				replyMsg.setReply("爬，你才是怪物。");
-				return replyMsg;
-			}else {
-				if(raw_message.contains(MsbotConst.botName+"怪物")||raw_message.contains(MsbotConst.botName+" 怪物")) {
-					raw_message = raw_message.substring(raw_message.indexOf("怪物")+2);
-					if(raw_message.indexOf(" ")==0) {
-						raw_message = raw_message.substring(1);
-					}
-					//查询怪物
-					System.out.println(raw_message);
-					try {
-						if(raw_message.length()==7) {
-							Long mob_id = Long.parseLong(raw_message);
-							wzXmlService.searchMobForChannel(mob_id,channelMsg.getChannel_id(),channelMsg.getGuild_id());
-							return null;
-						}
-					} catch (Exception e) {
-					}
-					wzXmlService.searchMobForChannel(raw_message,channelMsg.getChannel_id(),channelMsg.getGuild_id());
-					return null;
-					
-				}else {
-					
-				}
-				
-			}
-		}
 		
 		if(raw_message.replaceAll(MsbotConst.botName, "").replaceAll(" ","").replaceAll("？","").equals("")) {
 			raw_message = MsbotConst.botName+"固定回复问号";
@@ -599,7 +560,6 @@ public class ChannelServiceImpl implements ChannelService{
 				replyMsg.setAt_sender(true);
 				return replyMsg;
 			} catch (Exception e) {
-				// TODO 自动生成的 catch 块
 				e.printStackTrace();
 			}
 			

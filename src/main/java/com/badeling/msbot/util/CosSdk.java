@@ -40,6 +40,7 @@ public class CosSdk {
 		return cosClient;
 	}
 	
+	@SuppressWarnings("unused")
 	public static void deleteAllFile() {
 		COSClient cosClient = createCos();
 		// Bucket的命名格式为 BucketName-APPID ，此处填写的存储桶名称必须为此格式
@@ -88,6 +89,7 @@ public class CosSdk {
 		cosClient.shutdown();
 	}
 	
+	@SuppressWarnings("unused")
 	public static String uploadFile(String localFilePath) {
 		COSClient cosClient = createCos();
 		// 指定要上传的文件

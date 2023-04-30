@@ -16,7 +16,7 @@ public class MD5 {
      * @return 输入字符串的MD5值
      *
      */
-    public static String md5(String input) throws UnsupportedEncodingException {
+    protected static String md5(String input) throws UnsupportedEncodingException {
         if (input == null)
             return null;
 
