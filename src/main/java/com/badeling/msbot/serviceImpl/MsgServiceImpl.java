@@ -1708,8 +1708,8 @@ public class MsgServiceImpl implements MsgService{
 				}
 			}
 
-			//System.out.println("talkative_list:"+talkative_list);
-			//System.out.println("hot_num:"+hot_num);
+			System.out.println("talkative_list:"+talkative_list);
+			System.out.println("hot_num:"+hot_num);
 			String mes = "你的活跃度："+hot_num;
 			if(hot_num>=100 && hot_num<500){mes +="\r\n你很懒惰，请积极发言～";}
 			else if(hot_num>=500&&hot_num<1000){ mes +="\r\n你很活跃，请继续努力～"; }
