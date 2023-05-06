@@ -1,6 +1,7 @@
 package com.badeling.msbot.serviceImpl;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.badeling.msbot.config.MsbotConst;
 import com.badeling.msbot.controller.MsgZbCalculate;
@@ -1685,6 +1686,40 @@ public class MsgServiceImpl implements MsgService{
 			replyMsg.setReply(mes);
 			return replyMsg;
 		}
+		if(raw_message.startsWith(MsbotConst.botName+"查成分")){
+			String url = "http://127.0.0.1:5700/get_group_honor_info";
+			JSONObject postData = new JSONObject();
+			postData.put("group_id",receiveMsg.getGroup_id());
+			postData.put("type","talkative");
+			RestTemplate client = new RestTemplate();
+			JSONObject json = client.postForEntity(url, postData, JSONObject.class).getBody();
+			JSONObject data = json.getObject("data",JSONObject.class);
+			JSONArray talkative_list = data.getJSONArray("talkative_list");
+			String description="";
+			int hot_num = 0;
+			for (int i=0;i<talkative_list.size();i++){
+				JSONObject one = talkative_list.getJSONObject(i);
+				String user_id = one.getString("user_id");
+				if (user_id.equals(receiveMsg.getUser_id())){
+					description = one.getString("description").replaceAll("\\D+","-");
+					String[] arrStr = description.split("-");
+					hot_num = Integer.parseInt(arrStr[0])+Integer.parseInt(arrStr[1])*7;
+					break;
+				}
+			}
+
+			//System.out.println("talkative_list:"+talkative_list);
+			//System.out.println("hot_num:"+hot_num);
+			String mes = "你的活跃度："+hot_num;
+			if(hot_num>=100 && hot_num<500){mes +="\r\n你很懒惰，请积极发言～";}
+			else if(hot_num>=500&&hot_num<1000){ mes +="\r\n你很活跃，请继续努力～"; }
+			else if (hot_num>=1000){mes +="\r\n你住群里了吧？？？";}
+			else {mes += "\r\n别潜水行不行？？？";}
+			replyMsg.setAt_sender(true);
+			replyMsg.setReply(mes);
+			return replyMsg;
+
+		}
 
 		if(raw_message.startsWith(MsbotConst.botName+"结账")){
 			if (raw_message.contains("[CQ:at")){
@@ -1819,6 +1854,7 @@ public class MsgServiceImpl implements MsgService{
 				}
 			}
 		}
+
 		if (raw_message.contains("禁言周报")) {
 			//得到群成员信息
 			GroupMsg gp = new GroupMsg();
@@ -2661,6 +2697,13 @@ public class MsgServiceImpl implements MsgService{
 		gm.setGroup_id(Long.parseLong(noticeMsg.getGroup_id()));
 		groupMsgService.sendGroupMsg(gm);
 		return null;
+	}
+
+	public class Talkative {
+
+		public String group_id;
+		public String talkative_list;
+
 	}
 	
 }
