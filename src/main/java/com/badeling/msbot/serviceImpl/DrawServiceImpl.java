@@ -6,6 +6,7 @@ import com.badeling.msbot.controller.NewImageUtils;
 import com.badeling.msbot.domain.Photo;
 import com.badeling.msbot.entity.Friends;
 import com.badeling.msbot.entity.MonvTime;
+import com.badeling.msbot.entity.Msg;
 import com.badeling.msbot.repository.FriendsRepository;
 import com.badeling.msbot.repository.MonvTimeRepository;
 import com.badeling.msbot.service.DrawService;
@@ -614,11 +615,7 @@ public class DrawServiceImpl implements DrawService{
 	        String saveFilePath = MsbotConst.imageUrl + uuid +".png";
 	        BufferedImage sourceFile = ImageIO.read(new File(sourceFilePath));
 	        BufferedImage buffImg = null;
-	        //获取各个等级浮莲子的数量
-//	        int f2 = 10;
-//	        int f3 = 9;
-//	        int f4 = 9;
-//	        int f5 = 1;
+
 	        int f2 = 60;
 	        int f3 = 26;
 	        int f4 = 19;
@@ -647,7 +644,10 @@ public class DrawServiceImpl implements DrawService{
 					star = 2;
 					f = "2-"+random2;
 					}
+
 				BufferedImage friends = createKomomimi(f,star);
+
+
 	       	 if(count<=5) {
 	       		 buffImg = NewImageUtils.watermark(sourceFile, friends, 141+210*(count-1) , 179, 1.0f);
 	       	 }else {
@@ -667,7 +667,115 @@ public class DrawServiceImpl implements DrawService{
 	        generateWaterFile(newBufferedImage, saveFilePath);
 			return "[CQ:image,file=" + uuid +".jpg]";
 		}
-		//生成十连图片
+
+		@Override
+		public String kemomimiDraw2(List <Msg> pick) throws Exception {
+		Random r = new Random();
+		HashSet<Integer> rr = new HashSet<>();
+		boolean has5Frends =false;
+		//系统生成随机数
+		while (rr.size() < 10) {
+			int i = r.nextInt(10000)+1;
+			if(i<300) {
+				has5Frends = true;
+			}
+			rr.add(i);
+		}
+		/**
+		 * i为编号
+		 star 5 <300
+		 star 4 <2200
+		 star 3 <4800
+		 star 2 <10000
+		 */
+		if(!has5Frends) {
+			int i = r.nextInt(10000)+1;
+			if(i<500) {
+				rr.clear();
+				while (rr.size() < 10) {
+					int j = r.nextInt(5000)+4801;
+					rr.add(j);
+				}
+			}else if(i<800) {
+				rr.clear();
+				while (rr.size() < 10) {
+					int j = r.nextInt(2500)+2201;
+					rr.add(j);
+				}
+			}else if(i<1000) {
+				rr.clear();
+				while (rr.size() < 10) {
+					int j = r.nextInt(1800)+301;
+					rr.add(j);
+				}
+			}
+		}
+
+		//创建浮莲子
+		String sourceFilePath;
+		if(has5Frends) {
+			sourceFilePath = MsbotConst.imageUrl + "kf3/" + "2.png";
+		}else {
+			sourceFilePath = MsbotConst.imageUrl + "kf3/" + "1.png";
+		}
+		String uuid = UUID.randomUUID().toString().replaceAll("-", "");
+		String saveFilePath = MsbotConst.imageUrl + uuid +".png";
+		BufferedImage sourceFile = ImageIO.read(new File(sourceFilePath));
+		BufferedImage buffImg = null;
+
+		int f2 = 60;
+		int f3 = 26;
+		int f4 = 19;
+		int f5 = 3;
+
+		// 构建叠加层
+		int count =1;
+		for(int random:rr){
+			String f;
+			int star;
+
+			if(random<300) {
+				int random2 = r.nextInt(f5)+1;
+				star = 5;
+				f = "5-"+random2;
+			}else if(random<300+1900) {
+				int random2 = r.nextInt(f4)+1;
+				star = 4;
+				f = "4-"+random2;
+			}else if(random<200+1900+2700) {
+				int random2 = r.nextInt(f3)+1;
+				star = 3;
+				f = "3-"+random2;
+			}else{
+				int random2 = r.nextInt(f2)+1;
+				star = 2;
+				f = "2-"+random2;
+			}
+
+			BufferedImage friends = createKomomimi2(count,pick,star);
+
+
+			if(count<=5) {
+				buffImg = NewImageUtils.watermark(sourceFile, friends, 141+210*(count-1) , 179, 1.0f);
+			}else {
+				buffImg = NewImageUtils.watermark(sourceFile, friends, 141+210*(count-6) , 369, 1.0f);
+			}
+			count = count + 1;
+		}
+//	        buffImg = resizeBufferedImage(buffImg,buffImg.getWidth()/2,buffImg.getHeight()/2,true);
+		// TYPE_INT_RGB:创建一个RBG图像，24位深度，成功将32位图转化成24位
+		BufferedImage newBufferedImage = new BufferedImage(
+				buffImg.getWidth(), buffImg.getHeight(),
+				BufferedImage.TYPE_INT_RGB);
+		newBufferedImage.createGraphics().drawImage(buffImg, 0, 0,
+				Color.WHITE, null);
+		// write to jpeg file
+		ImageIO.write(newBufferedImage, "jpg", new File(MsbotConst.imageUrl + uuid +".jpg"));
+		generateWaterFile(newBufferedImage, saveFilePath);
+		return "[CQ:image,file=" + uuid +".jpg]";
+	}
+
+	//生成十连图片
 		private BufferedImage createKomomimi(String id,int star) throws Exception {
 			String sourceFilePath = MsbotConst.imageUrl + "kf3/" + "charaicon_base.png";
 			String waterFilePath;
@@ -685,6 +793,34 @@ public class DrawServiceImpl implements DrawService{
 //	        generateWaterFile(buffImg, saveFilePath);
 			return buffImg;
 		}
+
+	private BufferedImage createKomomimi2(int count,List<Msg> pick,int star) throws Exception {
+		String sourceFilePath = MsbotConst.imageUrl + "kf3/" + "charaicon_base.png";
+		String waterFilePath;
+
+		String pic = pick.get(count).getAnswer();
+		String path = pic.substring(pic.indexOf("file=")+5,pic.indexOf("]"));
+
+		waterFilePath = MsbotConst.imageUrl + path;
+		// 构建叠加层
+		BufferedImage buffImg = NewImageUtils.watermark(new File(sourceFilePath), new File(waterFilePath), 0, 0, 1.0f);
+
+		//加边框
+		if(star==5){
+			waterFilePath = MsbotConst.imageUrl + "kf3/" + "charaicon_frame_kiseki.png";
+		}
+		else{
+			waterFilePath = MsbotConst.imageUrl + "kf3/" + "charaicon_frame.png";
+		}
+		buffImg = NewImageUtils.watermark(buffImg, new File(waterFilePath), 0, 0, 1.0f);
+		//加星星
+		waterFilePath = MsbotConst.imageUrl + "kf3/" + "star" + star + ".png";
+		BufferedImage starImg = ImageIO.read(new File(waterFilePath));
+		buffImg = NewImageUtils.watermark(buffImg, starImg , 0, 135, 1.0f);
+		// 输出水印图片
+//	        generateWaterFile(buffImg, saveFilePath);
+		return buffImg;
+	}
 
 		@Override
 		public String throwSomeone(String headImg) throws Exception {

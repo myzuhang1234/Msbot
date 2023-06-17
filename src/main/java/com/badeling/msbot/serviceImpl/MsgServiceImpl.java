@@ -1678,7 +1678,27 @@ public class MsgServiceImpl implements MsgService{
 		if(raw_message.contains("抽蠢猫")) {
 			String mes;
 			try {
-				mes = drawService.kemomimiDraw();
+				List<Msg> list = new ArrayList<Msg>();
+				List<Msg> pick = new ArrayList<Msg>();
+
+
+				String command = "爆照";
+				while (it.hasNext()) {
+					msg = it.next();
+					if (msg.getQuestion().equals(command)) {
+						list.add(msg);
+					}
+				}
+				if(list.size()!=0) {
+					Random r = new Random();
+					while (pick.size()<=10){
+						int random = r.nextInt(list.size());
+						if(!pick.contains(list.get(random))){
+							pick.add(list.get(random));
+						}
+					}
+				}
+				mes = drawService.kemomimiDraw2(pick);
 			} catch (Exception e) {
 				e.printStackTrace();
 				mes = "图片文件缺失。";
@@ -1687,13 +1707,17 @@ public class MsgServiceImpl implements MsgService{
 			return replyMsg;
 		}
 		if(raw_message.startsWith(MsbotConst.botName+"查成分")){
-			String url = "http://127.0.0.1:5700/get_group_honor_info";
+			String url = "http://127.0.0.1:5700/get_group_member_info";
 			JSONObject postData = new JSONObject();
 			postData.put("group_id",receiveMsg.getGroup_id());
-			postData.put("type","talkative");
+			postData.put("user_id",receiveMsg.getUser_id());
+			postData.put("no_cache",false);
 			RestTemplate client = new RestTemplate();
 			JSONObject json = client.postForEntity(url, postData, JSONObject.class).getBody();
+			System.out.println("json:"+json);
+
 			JSONObject data = json.getObject("data",JSONObject.class);
+			System.out.println("data:"+data);
 			JSONArray talkative_list = data.getJSONArray("talkative_list");
 			String description="";
 			int hot_num = 0;
@@ -2510,6 +2534,8 @@ public class MsgServiceImpl implements MsgService{
 
 		}
 
+
+
 		//查找答案
 		List<Msg> list = new ArrayList<Msg>();
 		List<Msg> rep = new ArrayList<Msg>();
@@ -2535,7 +2561,7 @@ public class MsgServiceImpl implements MsgService{
 				 }else if(similarity==similar){
 					rep.add(tempMsg);
 				 }
-		        }
+			 }
 			 Random r = new Random();
 			 int random = r.nextInt(rep.size());
 			 replyMsg.setAt_sender(true);
