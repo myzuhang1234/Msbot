@@ -1714,10 +1714,10 @@ public class MsgServiceImpl implements MsgService{
 			postData.put("no_cache",false);
 			RestTemplate client = new RestTemplate();
 			JSONObject json = client.postForEntity(url, postData, JSONObject.class).getBody();
-			System.out.println("json:"+json);
+			//System.out.println("json:"+json);
 
 			JSONObject data = json.getObject("data",JSONObject.class);
-			System.out.println("data:"+data);
+			//System.out.println("data:"+data);
 			JSONArray talkative_list = data.getJSONArray("talkative_list");
 			String description="";
 			int hot_num = 0;
@@ -1732,8 +1732,8 @@ public class MsgServiceImpl implements MsgService{
 				}
 			}
 
-			System.out.println("talkative_list:"+talkative_list);
-			System.out.println("hot_num:"+hot_num);
+			//System.out.println("talkative_list:"+talkative_list);
+			//System.out.println("hot_num:"+hot_num);
 			String mes = "你的活跃度："+hot_num;
 			if(hot_num>=100 && hot_num<500){mes +="\r\n你很懒惰，请积极发言～";}
 			else if(hot_num>=500&&hot_num<1000){ mes +="\r\n你很活跃，请继续努力～"; }
