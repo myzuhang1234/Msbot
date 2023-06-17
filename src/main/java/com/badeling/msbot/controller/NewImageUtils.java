@@ -1,10 +1,7 @@
 package com.badeling.msbot.controller;
 
-import java.awt.AlphaComposite;
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
+import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.RoundRectangle2D;
@@ -13,8 +10,6 @@ import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
-
-import javax.imageio.ImageIO;
 
 public class NewImageUtils{
 
@@ -57,11 +52,14 @@ public class NewImageUtils{
 		// 创建Graphics2D对象，用在底图对象上绘图
 		Graphics2D g2d = buffImg.createGraphics();
 		int waterImgWidth = waterImg.getWidth();// 获取层图的宽度
-		int waterImgHeight = waterImg.getHeight();// 获取层图的高度
+
+		int proportion = waterImgWidth/200;
+
+		int waterImgHeight = waterImg.getHeight()/proportion;// 获取层图的高度
 		// 在图形和图像中实现混合和透明效果
 		g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_ATOP, alpha));
 		// 绘制
-		g2d.drawImage(waterImg, x, y, waterImgWidth, waterImgHeight, null);
+		g2d.drawImage(waterImg, x, y, 200, waterImgHeight, null);
 		g2d.dispose();// 释放图形上下文使用的系统资源
 		return buffImg;
 	}
