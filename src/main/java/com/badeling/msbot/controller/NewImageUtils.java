@@ -39,11 +39,26 @@ public class NewImageUtils{
 		// 创建Graphics2D对象，用在底图对象上绘图
 		Graphics2D g2d = buffImg.createGraphics();
 		int waterImgWidth = waterImg.getWidth();// 获取层图的宽度
-		int waterImgHeight = waterImg.getHeight();// 获取层图的高度
+		int waterImgHeight=0;
+		int rate = (int) waterImgWidth/160;
+
+		if (rate ==0 ){
+			 waterImgHeight = waterImg.getHeight();// 获取层图的高度
+		}
+		else{
+			 waterImgHeight = waterImg.getHeight()/rate;// 获取层图的高度
+		}
+
+		//System.out.println("waterImgWidth:"+waterImgWidth);
+		//System.out.println("waterImgHeight:"+waterImgHeight);
+
 		// 在图形和图像中实现混合和透明效果
 		g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_ATOP, alpha));
+		g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);//设置抗锯齿
+
+
 		// 绘制
-		g2d.drawImage(waterImg, x, y, waterImgWidth, waterImgHeight, null);
+		g2d.drawImage(waterImg, x, y, 160, waterImgHeight, null);
 		g2d.dispose();// 释放图形上下文使用的系统资源
 		return buffImg;
 	}
@@ -52,14 +67,13 @@ public class NewImageUtils{
 		// 创建Graphics2D对象，用在底图对象上绘图
 		Graphics2D g2d = buffImg.createGraphics();
 		int waterImgWidth = waterImg.getWidth();// 获取层图的宽度
+		int waterImgHeight = waterImg.getHeight();// 获取层图的高度
 
-		int proportion = waterImgWidth/200;
-
-		int waterImgHeight = waterImg.getHeight()/proportion;// 获取层图的高度
 		// 在图形和图像中实现混合和透明效果
+		g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 		g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_ATOP, alpha));
 		// 绘制
-		g2d.drawImage(waterImg, x, y, 200, waterImgHeight, null);
+		g2d.drawImage(waterImg, x, y, waterImgWidth, waterImgHeight, null);
 		g2d.dispose();// 释放图形上下文使用的系统资源
 		return buffImg;
 	}
@@ -74,6 +88,8 @@ public class NewImageUtils{
 		int waterImgHeight = waterImg.getHeight();// 获取层图的高度
 		// 在图形和图像中实现混合和透明效果
 		g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_ATOP, alpha));
+		g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);//设置抗锯齿
+
 		// 绘制
 		g2d.drawImage(waterImg, x, y, waterImgWidth, waterImgHeight, null);
 		g2d.dispose();// 释放图形上下文使用的系统资源

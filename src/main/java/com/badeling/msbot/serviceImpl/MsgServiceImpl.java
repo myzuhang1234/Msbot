@@ -1675,12 +1675,11 @@ public class MsgServiceImpl implements MsgService{
 			}
 		}
 
-		if(raw_message.contains("抽蠢猫")) {
+		if(raw_message.contains("抽猫") ||raw_message.contains("抽猫猫")) {
 			String mes;
 			try {
 				List<Msg> list = new ArrayList<Msg>();
 				List<Msg> pick = new ArrayList<Msg>();
-
 
 				String command = "爆照";
 				while (it.hasNext()) {

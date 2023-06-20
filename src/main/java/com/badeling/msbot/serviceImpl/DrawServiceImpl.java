@@ -12,6 +12,7 @@ import com.badeling.msbot.repository.MonvTimeRepository;
 import com.badeling.msbot.service.DrawService;
 import com.badeling.msbot.util.Loadfont;
 import com.badeling.msbot.util.Loadfont2;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -25,10 +26,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.List;
@@ -723,37 +721,11 @@ public class DrawServiceImpl implements DrawService{
 		BufferedImage sourceFile = ImageIO.read(new File(sourceFilePath));
 		BufferedImage buffImg = null;
 
-		int f2 = 60;
-		int f3 = 26;
-		int f4 = 19;
-		int f5 = 3;
-
 		// 构建叠加层
 		int count =1;
 		for(int random:rr){
-			String f;
-			int star;
 
-			if(random<300) {
-				int random2 = r.nextInt(f5)+1;
-				star = 5;
-				f = "5-"+random2;
-			}else if(random<300+1900) {
-				int random2 = r.nextInt(f4)+1;
-				star = 4;
-				f = "4-"+random2;
-			}else if(random<200+1900+2700) {
-				int random2 = r.nextInt(f3)+1;
-				star = 3;
-				f = "3-"+random2;
-			}else{
-				int random2 = r.nextInt(f2)+1;
-				star = 2;
-				f = "2-"+random2;
-			}
-
-			BufferedImage friends = createKomomimi2(count,pick,star);
-
+			BufferedImage friends = createKomomimi2(count,pick);
 
 			if(count<=5) {
 				buffImg = NewImageUtils.watermark(sourceFile, friends, 141+210*(count-1) , 179, 1.0f);
@@ -794,7 +766,7 @@ public class DrawServiceImpl implements DrawService{
 			return buffImg;
 		}
 
-	private BufferedImage createKomomimi2(int count,List<Msg> pick,int star) throws Exception {
+	private BufferedImage createKomomimi2(int count,List<Msg> pick) throws Exception {
 		String sourceFilePath = MsbotConst.imageUrl + "kf3/" + "charaicon_base.png";
 		String waterFilePath;
 
@@ -802,8 +774,14 @@ public class DrawServiceImpl implements DrawService{
 		String path = pic.substring(pic.indexOf("file=")+5,pic.indexOf("]"));
 
 		waterFilePath = MsbotConst.imageUrl + path;
+		String md5 = DigestUtils.md5Hex(new FileInputStream(waterFilePath));
+
 		// 构建叠加层
 		BufferedImage buffImg = NewImageUtils.watermark(new File(sourceFilePath), new File(waterFilePath), 0, 0, 1.0f);
+
+		int num = Integer.parseInt(md5.substring(md5.length()-4),16);
+		int star =  num % 4 + 2;
+		//System.out.println("star:"+star);
 
 		//加边框
 		if(star==5){
@@ -815,10 +793,13 @@ public class DrawServiceImpl implements DrawService{
 		buffImg = NewImageUtils.watermark(buffImg, new File(waterFilePath), 0, 0, 1.0f);
 		//加星星
 		waterFilePath = MsbotConst.imageUrl + "kf3/" + "star" + star + ".png";
+		String saveFilePath = MsbotConst.imageUrl + "save/20230620_"+count+".png";
+
 		BufferedImage starImg = ImageIO.read(new File(waterFilePath));
 		buffImg = NewImageUtils.watermark(buffImg, starImg , 0, 135, 1.0f);
 		// 输出水印图片
-//	        generateWaterFile(buffImg, saveFilePath);
+        generateWaterFile(buffImg, saveFilePath);
+
 		return buffImg;
 	}
 
