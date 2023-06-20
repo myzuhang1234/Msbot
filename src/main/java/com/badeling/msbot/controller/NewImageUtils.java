@@ -46,7 +46,10 @@ public class NewImageUtils{
 			 waterImgHeight = waterImg.getHeight();// 获取层图的高度
 		}
 		else{
-			 waterImgHeight = waterImg.getHeight()/rate;// 获取层图的高度
+			waterImgHeight = waterImg.getHeight()/rate;// 获取层图的高度
+			if(waterImgHeight < 160){
+				waterImgHeight = 160;
+			}
 		}
 
 		//System.out.println("waterImgWidth:"+waterImgWidth);
