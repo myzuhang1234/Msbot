@@ -798,7 +798,7 @@ public class DrawServiceImpl implements DrawService{
 		BufferedImage starImg = ImageIO.read(new File(waterFilePath));
 		buffImg = NewImageUtils.watermark(buffImg, starImg , 0, 135, 1.0f);
 		// 输出水印图片
-        generateWaterFile(buffImg, saveFilePath);
+        //generateWaterFile(buffImg, saveFilePath);
 
 		return buffImg;
 	}
