@@ -2721,6 +2721,13 @@ public class MsgServiceImpl implements MsgService{
 		gm.setMessage(msg.getAnswer());
 		gm.setGroup_id(Long.parseLong(noticeMsg.getGroup_id()));
 		groupMsgService.sendGroupMsg(gm);
+
+		gm.setMessage("[CQ:at,qq=" + noticeMsg.getUser_id() + "]" +
+				"欢迎新人，请把群名片改为游戏id，进家族先看布告栏公告，家族规定每周必须打水路～");
+		gm.setGroup_id(Long.parseLong(noticeMsg.getGroup_id()));
+		groupMsgService.sendGroupMsg(gm);
+
+
 		return null;
 	}
 

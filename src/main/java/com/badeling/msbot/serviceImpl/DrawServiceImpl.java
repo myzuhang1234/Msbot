@@ -791,9 +791,13 @@ public class DrawServiceImpl implements DrawService{
 			waterFilePath = MsbotConst.imageUrl + "kf3/" + "charaicon_frame.png";
 		}
 		buffImg = NewImageUtils.watermark(buffImg, new File(waterFilePath), 0, 0, 1.0f);
+
+		String saveFilePath = MsbotConst.imageUrl + "save/20230620_"+count+".png";
+		generateWaterFile(buffImg, saveFilePath);
+
+
 		//加星星
 		waterFilePath = MsbotConst.imageUrl + "kf3/" + "star" + star + ".png";
-		String saveFilePath = MsbotConst.imageUrl + "save/20230620_"+count+".png";
 
 		BufferedImage starImg = ImageIO.read(new File(waterFilePath));
 		buffImg = NewImageUtils.watermark(buffImg, starImg , 0, 135, 1.0f);

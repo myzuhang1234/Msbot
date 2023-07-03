@@ -13,6 +13,14 @@ import java.io.IOException;
 
 public class NewImageUtils{
 
+	private static void generateWaterFile(BufferedImage buffImg, String savePath) {
+		int temp = savePath.lastIndexOf(".") + 1;
+		try {
+			ImageIO.write(buffImg, savePath.substring(temp), new File(savePath));
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+	}
 
 	/**
 	 *
@@ -36,6 +44,7 @@ public class NewImageUtils{
 		BufferedImage buffImg = ImageIO.read(file);
 		// 获取层图
 		BufferedImage waterImg = ImageIO.read(waterFile);
+
 		// 创建Graphics2D对象，用在底图对象上绘图
 		Graphics2D g2d = buffImg.createGraphics();
 		int waterImgWidth = waterImg.getWidth();// 获取层图的宽度
@@ -52,6 +61,15 @@ public class NewImageUtils{
 			}
 		}
 
+		BufferedImage updateImage=new BufferedImage(160,waterImgHeight, BufferedImage.TYPE_INT_RGB);
+		updateImage.getGraphics().drawImage(waterImg, 0, 0, 160, waterImgHeight, null);
+
+		//int count = (int) (Math.random()*100)+1;
+		//System.out.println("count:"+count);
+		//String saveFilePath = MsbotConst.imageUrl  +"test"+count+".png";
+		//generateWaterFile(updateImage, saveFilePath);
+
+
 		//System.out.println("waterImgWidth:"+waterImgWidth);
 		//System.out.println("waterImgHeight:"+waterImgHeight);
 
@@ -60,14 +78,17 @@ public class NewImageUtils{
 		//设置抗锯齿
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		g2d.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
-		g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+		//g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
 		g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+		g2d.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+
 
 		// 绘制
-		g2d.drawImage(waterImg, x, y, 160, waterImgHeight, null);
+		g2d.drawImage(updateImage, x, y, 160, waterImgHeight, null);
 		g2d.dispose();// 释放图形上下文使用的系统资源
 		return buffImg;
 	}
+
 
 	public static BufferedImage watermark(BufferedImage buffImg, BufferedImage waterImg, int x, int y, float alpha) throws IOException {
 		// 创建Graphics2D对象，用在底图对象上绘图
@@ -77,10 +98,13 @@ public class NewImageUtils{
 
 		// 在图形和图像中实现混合和透明效果
 		g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_ATOP, alpha));
-		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
 		g2d.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
-		g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+		//g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
 		g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+		g2d.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_ENABLE);
+		g2d.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+
 
 		// 绘制
 		g2d.drawImage(waterImg, x, y, waterImgWidth, waterImgHeight, null);
@@ -117,14 +141,7 @@ public class NewImageUtils{
 	 * @param savePath
 	 *            图像加水印之后的保存路径
 	 */
-	public void generateWaterFile(BufferedImage buffImg, String savePath) {
-		int temp = savePath.lastIndexOf(".") + 1;
-		try {
-			ImageIO.write(buffImg, savePath.substring(temp), new File(savePath));
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
-	}
+
 
 
 	//原定的星星代码
