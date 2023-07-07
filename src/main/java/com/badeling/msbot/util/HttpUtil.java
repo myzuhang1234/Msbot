@@ -1,15 +1,6 @@
 package com.badeling.msbot.util;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
+import com.alibaba.fastjson.JSONObject;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -23,7 +14,15 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.springframework.util.StringUtils;
 
-import com.alibaba.fastjson.JSONObject;
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 
 public class HttpUtil {
@@ -49,26 +48,27 @@ public class HttpUtil {
         return HttpUtil.postGeneralUrl(url, contentType, params, encoding);
     }
 
+    @SuppressWarnings("unused")
     public static String postGeneralUrl(String generalUrl, String contentType, String params, String encoding)
             throws Exception {
         URL url = new URL(generalUrl);
-        
+
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
-        
+
         connection.setRequestProperty("Content-Type", contentType);
         connection.setRequestProperty("Connection", "Keep-Alive");
         connection.setUseCaches(false);
         connection.setDoOutput(true);
         connection.setDoInput(true);
 
-        
+
         DataOutputStream out = new DataOutputStream(connection.getOutputStream());
         out.write(params.getBytes(encoding));
         out.flush();
         out.close();
 
-       
+
         connection.connect();
 
         Map<String, List<String>> headers = connection.getHeaderFields();
@@ -88,7 +88,7 @@ public class HttpUtil {
         in.close();
         return result;
     }
-    
+
     //百度翻译
     public static JSONObject doPostStr(String url,String reqContent) throws IOException {
         CloseableHttpClient httpClient = HttpClients.createDefault();
@@ -104,10 +104,10 @@ public class HttpUtil {
         }
         return null;
     }
-    
-    
-	public static JSONObject doPostStr(String url, Map<String, String> reqContent) throws IOException{
-		CloseableHttpClient httpClient = HttpClients.createDefault();
+
+
+    public static JSONObject doPostStr(String url, Map<String, String> reqContent) throws IOException{
+        CloseableHttpClient httpClient = HttpClients.createDefault();
         HttpPost httpPost = new HttpPost(url);
 
         //装填参数
@@ -127,10 +127,10 @@ public class HttpUtil {
             return JSONObject.parseObject(resContent);
         }
         return null;
-	}
+    }
 
-	public static JSONObject doGetStr(String url) throws IOException {
-		CloseableHttpClient httpClient = HttpClients.createDefault();
+    public static JSONObject doGetStr(String url) throws IOException {
+        CloseableHttpClient httpClient = HttpClients.createDefault();
         HttpGet httpGet = new HttpGet(url);
         CloseableHttpResponse response = httpClient.execute(httpGet);
         HttpEntity entity = response.getEntity();
@@ -139,5 +139,5 @@ public class HttpUtil {
             return JSONObject.parseObject(content);
         }
         return null;
-	}
+    }
 }

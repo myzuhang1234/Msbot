@@ -5,26 +5,19 @@ import com.badeling.msbot.entity.Msg;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 
 @Service
 public interface DrawService {
 
-	String updateFriends();
-
-	String updatePhoto();
-
-	String startDraw() throws Exception;
-
 	String startDrawMs() throws Exception;
 
 	String startDrawMs(MonvTime monvTime) throws Exception;
 
-
 	String kemomimiDraw() throws Exception;
 
 	String kemomimiDraw2(List <Msg> pick) throws Exception;
-
 
 	String throwSomeone(String headImg) throws Exception;
 
@@ -35,4 +28,8 @@ public interface DrawService {
 	String ignImage(String ignDate) throws Exception;
 
 	String zbImage(String[] msg) throws Exception;
+
+	String drawRankImage(Map<String, Object> mapler) throws Exception;
+
+	String getRankList(List<String> richList, List<String> poorList) throws Exception;
 }

@@ -333,4 +333,24 @@ public class NewImageUtils{
 
 	}
 
+	//图片翻转
+	public static BufferedImage mirrorImage(BufferedImage image) {
+		int width = image.getWidth();
+		int height = image.getHeight();
+
+		for (int j = 0; j < height; j++) {
+			int l = 0, r = width - 1;
+			while (l < r) {
+				int pl = image.getRGB(l, j);
+				int pr = image.getRGB(r, j);
+				image.setRGB(l, j, pr);
+				image.setRGB(r, j, pl);
+				l++;
+				r--;
+			}
+		}
+		return image;
+
+	}
+
 }

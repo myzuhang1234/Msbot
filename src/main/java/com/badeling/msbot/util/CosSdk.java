@@ -1,8 +1,5 @@
 package com.badeling.msbot.util;
 
-import java.io.File;
-import java.util.List;
-
 import com.badeling.msbot.config.MsbotConst;
 import com.qcloud.cos.COSClient;
 import com.qcloud.cos.ClientConfig;
@@ -11,17 +8,16 @@ import com.qcloud.cos.auth.COSCredentials;
 import com.qcloud.cos.exception.CosClientException;
 import com.qcloud.cos.exception.CosServiceException;
 import com.qcloud.cos.http.HttpProtocol;
-import com.qcloud.cos.model.COSObjectSummary;
-import com.qcloud.cos.model.ListObjectsRequest;
-import com.qcloud.cos.model.ObjectListing;
-import com.qcloud.cos.model.PutObjectRequest;
-import com.qcloud.cos.model.PutObjectResult;
+import com.qcloud.cos.model.*;
 import com.qcloud.cos.region.Region;
 
+import java.io.File;
+import java.util.List;
+
 public class CosSdk {
-	
-	
-	
+
+
+
 	public static COSClient createCos() {
 		// 1 初始化用户身份信息（secretId, secretKey）。
 		// SECRETID和SECRETKEY请登录访问管理控制台 https://console.cloud.tencent.com/cam/capi 进行查看和管理
@@ -39,7 +35,8 @@ public class CosSdk {
 		COSClient cosClient = new COSClient(cred, clientConfig);
 		return cosClient;
 	}
-	
+
+	@SuppressWarnings("unused")
 	public static void deleteAllFile() {
 		COSClient cosClient = createCos();
 		// Bucket的命名格式为 BucketName-APPID ，此处填写的存储桶名称必须为此格式
@@ -54,40 +51,41 @@ public class CosSdk {
 		listObjectsRequest.setMaxKeys(1000);
 		ObjectListing objectListing = null;
 		do {
-		    try {
-		        objectListing = cosClient.listObjects(listObjectsRequest);
-		    } catch (CosServiceException e) {
-		        e.printStackTrace();
-		        return;
-		    } catch (CosClientException e) {
-		        e.printStackTrace();
-		        return;
-		    }
-		    // common prefix表示表示被delimiter截断的路径, 如delimter设置为/, common prefix则表示所有子目录的路径
-		    List<String> commonPrefixs = objectListing.getCommonPrefixes();
+			try {
+				objectListing = cosClient.listObjects(listObjectsRequest);
+			} catch (CosServiceException e) {
+				e.printStackTrace();
+				return;
+			} catch (CosClientException e) {
+				e.printStackTrace();
+				return;
+			}
+			// common prefix表示表示被delimiter截断的路径, 如delimter设置为/, common prefix则表示所有子目录的路径
+			List<String> commonPrefixs = objectListing.getCommonPrefixes();
 
-		    // object summary表示所有列出的object列表
-		    List<COSObjectSummary> cosObjectSummaries = objectListing.getObjectSummaries();
-		    for (COSObjectSummary cosObjectSummary : cosObjectSummaries) {
-		        // 文件的路径key
-		        String key = cosObjectSummary.getKey();
-		        // 文件的etag
-		        String etag = cosObjectSummary.getETag();
-		        // 文件的长度
-		        long fileSize = cosObjectSummary.getSize();
-		        // 文件的存储类型
-		        String storageClasses = cosObjectSummary.getStorageClass();
-		        if(!key.equals(MsbotConst.channelBotId + ".json")) {
-		        	deleteFile(cosClient,key);
-		        }
-		    }
+			// object summary表示所有列出的object列表
+			List<COSObjectSummary> cosObjectSummaries = objectListing.getObjectSummaries();
+			for (COSObjectSummary cosObjectSummary : cosObjectSummaries) {
+				// 文件的路径key
+				String key = cosObjectSummary.getKey();
+				// 文件的etag
+				String etag = cosObjectSummary.getETag();
+				// 文件的长度
+				long fileSize = cosObjectSummary.getSize();
+				// 文件的存储类型
+				String storageClasses = cosObjectSummary.getStorageClass();
+				if(!key.equals(MsbotConst.channelBotId + ".json")) {
+					deleteFile(cosClient,key);
+				}
+			}
 
-		    String nextMarker = objectListing.getNextMarker();
-		    listObjectsRequest.setMarker(nextMarker);
+			String nextMarker = objectListing.getNextMarker();
+			listObjectsRequest.setMarker(nextMarker);
 		} while (objectListing.isTruncated());
 		cosClient.shutdown();
 	}
-	
+
+	@SuppressWarnings("unused")
 	public static String uploadFile(String localFilePath) {
 		COSClient cosClient = createCos();
 		// 指定要上传的文件
@@ -100,26 +98,26 @@ public class CosSdk {
 		}
 		//判断文件是否存在
 		try {
-		    boolean objectExists = cosClient.doesObjectExist(MsbotConst.bucketName, key);
-		    if(!objectExists) {
-		    	//文件不存在 上传
-		    	PutObjectRequest putObjectRequest = new PutObjectRequest(MsbotConst.bucketName, key, localFile);
+			boolean objectExists = cosClient.doesObjectExist(MsbotConst.bucketName, key);
+			if(!objectExists) {
+				//文件不存在 上传
+				PutObjectRequest putObjectRequest = new PutObjectRequest(MsbotConst.bucketName, key, localFile);
 				PutObjectResult putObjectResult = cosClient.putObject(putObjectRequest);
-		    }
+			}
 		} catch (CosServiceException e) {
-		    e.printStackTrace();
+			e.printStackTrace();
 		} catch (CosClientException e) {
-		    e.printStackTrace();
+			e.printStackTrace();
 		}
 		cosClient.shutdown();
 		return key;
 	}
-		
+
 	public static void deleteFile(COSClient cosClient,String file_url) {
 		// 指定被删除的文件在 COS 上的路径，即对象键。例如对象键为folder/picture.jpg，则表示删除位于 folder 路径下的文件 picture.jpg
 		cosClient.deleteObject(MsbotConst.bucketName, file_url);
 		cosClient.shutdown();
 	}
-	
-	
+
+
 }
