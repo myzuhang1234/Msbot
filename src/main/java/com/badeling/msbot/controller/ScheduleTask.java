@@ -144,7 +144,7 @@ public class ScheduleTask {
 			
 			for(String a : fileList) {
 				File file2 = new File(url,a);
-				if(file2.isFile()&&a.length()==32&&!file2.getName().contains(MsbotConst.channelBotId)) {
+				if(file2.isFile()&&a.length()>30&&!file2.getName().contains(MsbotConst.channelBotId)) {
 					size = size + file2.length();
 					file2.delete();
 					count++;
@@ -152,9 +152,8 @@ public class ScheduleTask {
 			}
 		}
 		time2=System.currentTimeMillis();
-		String reply = "";
+		String reply = "程序运行总时间： "+(time2-time1)+"ms";
 		if(count!=0) {		
-			reply = "程序运行总时间： "+(time2-time1)+"ms";
 			reply = reply + "\r\n清理图片" + count + "张，共计" + (size/1024/1024) + "MB";
 		}
 		
@@ -256,11 +255,11 @@ public class ScheduleTask {
 			System.out.println("更新群成员信息失败");
 		}
 		
-		if(MsbotConst.notice_group!=null&&!MsbotConst.notice_group.isEmpty()&&!reply.isEmpty()) {
+		if(MsbotConst.notice_group!=null&&!MsbotConst.notice_group.isEmpty()) {
 			GroupMsg groupMsg = new GroupMsg();
 			groupMsg.setGroup_id(Long.parseLong(MsbotConst.notice_group));
 			groupMsg.setMessage(reply);
-			groupMsgService.sendGroupMsg(groupMsg);
+			//groupMsgService.sendGroupMsg(groupMsg);
 		}	
 		
 		System.out.println(reply);
@@ -375,7 +374,7 @@ public class ScheduleTask {
 					groupMsg.setAuto_escape(false);
 					groupMsg.setMessage(message);
 					groupMsg.setGroup_id(Long.parseLong((group_id)));
-					groupMsgService.sendGroupMsg(groupMsg);
+					//groupMsgService.sendGroupMsg(groupMsg);
 					Thread.sleep(3542);
 				}
 			} catch (Exception e) {

@@ -33,4 +33,7 @@ public interface MessageRepository extends CrudRepository<Message, Long>{
 	
 	@Query(value = "select * from message",nativeQuery=true)
 	List<Message> findAllMsg();
+	
+	@Query(value = "SELECT * FROM msbot.message where group_id = ?1 and raw_message not like '%[CQ:%\' order by id desc limit 0,5",nativeQuery=true)
+	List<Message> findForGpt(String group_id);
 }

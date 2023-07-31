@@ -30,6 +30,12 @@ public class Msg {
 		this.link = link;
 	}
 	
+	@Override
+	public String toString() {
+		return "Msg [id=" + id + ", question=" + question + ", answer=" + answer + ", createId=" + createId + ", link="
+				+ link + "]";
+	}
+
 	public String getCreateId() {
 		return createId;
 	}
