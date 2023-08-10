@@ -93,6 +93,9 @@ public class MsgServiceImpl implements MsgService{
 	@Autowired
 	GroupMemberRepository groupMemberRepository;
 
+	@Autowired
+	private RoleAttRepository roleAttRepository;
+
 	public static int[] starForceDesc(int level,int stat,int att,int star) {
 		Map<Integer, Map<String, int[]>> starForceDataAfter16 = starForceDataAfter16();
 		Map<String, int[]> map = starForceDataAfter16.get(level);
@@ -1115,6 +1118,11 @@ public class MsgServiceImpl implements MsgService{
 		if(raw_message.contains(MsbotConst.botName+"查成分")) {
 			return handMemberAtt(receiveMsg);
 		}
+		
+		//联盟查询
+		if(raw_message.contains(MsbotConst.botName+"联盟查询")) {
+			return handLegionRank(receiveMsg);
+		}
 
 		//说
 		if(raw_message.contains(MsbotConst.botName+"说")){
@@ -1434,25 +1442,19 @@ public class MsgServiceImpl implements MsgService{
 				//设置QQ号
 				roleDmg.setUser_id(receiveMsg.getSender().getUser_id());
 				//设置群号
-				if(receiveMsg.getGroup_id().contains("101577006")) {
-					roleDmg.setGroup_id("398359236");
-				}else {
-					roleDmg.setGroup_id(receiveMsg.getGroup_id());
-				}
+				roleDmg.setGroup_id(receiveMsg.getGroup_id());
 				roleDmg.setCommonDmg(100);
 				roleDmg.setBossDmg(200);
-				System.out.println("roleDmg:");
-				System.out.println(roleDmg);
 				roleDmg = roleDmgRepository.save(roleDmg);
 			}
 			try {
 				for(String temp : split) {
-					temp.replace("%", "");
+					temp = temp.replace("%", "").replace(MsbotConst.botName,"");
 					if(temp.contains("伤害")) {
-						roleDmg.setCommonDmg(Integer.parseInt(temp.replace(MsbotConst.botName,"").replace("伤害", "")));
+						roleDmg.setCommonDmg(Integer.parseInt(temp.replace("伤害", "")));
 					}else if(temp.toLowerCase().contains("boss")) {
 						temp = temp.toLowerCase();
-						roleDmg.setBossDmg(Integer.parseInt(temp.replace(MsbotConst.botName,"").replace("boss", "")));
+						roleDmg.setBossDmg(Integer.parseInt(temp.replace("boss", "")));
 					}else {
 					}
 				}
@@ -1464,6 +1466,84 @@ public class MsgServiceImpl implements MsgService{
 				return replyMsg;
 			}
 
+		}
+
+		//攻击信息
+		if(raw_message.contains("攻击")&&raw_message.contains("百分比")&&raw_message.contains("面板")) {
+			String[] split = raw_message.split(" ");
+			RoleAtt roleAtt = roleAttRepository.findRoleBynumber(receiveMsg.getSender().getUser_id());
+			if(roleAtt == null) {
+				//查询无角色
+				roleAtt = new RoleAtt();
+				//设置群名片 如果没有 设置昵称
+				if(receiveMsg.getSender().getCard()==null || receiveMsg.getSender().getCard().equals("")) {
+					roleAtt.setName(receiveMsg.getSender().getNickname());
+				}else {
+					roleAtt.setName(receiveMsg.getSender().getCard());
+				}
+				//设置QQ号
+				roleAtt.setUser_id(receiveMsg.getSender().getUser_id());
+				//设置群号
+				roleAtt.setGroup_id(receiveMsg.getGroup_id());
+				roleAtt.setAtt(6728);
+				roleAtt.setAttPer(157);
+				roleAtt.setMaxAtt(Long.parseLong("66030797"));
+				roleAtt = roleAttRepository.save(roleAtt);
+			}
+			try {
+				for(String temp : split) {
+					temp = temp.replace("%", "").replace(MsbotConst.botName,"");
+					if(temp.contains("攻击")) {
+						roleAtt.setAtt(Integer.parseInt(temp.replace("攻击", "")));
+					}else if(temp.contains("百分比")) {
+						roleAtt.setAttPer(Integer.parseInt(temp.replace("百分比", "")));
+					}else if(temp.contains("面板")){
+						roleAtt.setMaxAtt(Long.parseLong(temp.replace("面板", "")));
+					}else {
+					}
+				}
+				roleAttRepository.modifyAtt(roleAtt.getId(), roleAtt.getAtt(), roleAtt.getAttPer(),roleAtt.getMaxAtt());
+
+				String reply = "修改成功";
+
+				RoleDmg roleDmg = roleDmgRepository.findRoleBynumber(receiveMsg.getSender().getUser_id());
+				if(roleDmg==null) {
+					reply = reply + "，未查询到伤害、boss数据，无法计算具体收益比。";
+					replyMsg.setReply(reply);
+					return replyMsg;
+				}
+
+				//攻击 攻击百分比
+				int att_per = roleAtt.getAttPer();
+				int att = roleAtt.getAtt();
+				//面板
+				Long max_att = roleAtt.getMaxAtt();
+				//总伤
+				int dmg = roleDmg.getCommonDmg();
+				int boss = roleDmg.getBossDmg();
+
+				//计算如果新增40boss 相当于提升x攻击%
+				int add_boss = 40;
+				//boss面板
+				float real_max_att = max_att/(100+dmg)*(100+dmg+boss);
+				//增加40boss后的boss面板
+				float real_after_max_att =  max_att/(100+dmg)*(100+dmg+boss+add_boss);
+				//增加40boss后的等效总攻击
+				float after_att = att*real_after_max_att/real_max_att;
+				//等效总攻击换算为百分比
+				float eq_att_per = ((float)after_att)/att*(100+att_per)-(100+att_per);
+				//等效攻击去除百分比
+				float eq_att = (after_att-att)*100/(100+att_per);
+				reply = reply + "\r\n当前数据：伤害："+dmg+"%，boss："+boss+"%\r\n"
+						+ "攻击："+att+"，攻击百分比："+att_per+"%，\r\n面板："+max_att+"\r\n"
+						+ add_boss + "%boss=" + String.format("%.2f",eq_att_per) + "%攻击力=" + String.format("%.2f",eq_att) + "攻击力";
+				replyMsg.setReply(reply);
+				return replyMsg;
+			} catch (Exception e) {
+				replyMsg.setReply("出现了一个意料之外的错误");
+				e.printStackTrace();
+				return replyMsg;
+			}
 		}
 
 		//怪物查询
@@ -1574,6 +1654,28 @@ public class MsgServiceImpl implements MsgService{
 				}
 
 				RoleDmg roleDmg = roleDmgRepository.findRoleBynumber(receiveMsg.getSender().getUser_id());
+				RoleAtt roleAtt = roleAttRepository.findRoleBynumber(receiveMsg.getSender().getUser_id());
+
+				if(roleDmg==null&&roleAtt==null) {
+					GroupMsg groupMsg = new GroupMsg();
+					groupMsg.setGroup_id(Long.parseLong(receiveMsg.getGroup_id()));
+					groupMsg.setMessage("[CQ:at,qq="+ receiveMsg.getSender().getUser_id() +"]"+"未查询到攻击、伤害信息，默认伤害100,boss伤200,攻击6728(157%),面板66030797。你可通过以下指令修改信息\r\n【"+MsbotConst.botName+" 伤害50 boss300】\r\n【"+MsbotConst.botName+" 攻击6728 百分比157 面板66030797】");
+					groupMsgService.sendGroupMsg(groupMsg);
+				}else if(roleDmg==null&&roleAtt!=null) {
+					GroupMsg groupMsg = new GroupMsg();
+					groupMsg.setGroup_id(Long.parseLong(receiveMsg.getGroup_id()));
+					groupMsg.setMessage("[CQ:at,qq="+ receiveMsg.getSender().getUser_id() +"]"+"未查询到角色信息，默认伤害100,boss伤200。你可通过指令【"+MsbotConst.botName+" 伤害50 boss300】修改角色信息");
+					groupMsgService.sendGroupMsg(groupMsg);
+				}else if(roleDmg!=null&&roleAtt==null) {
+					GroupMsg groupMsg = new GroupMsg();
+					groupMsg.setGroup_id(Long.parseLong(receiveMsg.getGroup_id()));
+					groupMsg.setMessage("[CQ:at,qq="+ receiveMsg.getSender().getUser_id() +"]"+"未查询到面板信息，默认攻击6728(157%),面板66030797。你可通过指令【"+MsbotConst.botName+" 攻击6728 百分比157 面板66030797】修改角色信息");
+					groupMsgService.sendGroupMsg(groupMsg);
+				}else {
+
+				}
+
+
 				if(roleDmg == null) {
 					//查询无角色
 					roleDmg = new RoleDmg();
@@ -1590,37 +1692,72 @@ public class MsgServiceImpl implements MsgService{
 					roleDmg.setCommonDmg(100);
 					roleDmg.setBossDmg(200);
 					roleDmgRepository.save(roleDmg);
-
-					GroupMsg groupMsg = new GroupMsg();
-					groupMsg.setGroup_id(Long.parseLong(receiveMsg.getGroup_id()));
-					groupMsg.setMessage("[CQ:at,qq="+ receiveMsg.getSender().getUser_id() +"]"+"未查询到角色信息，默认伤害100,boss伤200。你可通过指令【"+MsbotConst.botName+" 伤害50 boss300】命令修改角色信息");
-					groupMsgService.sendGroupMsg(groupMsg);
 				}
-
+				if(roleAtt == null) {
+					//查询无角色
+					roleAtt = new RoleAtt();
+					//设置群名片 如果没有 设置昵称
+					if(receiveMsg.getSender().getCard()==null || receiveMsg.getSender().getCard().equals("")) {
+						roleAtt.setName(receiveMsg.getSender().getNickname());
+					}else {
+						roleAtt.setName(receiveMsg.getSender().getCard());
+					}
+					//设置QQ号
+					roleAtt.setUser_id(receiveMsg.getSender().getUser_id());
+					//设置群号
+					roleAtt.setGroup_id(receiveMsg.getGroup_id());
+					roleAtt.setAtt(6728);
+					roleAtt.setAttPer(157);
+					roleAtt.setMaxAtt(Long.parseLong("66030797"));
+					roleAttRepository.save(roleAtt);
+				}
 //				shortMsg += " = " + String.format("%.2f", ign) + "%";
 //				shortMsg += "\r\n为防止刷屏，详细计算的部分将以私聊的形式发送于您。";
-
 				ign2 = ign + (100-ign)*20/100;
+
+				//攻击 攻击百分比
+				int att_per = roleAtt.getAttPer();
+				int att = roleAtt.getAtt();
+				//面板
+				Long max_att = roleAtt.getMaxAtt();
+				//总伤
+				int dmg = roleDmg.getCommonDmg();
+				int boss = roleDmg.getBossDmg();
+
+				//计算如果新增40boss 相当于提升x攻击%
+				int add_boss = 40;
+				//boss面板
+				float real_max_att = max_att/(100+dmg)*(100+dmg+boss);
+				//增加40boss后的boss面板
+				float real_after_max_att =  max_att/(100+dmg)*(100+dmg+boss+add_boss);
+				//增加40boss后的等效总攻击
+				float after_att = att*real_after_max_att/real_max_att;
+				//等效总攻击换算为百分比
+				float eq_att_per = ((float)after_att)/att*(100+att_per)-(100+att_per);
+				//等效攻击去除百分比
+				float eq_att = (after_att-att)*100/(100+att_per);
+
 				String replyM = "你之前的无视：" + ign_before + "%(" + ign_before2 + "%)\r\n" + "计算后的无视：" + String.format("%.2f", ign) + "%(" + String.format("%.2f", ign2) + "%)\r\n";
-				replyM += "角色数据 伤害:" + roleDmg.getCommonDmg() + "% boss:" + roleDmg.getBossDmg() + "%\r\n(括号为核心20%无视加成结果)\r\n";
+				replyM += "角色数据 伤害:" + roleDmg.getCommonDmg() + "% boss:" + roleDmg.getBossDmg() + "%\r\n"
+						+ "攻击:" + att + "(" + att_per + "%)" + " 面板:" + max_att + "\r\n";
 
 				replyM += "//----超高防对比-----//\r\n";
 				replyM += "卡琳提升率（380超高防）：" + String.format("%.2f", (defAndign(380, ign)/defAndign(380, ign_before)-1)*100) + "%(" + String.format("%.2f", (defAndign(380, ign2)/defAndign(380, ign_before2)-1)*100) + "%)\r\n";
 				replyM += "原伤害" + defAndign(380, ign_before) + "%(" + defAndign(380, ign_before2) + "%)\r\n";
 				replyM += "现伤害" + defAndign(380, ign) + "%(" + defAndign(380, ign2) +  "%)\r\n";
-				replyM += "相当于提升了" + String.format("%.2f",(defAndign(380, ign)/defAndign(380, ign_before)-1)*(100+roleDmg.getCommonDmg()+roleDmg.getBossDmg())) + "%(" + String.format("%.2f", (defAndign(380, ign2)/defAndign(380, ign_before2)-1)*(100+roleDmg.getCommonDmg()+roleDmg.getBossDmg())) + "%)点boss伤害\r\n";
+				replyM += "提升" + String.format("%.2f",(defAndign(380, ign)/defAndign(380, ign_before)-1)*(100+roleDmg.getCommonDmg()+roleDmg.getBossDmg())) + "%boss/" + String.format("%.2f",(defAndign(380, ign)/defAndign(380, ign_before)-1)*(100+roleDmg.getCommonDmg()+roleDmg.getBossDmg())*eq_att_per/add_boss) + "%攻击/" + String.format("%.2f",(defAndign(380, ign)/defAndign(380, ign_before)-1)*(100+roleDmg.getCommonDmg()+roleDmg.getBossDmg())*eq_att/add_boss)+ "攻击\r\n";
 
 				replyM += "//-----高防对比-----//\r\n";
 				replyM += "斯乌提升率（300高防）：" + String.format("%.2f", (defAndign(300, ign)/defAndign(300, ign_before)-1)*100) + "%(" + String.format("%.2f", (defAndign(300, ign2)/defAndign(300, ign_before2)-1)*100) + "%)\r\n";
 				replyM += "原伤害" + defAndign(300, ign_before) + "%(" + defAndign(300, ign_before2) + "%)\r\n";
 				replyM += "现伤害" + defAndign(300, ign) + "%(" + defAndign(300, ign2) +  "%)\r\n";
-				replyM += "相当于提升了" + String.format("%.2f",(defAndign(300, ign)/defAndign(300, ign_before)-1)*(100+roleDmg.getCommonDmg()+roleDmg.getBossDmg())) + "%(" + String.format("%.2f", (defAndign(300, ign2)/defAndign(300, ign_before2)-1)*(100+roleDmg.getCommonDmg()+roleDmg.getBossDmg())) + "%)点boss伤害\r\n";
+				replyM += "提升" + String.format("%.2f",(defAndign(300, ign)/defAndign(300, ign_before)-1)*(100+roleDmg.getCommonDmg()+roleDmg.getBossDmg())) + "%boss/" + String.format("%.2f",(defAndign(300, ign)/defAndign(300, ign_before)-1)*(100+roleDmg.getCommonDmg()+roleDmg.getBossDmg())*eq_att_per/add_boss) + "%攻击/" + String.format("%.2f",(defAndign(300, ign)/defAndign(300, ign_before)-1)*(100+roleDmg.getCommonDmg()+roleDmg.getBossDmg())*eq_att/add_boss)+ "攻击\r\n";
 
 				replyM += "//-----中防对比-----//\r\n";
 				replyM += "进阶贝伦提升率（200中防）：" + String.format("%.2f", (defAndign(200, ign)/defAndign(200, ign_before)-1)*100) + "%(" + String.format("%.2f", (defAndign(200, ign2)/defAndign(200, ign_before2)-1)*100) + "%)\r\n";
 				replyM += "原伤害" + defAndign(200, ign_before) + "%(" + defAndign(200, ign_before2) + "%)\r\n";
 				replyM += "现伤害" + defAndign(200, ign) + "%(" + defAndign(200, ign2) +  "%)\r\n";
-				replyM += "相当于提升了" + String.format("%.2f",(defAndign(200, ign)/defAndign(200, ign_before)-1)*(100+roleDmg.getCommonDmg()+roleDmg.getBossDmg())) + "%(" + String.format("%.2f", (defAndign(200, ign2)/defAndign(200, ign_before2)-1)*(100+roleDmg.getCommonDmg()+roleDmg.getBossDmg())) + "%)点boss伤害";
+				replyM += "提升" + String.format("%.2f",(defAndign(200, ign)/defAndign(200, ign_before)-1)*(100+roleDmg.getCommonDmg()+roleDmg.getBossDmg())) + "%boss/" + String.format("%.2f",(defAndign(200, ign)/defAndign(200, ign_before)-1)*(100+roleDmg.getCommonDmg()+roleDmg.getBossDmg())*eq_att_per/add_boss) + "%攻击/" + String.format("%.2f",(defAndign(200, ign)/defAndign(200, ign_before)-1)*(100+roleDmg.getCommonDmg()+roleDmg.getBossDmg())*eq_att/add_boss)+ "攻击";
 
 				replyMsg.setReply(replyM);
 				String reply = null;
@@ -1633,11 +1770,51 @@ public class MsgServiceImpl implements MsgService{
 					replyMsg.setAt_sender(false);
 					e.printStackTrace();
 				}
+//					PrivateMsg privateMsg = new PrivateMsg();
+//					privateMsg.setUser_id(Long.parseLong(receiveMsg.getUser_id()));
+//					privateMsg.setMessage(replyM);
+//					groupMsgService.sendPrivateMsg(privateMsg);
+				return replyMsg;
+
+
+				//无视 核心20%计算
+//				String replyM = "你之前的无视：" + ign_before + "%(" + ign_before2 + "%)\r\n" + "计算后的无视：" + String.format("%.2f", ign) + "%(" + String.format("%.2f", ign2) + "%)\r\n";
+//				replyM += "角色数据 伤害:" + roleDmg.getCommonDmg() + "% boss:" + roleDmg.getBossDmg() + "%\r\n(括号为核心20%无视加成结果)\r\n";
+//
+//				replyM += "//----超高防对比-----//\r\n";
+//				replyM += "卡琳提升率（380超高防）：" + String.format("%.2f", (defAndign(380, ign)/defAndign(380, ign_before)-1)*100) + "%(" + String.format("%.2f", (defAndign(380, ign2)/defAndign(380, ign_before2)-1)*100) + "%)\r\n";
+//				replyM += "原伤害" + defAndign(380, ign_before) + "%(" + defAndign(380, ign_before2) + "%)\r\n";
+//				replyM += "现伤害" + defAndign(380, ign) + "%(" + defAndign(380, ign2) +  "%)\r\n";
+//				replyM += "相当于提升了" + String.format("%.2f",(defAndign(380, ign)/defAndign(380, ign_before)-1)*(100+roleDmg.getCommonDmg()+roleDmg.getBossDmg())) + "%(" + String.format("%.2f", (defAndign(380, ign2)/defAndign(380, ign_before2)-1)*(100+roleDmg.getCommonDmg()+roleDmg.getBossDmg())) + "%)点boss伤害\r\n";
+//
+//				replyM += "//-----高防对比-----//\r\n";
+//				replyM += "斯乌提升率（300高防）：" + String.format("%.2f", (defAndign(300, ign)/defAndign(300, ign_before)-1)*100) + "%(" + String.format("%.2f", (defAndign(300, ign2)/defAndign(300, ign_before2)-1)*100) + "%)\r\n";
+//				replyM += "原伤害" + defAndign(300, ign_before) + "%(" + defAndign(300, ign_before2) + "%)\r\n";
+//				replyM += "现伤害" + defAndign(300, ign) + "%(" + defAndign(300, ign2) +  "%)\r\n";
+//				replyM += "相当于提升了" + String.format("%.2f",(defAndign(300, ign)/defAndign(300, ign_before)-1)*(100+roleDmg.getCommonDmg()+roleDmg.getBossDmg())) + "%(" + String.format("%.2f", (defAndign(300, ign2)/defAndign(300, ign_before2)-1)*(100+roleDmg.getCommonDmg()+roleDmg.getBossDmg())) + "%)点boss伤害\r\n";
+//
+//				replyM += "//-----中防对比-----//\r\n";
+//				replyM += "进阶贝伦提升率（200中防）：" + String.format("%.2f", (defAndign(200, ign)/defAndign(200, ign_before)-1)*100) + "%(" + String.format("%.2f", (defAndign(200, ign2)/defAndign(200, ign_before2)-1)*100) + "%)\r\n";
+//				replyM += "原伤害" + defAndign(200, ign_before) + "%(" + defAndign(200, ign_before2) + "%)\r\n";
+//				replyM += "现伤害" + defAndign(200, ign) + "%(" + defAndign(200, ign2) +  "%)\r\n";
+//				replyM += "相当于提升了" + String.format("%.2f",(defAndign(200, ign)/defAndign(200, ign_before)-1)*(100+roleDmg.getCommonDmg()+roleDmg.getBossDmg())) + "%(" + String.format("%.2f", (defAndign(200, ign2)/defAndign(200, ign_before2)-1)*(100+roleDmg.getCommonDmg()+roleDmg.getBossDmg())) + "%)点boss伤害";
+//
+//				replyMsg.setReply(replyM);
+//				String reply = null;
+//				try {
+//					reply = drawService.ignImage(replyM);
+//					replyMsg.setReply(reply);
+//					replyMsg.setAt_sender(false);
+//				}catch (Exception e) {
+//					replyMsg.setReply("图片文件缺失");
+//					replyMsg.setAt_sender(false);
+//					e.printStackTrace();
+//				}
 //				PrivateMsg privateMsg = new PrivateMsg();
 //				privateMsg.setUser_id(Long.parseLong(receiveMsg.getUser_id()));
 //				privateMsg.setMessage(replyM);
 //				groupMsgService.sendPrivateMsg(privateMsg);
-				return replyMsg;
+//				return replyMsg;
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -1648,9 +1825,10 @@ public class MsgServiceImpl implements MsgService{
 			String reply = "//无视加算\r\n"
 					+ MsbotConst.botName + " 无视 70+50+20\r\n"
 					+ "//无视逆运算\r\n"
-					+ MsbotConst.botName+ " 无视 90-50\r\n"
+					+ MsbotConst.botName + " 无视 90-50\r\n"
 					+ "//修改角色属性数据\r\n"
-					+ MsbotConst.botName+ " 伤害50 boss250";
+					+ MsbotConst.botName + " 伤害50 boss250\r\n"
+					+ MsbotConst.botName + " 攻击6728 百分比157 面板66030797";
 			replyMsg.setReply(reply);
 			return replyMsg;
 		}
