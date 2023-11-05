@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
@@ -19,7 +18,6 @@ import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.alibaba.fastjson.JSON;
 import com.badeling.msbot.config.MsbotConst;
 import com.badeling.msbot.controller.MsgZbCalculate;
 import com.badeling.msbot.domain.ChannelMsg;
@@ -642,22 +640,6 @@ public class ChannelServiceImpl implements ChannelService{
 			 return replyMsg;
 		 }
 		 
-		 if(MsbotConst.moliKey2!=null&&MsbotConst.moliSecret2!=null&&!MsbotConst.moliKey2.isEmpty()&&!MsbotConst.moliSecret2.isEmpty()) {
-			 if(!raw_message.contains("[CQ")) {
-				String tuLingMsg = groupMsgService.MoliMsg2(command, Math.abs(channelMsg.getUser_id().hashCode())+"", channelMsg.getSender().getNickname());
-				@SuppressWarnings("unchecked")
-				Map<String,Object> result = (Map<String, Object>) JSON.parse(tuLingMsg); 
-				System.out.println(tuLingMsg);
-				if((result.get("message")+"").contains("请求成功")) {
-					String reply = tuLingMsg.substring(tuLingMsg.indexOf("content")+10,tuLingMsg.indexOf("\",\"typed\":"));
-					replyMsg.setReply(reply);
-					return replyMsg;
-				}
-			}
-		}
-		 
-		
-		
 		Random r = new Random();
 		int random = r.nextInt(6) + 1;
 		if(random==1) {

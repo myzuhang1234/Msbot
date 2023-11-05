@@ -16,6 +16,8 @@ public class GlobalVariable {
 	public static Map<String,Long> newFriendsMap;
 	//魔女抽奖CD
 	public static Map<String,Long> witchForestMap;
+	//百度AUTH
+	public static Map<String,String> baiduAuth;
 	
 	public GlobalVariable() {
 		
@@ -40,10 +42,17 @@ public class GlobalVariable {
 	public static Map<String, Long> getWitchForestMap() {
 		return witchForestMap;
 	}
+	
 	public static void setWitchForestMap(Map<String, Long> witchForestMap) {
 		GlobalVariable.witchForestMap = witchForestMap;
 	}
-	
-	
 
+	public static Map<String, String> getBaiduAuth() {
+		return baiduAuth;
+	}
+
+	public static void setBaiduAuth(Map<String, String> baiduAuth) {
+		GlobalVariable.baiduAuth = baiduAuth;
+	}
+	
 }

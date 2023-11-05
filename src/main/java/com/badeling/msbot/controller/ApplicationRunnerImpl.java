@@ -12,6 +12,7 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
+import com.badeling.msbot.config.MsbotConst;
 import com.badeling.msbot.domain.GlobalVariable;
 import com.badeling.msbot.domain.GroupMsg;
 import com.badeling.msbot.domain.Result;
@@ -20,6 +21,8 @@ import com.badeling.msbot.entity.GroupMember;
 import com.badeling.msbot.repository.GroupInfoRepository;
 import com.badeling.msbot.repository.GroupMemberRepository;
 import com.badeling.msbot.service.GroupMsgService;
+import com.badeling.msbot.service.ImgModerationService;
+import com.badeling.msbot.service.MvpImageService;
 
 @Component
 public class ApplicationRunnerImpl implements ApplicationRunner{
@@ -34,6 +37,12 @@ public class ApplicationRunnerImpl implements ApplicationRunner{
 	@Autowired
 	GroupMemberRepository groupMemberRepository;
 	
+	@Autowired
+	ImgModerationService imgModerationService;
+	
+	@Autowired
+	MvpImageService mvpImageService;
+	
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
 		TreeSet<String> msgList = new TreeSet<>();
@@ -43,6 +52,14 @@ public class ApplicationRunnerImpl implements ApplicationRunner{
 		Map<String,Long> witchForestMap = new HashMap<>();
 		GlobalVariable.setWitchForestMap(witchForestMap);
 		
+		try {
+			Map<String,String> baiduAuth = new HashMap<>();
+			baiduAuth.put("imageSecurity", imgModerationService.getAuth(MsbotConst.img_apikey, MsbotConst.img_secretkey));
+			baiduAuth.put("imageContent", mvpImageService.getAuth(MsbotConst.baiduKey, MsbotConst.baiduSecret));
+			GlobalVariable.setBaiduAuth(baiduAuth);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		
 		System.out.println("初始程序执行完毕");
 		

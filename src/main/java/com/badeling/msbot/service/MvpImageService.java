@@ -17,4 +17,6 @@ public interface MvpImageService {
 	String saveFlagRaceImage(String today, String time);
 
 	String[] handHigherImageMsg(ReceiveMsg receiveMsg);
+
+	String getAuth(String ak, String sk);
 }

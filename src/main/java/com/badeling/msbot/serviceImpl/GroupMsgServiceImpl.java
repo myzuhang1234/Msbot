@@ -1,19 +1,12 @@
 package com.badeling.msbot.serviceImpl;
 
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import com.alibaba.fastjson.JSONObject;
 import com.badeling.msbot.config.MsbotConst;
 import com.badeling.msbot.domain.ChannelReplyMsg;
 import com.badeling.msbot.domain.GroupMsg;
@@ -83,55 +76,5 @@ public class GroupMsgServiceImpl implements GroupMsgService{
 		Result<?> result = restTemplate.postForObject("http://127.0.0.1:5700/delete_msg", map, Result.class);
         return result;
 	}
-	
-	@Override
-	public String tuLingMsg(String json) {
-		restTemplate.getMessageConverters().set(1, new StringHttpMessageConverter(StandardCharsets.UTF_8));
-		String result = restTemplate.postForObject("http://openapi.tuling123.com/openapi/api/v2", json, String.class);
-        return result;
-	}
-	
-	@Override
-	public String MoliMsg(String content,String user_id,String name) {
-		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.APPLICATION_JSON);
-		headers.add("Api-Key", MsbotConst.moliKey);
-		headers.add("Api-Secret", MsbotConst.moliSecret);
 
-		Map<String,Object> body = new HashMap<>();
-		// 发送的内容
-		body.put("content", content);
-		// 消息类型，1：私聊，2：群聊
-		body.put("type", 2);
-		body.put("from", user_id);
-		body.put("fromName", name);
-		body.put("to", user_id);
-		String json = JSONObject.toJSONString(body);
-		HttpEntity<String> formEntity = new HttpEntity<String>(json.toString(), headers);
-		JSONObject jsonObject = restTemplate.postForEntity("https://i.mly.app/reply", formEntity, JSONObject.class).getBody();
-//		(Map<String, Object>)JSON.parseObject(msg);
-		return jsonObject.toString().replaceAll("\\\\n", "\r\n");
-	}
-	
-	@Override
-	public String MoliMsg2(String content,String user_id,String name) {
-		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.APPLICATION_JSON);
-		headers.add("Api-Key", MsbotConst.moliKey2);
-		headers.add("Api-Secret", MsbotConst.moliSecret2);
-
-		Map<String,Object> body = new HashMap<>();
-		// 发送的内容
-		body.put("content", content);
-		// 消息类型，1：私聊，2：群聊
-		body.put("type", 2);
-		body.put("from", user_id);
-		body.put("fromName", name);
-		body.put("to", user_id);
-		String json = JSONObject.toJSONString(body);
-		HttpEntity<String> formEntity = new HttpEntity<String>(json.toString(), headers);
-		JSONObject jsonObject = restTemplate.postForEntity("https://i.mly.app/reply", formEntity, JSONObject.class).getBody();
-//		(Map<String, Object>)JSON.parseObject(msg);
-		return jsonObject.toString().replaceAll("\\\\n", "\r\n");
-	}
 }

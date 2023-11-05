@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,7 @@ import com.badeling.msbot.entity.RereadSentence;
 import com.badeling.msbot.entity.RereadTime;
 import com.badeling.msbot.entity.Score;
 import com.badeling.msbot.entity.SellAndBuy;
+import com.badeling.msbot.entity.SweetDream;
 import com.badeling.msbot.repository.GroupInfoRepository;
 import com.badeling.msbot.repository.GroupMemberRepository;
 import com.badeling.msbot.repository.MessageRepository;
@@ -31,7 +33,11 @@ import com.badeling.msbot.repository.RereadSentenceRepository;
 import com.badeling.msbot.repository.RereadTimeRepository;
 import com.badeling.msbot.repository.ScoreRepository;
 import com.badeling.msbot.repository.SellAndBuyRepository;
+import com.badeling.msbot.repository.SweetDreamRepository;
 import com.badeling.msbot.service.GroupMsgService;
+import com.badeling.msbot.service.ImgModerationService;
+import com.badeling.msbot.service.MvpImageService;
+import com.badeling.msbot.service.RankService;
 import com.badeling.msbot.util.CosSdk;
 
 @EnableScheduling
@@ -42,10 +48,10 @@ public class ScheduleTask {
 	GroupMsgService groupMsgService;
 	
 	@Autowired
-	private RereadSentenceRepository rereadSentenceRepository;
+	RereadSentenceRepository rereadSentenceRepository;
 	
 	@Autowired
-	private RereadTimeRepository rereadTimeRepository;
+	RereadTimeRepository rereadTimeRepository;
 	
 	@Autowired
 	SellAndBuyRepository sellAndBuyRepository;
@@ -61,6 +67,18 @@ public class ScheduleTask {
 	
 	@Autowired
 	GroupMemberRepository groupMemberRepository;
+	
+	@Autowired
+	RankService rankService;	
+	
+	@Autowired
+	ImgModerationService imgModerationService;
+	
+	@Autowired
+	MvpImageService mvpImageService;
+	
+	@Autowired
+	SweetDreamRepository sweetDreamRepository;
 	
 	@Scheduled(cron="23 24 5 * * ?")
 	private void deleteExpiredSellAndBuy() {
@@ -387,7 +405,70 @@ public class ScheduleTask {
 		rereadTimeRepository.deleteAll();
 	}
 		
-	
+	@Scheduled(cron="23 24 6 * * ?")
+	private void search() {
 		
+		Random r = new Random();
+		List<SweetDream> list = sweetDreamRepository.findByType("morning");
+		
+		
+		for(String group_id :MsbotConst.group_morning) {
+			try {
+				SweetDream sweetDream = list.get(r.nextInt(list.size()));
+				GroupMsg groupMsg = new GroupMsg();
+				groupMsg.setAuto_escape(false);
+				groupMsg.setGroup_id(Long.parseLong(group_id));
+				groupMsg.setMessage(sweetDream.getContent());
+				groupMsgService.sendGroupMsg(groupMsg);		
+				
+				Thread.sleep(55627);
+				
+				String imageFiles = MsbotConst.imageUrl + "morning";
+				File files = new File(imageFiles);
+				File[] listFiles = files.listFiles();
+				int nextInt = r.nextInt(listFiles.length);
+				String image = "[CQ:image,file=morning/" + listFiles[nextInt].getName() + "]";
+				groupMsg.setMessage(image);
+				groupMsgService.sendGroupMsg(groupMsg);
+				Thread.sleep(55627);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
+		
+		
+	}
+	
+	@Scheduled(cron="30 50 23 * * ?")
+	private void sweetDream() {
+		Random r = new Random();
+		
+		List<SweetDream> list = sweetDreamRepository.findByType("night");
+		
+		for(String group_id :MsbotConst.group_morning) {
+			SweetDream sweetDream = list.get(r.nextInt(list.size()));
+			GroupMsg groupMsg = new GroupMsg();
+			groupMsg.setAuto_escape(false);
+			groupMsg.setGroup_id(Long.parseLong(group_id));
+			groupMsg.setMessage(sweetDream.getContent());
+			groupMsgService.sendGroupMsg(groupMsg);		
+			
+			try {
+				Thread.sleep(5862);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+			String imageFiles = MsbotConst.imageUrl + "night";
+			File files = new File(imageFiles);
+			File[] listFiles = files.listFiles();
+			
+			int nextInt = r.nextInt(listFiles.length);
+			String image = "[CQ:image,file=night/" + listFiles[nextInt].getName() + "]";
+			groupMsg.setMessage(image);
+			groupMsgService.sendGroupMsg(groupMsg);
+		}
+	}
 }
 

@@ -640,9 +640,6 @@ public class ChannelOfficialServiceImpl implements ChannelOfficialService{
 			return replyMsg;
 		}
 		
-		if(MsbotConst.moliKey!=null&&MsbotConst.moliSecret!=null&&!MsbotConst.moliKey.isEmpty()&&!MsbotConst.moliSecret.isEmpty()) {
-			
-		}
 		
 		if(raw_message.replaceAll(MsbotConst.channelBotName, "").replaceAll(" ","").replaceAll("？","").equals("")) {
 			raw_message = MsbotConst.channelBotName+"固定回复问号";
@@ -723,20 +720,6 @@ public class ChannelOfficialServiceImpl implements ChannelOfficialService{
 
 			 return replyMsg;
 		 }
-		
-		 if(MsbotConst.moliKey!=null&&MsbotConst.moliSecret!=null&&!MsbotConst.moliKey.isEmpty()&&!MsbotConst.moliSecret.isEmpty()) {
-			//消息传给图灵
-				String tuLingMsg = groupMsgService.MoliMsg(command, Math.abs(user_id.hashCode())+"", user_name);
-				@SuppressWarnings("unchecked")
-				Map<String,Object> result = (Map<String, Object>) JSON.parse(tuLingMsg); 
-				System.out.println(tuLingMsg);
-				if((result.get("message")+"").contains("请求成功")) {
-					String reply = tuLingMsg.substring(tuLingMsg.indexOf("content")+10,tuLingMsg.indexOf("\",\"typed\":"));
-					replyMsg.setReply(reply);
-					return replyMsg;
-				}
-			}
-		 
 		
 		 
 		Random r = new Random();

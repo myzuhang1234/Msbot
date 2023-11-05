@@ -25,12 +25,5 @@ public interface GroupMsgService {
 	Result<?> getGroupMember(GroupMsg groupMsg);
 
 	Result<?> deleteMsg(HashMap<String, Integer> map);
-
-	String tuLingMsg(String str);
-
-	String MoliMsg(String content, String user_id, String name);
-
-	String MoliMsg2(String content, String user_id, String name);
-
 	
 }

@@ -25,7 +25,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.badeling.msbot.config.MsbotConst;
 import com.badeling.msbot.controller.ChatGpt;
@@ -42,6 +41,7 @@ import com.badeling.msbot.entity.GroupInfo;
 import com.badeling.msbot.entity.GroupMember;
 import com.badeling.msbot.entity.Message;
 import com.badeling.msbot.entity.Msg;
+import com.badeling.msbot.entity.MsgDeleted;
 import com.badeling.msbot.entity.MsgNoPrefix;
 import com.badeling.msbot.entity.QuizOzAnswer;
 import com.badeling.msbot.entity.QuizOzQuestion;
@@ -55,9 +55,9 @@ import com.badeling.msbot.entity.SellAndBuy;
 import com.badeling.msbot.repository.GroupInfoRepository;
 import com.badeling.msbot.repository.GroupMemberRepository;
 import com.badeling.msbot.repository.MessageRepository;
+import com.badeling.msbot.repository.MsgDeletedRepository;
 import com.badeling.msbot.repository.MsgNoPrefixRepository;
 import com.badeling.msbot.repository.MsgRepository;
-import com.badeling.msbot.repository.QuizOzAnswerRepository;
 import com.badeling.msbot.repository.QuizOzQuestionRepository;
 import com.badeling.msbot.repository.RankInfoRepository;
 import com.badeling.msbot.repository.RereadSentenceRepository;
@@ -69,6 +69,7 @@ import com.badeling.msbot.repository.SellAndBuyRepository;
 import com.badeling.msbot.service.ChannelService;
 import com.badeling.msbot.service.DrawService;
 import com.badeling.msbot.service.GroupMsgService;
+import com.badeling.msbot.service.ImgModerationService;
 import com.badeling.msbot.service.MsgService;
 import com.badeling.msbot.service.MvpImageService;
 import com.badeling.msbot.service.PrivateService;
@@ -82,6 +83,9 @@ public class MsgServiceImpl implements MsgService{
 	
 	@Autowired
 	private MsgRepository msgRepository;
+	
+	@Autowired
+	private MsgDeletedRepository msgDeletedRepository;
 	
 	@Autowired
 	private MsgZbCalculate msgZbCalculate;
@@ -120,28 +124,28 @@ public class MsgServiceImpl implements MsgService{
 	private MsgNoPrefixRepository msgNoPrefixRepository;
 	
 	@Autowired
-	RankInfoRepository rankInfoRepository;
+	private RankInfoRepository rankInfoRepository;
 	
 	@Autowired
-	QuizOzQuestionRepository quizOzQuestionRepository;
+	private QuizOzQuestionRepository quizOzQuestionRepository;
 	
 	@Autowired
-	QuizOzAnswerRepository quizOzAnswerRepository;
+	private SellAndBuyRepository sellAndBuyRepository;
 	
 	@Autowired
-	SellAndBuyRepository sellAndBuyRepository;
+	private GroupInfoRepository groupInfoRepository;
 	
 	@Autowired
-	GroupInfoRepository groupInfoRepository;
+	private MessageRepository messageRepository;
 	
 	@Autowired
-	MessageRepository messageRepository;
+	private ScoreRepository scoreRepository;
 	
 	@Autowired
-	ScoreRepository scoreRepository;
+	private GroupMemberRepository groupMemberRepository;
 	
 	@Autowired
-	GroupMemberRepository groupMemberRepository;
+	private ImgModerationService imgModerationService;
 	
 	@Override
 	public ReplyMsg receive(String msg) {
@@ -206,6 +210,11 @@ public class MsgServiceImpl implements MsgService{
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+       
+        if(receiveMsg.getGroup_id().equals("994670432")||receiveMsg.getGroup_id().equals("1023665202")) {
+        	receiveMsg.setRaw_message(receiveMsg.getRaw_message().replaceAll("蠢落", "蠢猫"));
+        	receiveMsg.setMessage(receiveMsg.getMessage().replaceAll("蠢落", "蠢猫"));
+		}
         
     	//过滤自己的消息 、 统计自己的消息需设置report-self-message:true
     	if(receiveMsg.getUser_id()!=null&&receiveMsg.getUser_id().equals(receiveMsg.getSelf_id())) {
@@ -218,17 +227,28 @@ public class MsgServiceImpl implements MsgService{
         		return null;
         	}
         }
+       
+        //图像审核
+        if(receiveMsg.getRaw_message().contains("[CQ:image,file")) {
+        	for(String group_id : MsbotConst.img_security_group) {
+            	if(receiveMsg.getGroup_id().equals(group_id)) {
+                	imgModerationService.imgModeration(receiveMsg);
+            	}
+            }
+        }
+        
         
         if(receiveMsg.getRaw_message().startsWith(MsbotConst.botName)) {
         	System.out.println(receiveMsg.toString());
         	return handleNameMsg(receiveMsg);
         }else if(receiveMsg.getRaw_message().startsWith("[CQ:at,qq="+MsbotConst.botId+"]")){
            	receiveMsg.setRaw_message(receiveMsg.getRaw_message().replace("[CQ:at,qq="+receiveMsg.getSelf_id()+"]", MsbotConst.botName));
-        	System.out.println(receiveMsg.toString());
+        	receiveMsg.setMessage(receiveMsg.getMessage().replace("[CQ:at,qq="+receiveMsg.getSelf_id()+"]", MsbotConst.botName));
+           	System.out.println(receiveMsg.toString());
         	return handleNameMsg(receiveMsg);
         }else if(receiveMsg.getRaw_message().startsWith(MsbotConst.gptName)) {
         	String raw_message = receiveMsg.getRaw_message();
-			ReplyMsg gptForUser = ChatGpt.getGptForUser(raw_message);
+			ReplyMsg gptForUser = ChatGpt.getGpt(raw_message,MsbotConst.user_prompt);
 			GroupMsg groupMsg = new GroupMsg();
 			groupMsg.setAuto_escape(false);
 			groupMsg.setGroup_id(Long.parseLong(receiveMsg.getGroup_id()));
@@ -529,22 +549,6 @@ public class MsgServiceImpl implements MsgService{
 					}
 				}
 				
-//				if(getResult(next.getAnswer(),a)<=k) {
-//					k=getResult(next.getAnswer(),a);
-//					MatchQoa = next;
-//				}
-//				if(getResult(next.getAnswer(),b)<=k) {
-//					k=getResult(next.getAnswer(),b);
-//					MatchQoa = next;
-//				}
-//				if(getResult(next.getAnswer(),c)<=k) {
-//					k=getResult(next.getAnswer(),c);
-//					MatchQoa = next;
-//				}
-//				if(getResult(next.getAnswer(),d)<=k) {
-//					k=getResult(next.getAnswer(),d);
-//					MatchQoa = next;
-//				}
 			}
 			
 			reply = reply + "匹配答案 : " + matchQoa + "\r\n";
@@ -612,8 +616,8 @@ public class MsgServiceImpl implements MsgService{
 			name = raw_message;
 		}
 
-			String legion = rankService.getRank(name);
-			replyMsg.setReply(legion);
+		String legion = rankService.getRank(name);
+		replyMsg.setReply(legion);
 		
 		GroupMsg groupMsg = new GroupMsg();
 		groupMsg.setAuto_escape(false);
@@ -692,12 +696,12 @@ public class MsgServiceImpl implements MsgService{
 		boolean isBreakReread = false;
 		//图片信息判定是否相同
 		if(reReadMsg!=null) {
-			if(receiveMsg.getRaw_message().contains("[CQ:image,file=")&&reReadMsg.getRaw_message().contains("[CQ:image,file=")) {
+			if(receiveMsg.getMessage().contains("[CQ:image,file=")&&reReadMsg.getRaw_message().contains("[CQ:image,file=")) {
 				String name1 = reReadMsg.getRaw_message().substring(reReadMsg.getRaw_message().indexOf("file=")+5,reReadMsg.getRaw_message().indexOf(",url="));
-				String name2 = receiveMsg.getRaw_message().substring(receiveMsg.getRaw_message().indexOf("file=")+5,receiveMsg.getRaw_message().indexOf(",url="));
+				String name2 = receiveMsg.getMessage().substring(receiveMsg.getMessage().indexOf("file=")+5,receiveMsg.getMessage().indexOf(",url="));
 				isBreakReread = !name1.equals(name2);
 			}else {
-				isBreakReread = !reReadMsg.getRaw_message().equals(receiveMsg.getRaw_message());
+				isBreakReread = !reReadMsg.getRaw_message().equals(receiveMsg.getMessage());
 			}
 			
 			if(!isBreakReread) {
@@ -737,7 +741,7 @@ public class MsgServiceImpl implements MsgService{
 				}
 			}
 			reReadMsg.setCount(1);
-			reReadMsg.setRaw_message(receiveMsg.getRaw_message());
+			reReadMsg.setRaw_message(receiveMsg.getMessage());
 			reReadMsg.setReread_id(receiveMsg.getUser_id());
 			Random r = new Random();
 			reReadMsg.setRe_count(2+r.nextInt(2));
@@ -756,7 +760,26 @@ public class MsgServiceImpl implements MsgService{
 				if(reReadMsg.getRaw_message().equals("？")) {
 					groupMsg.setMessage("[CQ:image,file=save/7AA9BBE83B63CB529F8EC7B64B14116C]");
 				}else {
-					groupMsg.setMessage(reReadMsg.getRaw_message());
+					String raw_message = reReadMsg.getRaw_message();
+					String answer = reReadMsg.getRaw_message();
+					int count = 0;
+					while(answer.contains("[CQ:image")&&count<10) {
+						try{
+							int start = raw_message.indexOf(",url=")+5;
+							int end = raw_message.indexOf("]");
+							String imageUrl = raw_message.substring(start, end);
+							
+							String imageName = mvpImageService.saveTempImage(imageUrl);
+							imageName = "[CQ:image,file=" + imageName + "]";
+							String imageCq = answer.substring(answer.indexOf("[CQ:image,file"), answer.indexOf("]")+1);
+							raw_message = raw_message.replace(imageCq, imageName);
+							answer = answer.replace(imageCq, "");
+						}catch (Exception e) {
+							e.printStackTrace();
+						}
+						count++;
+					}
+					groupMsg.setMessage(raw_message);
 				}
 				groupMsgService.sendGroupMsg(groupMsg);
 			}
@@ -801,7 +824,7 @@ public class MsgServiceImpl implements MsgService{
 					gpt_message = gpt_message + "你:?";
 				}
 
-				ReplyMsg gpt = ChatGpt.getGptForGroup(gpt_message);
+				ReplyMsg gpt = ChatGpt.getGpt(gpt_message,MsbotConst.group_prompt);
 				
 				GroupMsg groupMsg = new GroupMsg();
 				groupMsg.setAuto_escape(false);
@@ -811,11 +834,10 @@ public class MsgServiceImpl implements MsgService{
 				
 				Thread.sleep(5873);
 				
-				GroupMsg g = new GroupMsg();
-				g.setGroup_id(Long.parseLong(MsbotConst.gpt_notice_group));
 				GroupInfo findByGroupId = groupInfoRepository.findByGroupId(receiveMsg.getGroup_id());
-				g.setMessage(gpt_message+"\r\n"+gpt.getReply()+" -by "+findByGroupId.getGroup_name());
-				groupMsgService.sendGroupMsg(g);
+				groupMsg.setGroup_id(Long.parseLong(MsbotConst.notice_group));
+				groupMsg.setMessage(gpt_message+"\r\n"+gpt.getReply()+" -by "+findByGroupId.getGroup_name());
+				groupMsgService.sendGroupMsg(groupMsg);
 				
 				return null;
 				
@@ -955,11 +977,6 @@ public class MsgServiceImpl implements MsgService{
 					int questionIndex = raw_message.indexOf("问");
 					int answerIndex = raw_message.indexOf(" 答");
 					String theQuestion = raw_message.substring(questionIndex+1, answerIndex);
-					if((theQuestion.contains("固定回复")||theQuestion.contains("随机回复"))&&!receiveMsg.getUser_id().equals(MsbotConst.masterId)) {
-						replyMsg.setReply("你的权限不足，添加固定回复词条所需权限22，你当前权限21");
-						return replyMsg;
-					}
-					
 					String[] qList = theQuestion.split("\\|");
 					String answer = raw_message;
 					while(answer.contains("[CQ:image")) {
@@ -1005,10 +1022,6 @@ public class MsgServiceImpl implements MsgService{
 					int answerIndex = raw_message.indexOf(" 答");
 					String theQuestion = raw_message.substring(questionIndex+1, answerIndex);
 					newMsg.setQuestion(theQuestion);
-					if((theQuestion.contains("固定回复")||theQuestion.contains("随机回复"))&&!receiveMsg.getUser_id().equals(MsbotConst.masterId)) {
-						replyMsg.setReply("你的权限不足，添加固定回复词条所需权限22，你当前权限21");
-						return replyMsg;
-					}
 					String answer = raw_message;
 					while(answer.contains("[CQ:image")) {
 						String imageName = mvpImageService.saveImage(answer);
@@ -1088,13 +1101,9 @@ public class MsgServiceImpl implements MsgService{
 					if(findQuestion==null) {
 						replyMsg.setReply("指定问题不存在");
 					}else {
-						if(isAdminMsg(receiveMsg.getUser_id())) {
-							if(!findQuestion.getCreateId().equals(receiveMsg.getUser_id())) {
-								replyMsg.setReply("只能删除自己创建的问题喔");
-								return replyMsg;
-							}
-						}
+						MsgDeleted md = new MsgDeleted(null, findQuestion.getQuestion(), findQuestion.getAnswer(), receiveMsg.getUser_id(), findQuestion.getLink());
 						msgRepository.delete(findQuestion);
+						msgDeletedRepository.save(md);
 						replyMsg.setReply("删除成功 问题:"+findQuestion.getQuestion());
 					}
 				}catch (Exception e) {
@@ -1106,6 +1115,7 @@ public class MsgServiceImpl implements MsgService{
 			}
 			return replyMsg;
 		}
+		
 		
 		//伤害信息
 		if(raw_message.contains("伤害")&&(raw_message.contains("boss")||raw_message.contains("BOSS"))) {
@@ -1418,10 +1428,6 @@ public class MsgServiceImpl implements MsgService{
 					replyMsg.setAt_sender(false);
 					e.printStackTrace();
 				}
-//					PrivateMsg privateMsg = new PrivateMsg();
-//					privateMsg.setUser_id(Long.parseLong(receiveMsg.getUser_id()));
-//					privateMsg.setMessage(replyM);
-//					groupMsgService.sendPrivateMsg(privateMsg);
 				return replyMsg;
 				
 				
@@ -1536,6 +1542,7 @@ public class MsgServiceImpl implements MsgService{
 			replyMsg.setAt_sender(false);
 			return replyMsg;
 		}
+		
 		//退群人员查询
 		if(raw_message.contains("谁")&&raw_message.contains("退群")) {
 			Long time = System.currentTimeMillis()-24*60*60*1000;
@@ -1647,7 +1654,7 @@ public class MsgServiceImpl implements MsgService{
         		String findNumber = receiveMsg.getRaw_message().substring(aIndex,bIndex);
         		if(raw_message.contains("别")||raw_message.contains("不")||raw_message.contains("怎么")||raw_message.contains("禁止")) {
         			replyMsg.setAt_sender(true);
-        			replyMsg.setReply("[CQ:image,file=img/buzhidao5.jpg]");
+        			replyMsg.setReply("[CQ:image,file=img/buzhidao.png]");
     				return replyMsg;
     			}
         		String throwSomeone = "";
@@ -1765,7 +1772,7 @@ public class MsgServiceImpl implements MsgService{
         		String findNumber = receiveMsg.getRaw_message().substring(aIndex,bIndex);
         		if(raw_message.contains("别")||raw_message.contains("不")||raw_message.contains("怎么")||raw_message.contains("禁止")) {
         			replyMsg.setAt_sender(true);
-        			replyMsg.setReply("[CQ:image,file=img/buzhidao5.jpg]");
+        			replyMsg.setReply("[CQ:image,file=img/buzhidao.png]");
     				return replyMsg;
     			}
         		if(findNumber.equals(MsbotConst.masterId)||findNumber.equals(receiveMsg.getSelf_id())) {
@@ -1790,6 +1797,14 @@ public class MsgServiceImpl implements MsgService{
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+		}
+		
+		if(raw_message.contains("roll")||raw_message.contains("ROLL")) {
+			Random r = new Random();
+			int i = r.nextInt(100);
+			replyMsg.setAt_sender(true);
+			replyMsg.setReply("ROLL:"+i);
+			return replyMsg;
 		}
 		
 		if(raw_message.contains("抽卡")) {
@@ -2022,7 +2037,7 @@ public class MsgServiceImpl implements MsgService{
 		//查找答案
 		List<Msg> list = new ArrayList<Msg>();
 		List<Msg> rep = new ArrayList<Msg>();
-		String command = raw_message.substring(2);
+		String command = raw_message.substring(MsbotConst.botName.length());
 		 while (it.hasNext()) {
 			 msg = it.next();
 			 if (command.toLowerCase().contains(msg.getQuestion().toLowerCase())) {
@@ -2077,7 +2092,7 @@ public class MsgServiceImpl implements MsgService{
 		 }
 		 
 		 try {
-			 ReplyMsg gptForUser = ChatGpt.getGptForUser(raw_message);
+			 ReplyMsg gptForUser = ChatGpt.getGpt(command,MsbotConst.user_prompt);
 			 GroupMsg groupMsg = new GroupMsg();
 			 groupMsg.setAuto_escape(false);
 			 groupMsg.setGroup_id(Long.parseLong(receiveMsg.getGroup_id()));
@@ -2087,31 +2102,10 @@ public class MsgServiceImpl implements MsgService{
 		} catch (Exception e) {
 			
 		}
-		 
-		 
-		 if(MsbotConst.moliKey2!=null&&MsbotConst.moliSecret2!=null&&!MsbotConst.moliKey2.isEmpty()&&!MsbotConst.moliSecret2.isEmpty()) {
-			 if(!raw_message.contains("[CQ")) {
-					String tuLingMsg = groupMsgService.MoliMsg2(command, Math.abs(receiveMsg.getUser_id().hashCode())+"", receiveMsg.getSender().getNickname());
-					@SuppressWarnings("unchecked")
-					Map<String,Object> result = (Map<String, Object>) JSON.parse(tuLingMsg); 
-					System.out.println(tuLingMsg);
-					if((result.get("message")+"").contains("请求成功")) {
-						String reply = tuLingMsg.substring(tuLingMsg.indexOf("content")+10,tuLingMsg.indexOf("\",\"typed\":"));
-						replyMsg.setReply(reply);
-						
-						GroupMsg groupMsg = new GroupMsg();
-						groupMsg.setGroup_id(Long.parseLong(receiveMsg.getGroup_id()));
-						groupMsg.setMessage(reply);
-						groupMsgService.sendGroupMsg(groupMsg);
-						return null;
-					}
-				}
-			}
-		
-		 
-		
+
 		Random r = new Random();
-		int random = r.nextInt(6) + 1;
+		int random = r.nextInt(1);
+//		int random = r.nextInt(6) + 1;
 		if(random==1) {
 			replyMsg.setAt_sender(false);
 			replyMsg.setReply("[CQ:image,file=img/buzhidao1.gif]");
@@ -2129,7 +2123,13 @@ public class MsgServiceImpl implements MsgService{
 			replyMsg.setReply("[CQ:image,file=img/buzhidao5.png]");
 		}else{
 			replyMsg.setAt_sender(false);
-			replyMsg.setReply("[CQ:image,file=img/buzhidao2.gif]");
+			replyMsg.setReply("[CQ:image,file=img/buzhidao.png]");
+			
+			GroupMsg gm = new GroupMsg();
+			gm.setGroup_id(Long.parseLong(receiveMsg.getGroup_id()));
+			gm.setMessage("[CQ:image,file=img/buzhidao.png]");
+			groupMsgService.sendGroupMsg(gm);
+			return null;
 		}
         return replyMsg;
 	}
@@ -2254,17 +2254,14 @@ public class MsgServiceImpl implements MsgService{
 		return map;
 	}
 	
-	
-	
 	private boolean isAdminMsg(String user_id) {
 		for(String temp : MsbotConst.managerId) {
 			if(temp.equals(user_id)) {
 				return true;
 			}
 		}
-		return false;
+		return false;	
 	}
-	
 
 	//someone leave
 	private ReplyMsg handLeave(NoticeMsg noticeMsg) {

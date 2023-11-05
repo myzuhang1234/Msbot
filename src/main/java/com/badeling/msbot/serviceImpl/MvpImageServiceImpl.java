@@ -18,6 +18,7 @@ import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 
 import com.badeling.msbot.config.MsbotConst;
+import com.badeling.msbot.domain.GlobalVariable;
 import com.badeling.msbot.domain.ReceiveMsg;
 import com.badeling.msbot.service.MvpImageService;
 import com.badeling.msbot.util.Base64Util;
@@ -151,14 +152,11 @@ public class MvpImageServiceImpl implements MvpImageService{
 	
 	//获取token
 	public static String getAuth() {
-        // 官网获取的 API Key 更新为你注册的
-        String clientId = MsbotConst.baiduKey;
-        // 官网获取的 Secret Key 更新为你注册的
-        String clientSecret = MsbotConst.baiduSecret;
-        return getAuth(clientId, clientSecret);
+        return GlobalVariable.getBaiduAuth().get("imageContent");
     }
-
-    public static String getAuth(String ak, String sk) {
+		
+	@Override
+    public String getAuth(String ak, String sk) {
         // 获取token地址
         String authHost = "https://aip.baidubce.com/oauth/2.0/token?";
         String getAccessTokenUrl = authHost
@@ -334,6 +332,9 @@ public class MvpImageServiceImpl implements MvpImageService{
         }
         return null;
     }
+	
+	
+	
 	
 	
 }

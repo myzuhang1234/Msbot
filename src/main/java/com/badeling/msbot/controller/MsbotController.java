@@ -5,10 +5,8 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import com.alibaba.fastjson.JSON;
-import com.badeling.msbot.domain.GroupMsg;
 import com.badeling.msbot.domain.ReplyMsg;
 import com.badeling.msbot.service.GroupMsgService;
 import com.badeling.msbot.service.MsgService;
@@ -51,32 +49,4 @@ public class MsbotController {
 		
 		return JSON.toJSONString(receive);
 	}
-	
-	//对接b站挂小心心的功能 可以忽略
-	@RequestMapping("/server_bili")
-	@ResponseBody
-	public String msgServer(@RequestParam("title")String title,@RequestParam("desp")String desp) {
-		GroupMsg groupMsg = new GroupMsg();
-		groupMsg.setGroup_id(Long.parseLong("348273823"));
-		String[] split = desp.split("用户:");
-		for(String temp : split) {
-			if(temp.isEmpty()) {
-				continue;
-			}else {
-				while(temp.endsWith("\r")||temp.endsWith("\n")) {
-					temp = temp.substring(0,temp.length()-2);
-				}
-				groupMsg.setMessage(title+"\r\n"+"用户:"+temp);
-				groupMsgService.sendGroupMsg(groupMsg);
-				try {
-					Thread.sleep(1221);
-				} catch (Exception e) {
-					
-				}
-			}
-		}
-		return null;
-	}
-	
-	
 }
