@@ -14,8 +14,6 @@
 
 # 视频搭建流程：
 
-windows免环境版：https://www.bilibili.com/video/BV1us4y1w7JH
-
 Linux服务器搭建：https://www.bilibili.com/video/BV14R4y1G7sM
 
 windows服务器搭建：https://www.bilibili.com/video/BV1pW4y1r7JS
