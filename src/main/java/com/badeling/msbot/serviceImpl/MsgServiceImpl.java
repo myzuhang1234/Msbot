@@ -53,6 +53,10 @@ public class MsgServiceImpl implements MsgService{
 
 	@Autowired
 	private RecordService recordService;
+
+	@Autowired
+	private ErniebotService erniebotService;
+
 	@Autowired
 	private DrawService drawService;
 	@Autowired
@@ -231,7 +235,6 @@ public class MsgServiceImpl implements MsgService{
 	        if(A.equals(B)) {
 	            return 0;
 	        }
-	        //dp[i][j]表示源串A位置i到目标串B位置j处最低需要操作的次数
 	        int[][] dp = new int[A.length() + 1][B.length() + 1];
 	        for(int i = 1;i <= A.length();i++)
 	            dp[i][0] = i;
@@ -253,7 +256,6 @@ public class MsgServiceImpl implements MsgService{
 	@Override
 	public synchronized ReplyMsg receive(String msg) {
 		ReceiveMsg receiveMsg = null;
-		//判定是否有重复请求
 		TreeSet<String> msgList = GlobalVariable.getMsgList();
 		if(msgList.contains(msg)) {
 			return null;
@@ -283,7 +285,6 @@ public class MsgServiceImpl implements MsgService{
 				NoticeMsg noticeMsg = new ObjectMapper().readValue(msg, NoticeMsg.class);
 				return handLeave(noticeMsg);
 			}else if(msg.contains("\"notice_type\":\"group_card\"")) {
-				//修改群名片的事件 但目前使用的版本没有上传该事件 故暂时搁置
 //        		NoticeMsg noticeMsg = new ObjectMapper().readValue(msg, NoticeMsg.class);
 //        		return handModifyCard(noticeMsg);
 				return null;
@@ -293,13 +294,7 @@ public class MsgServiceImpl implements MsgService{
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		//私聊
-		//if(receiveMsg.getMessage_type().equals("private")&&receiveMsg.getUser_id().equals(MsbotConst.masterId)) {
-        //      	System.err.println(receiveMsg.toString());
-        //        	return handlePrivateMsg(receiveMsg);
-        // }
 
-		//接收消息统计
 		try {
 			int length = receiveMsg.getRaw_message().length();
 			if(length>2000) {
@@ -2835,7 +2830,7 @@ public class MsgServiceImpl implements MsgService{
 		if(raw_message.replace(" ", "").equals(MsbotConst.botName)) {
 			replyMsg.setAuto_escape(false);
 			replyMsg.setAt_sender(false);
-			replyMsg.setReply("(ﾉﾟ▽ﾟ)ﾉ我在哦~");
+			replyMsg.setReply("(??▽?)?我在哦~");
 			return replyMsg;
 		}
 
@@ -2985,67 +2980,23 @@ public class MsgServiceImpl implements MsgService{
 			 return replyMsg;
 		 }
 
-		 if(MsbotConst.moliKey2!=null&&MsbotConst.moliSecret2!=null&&!MsbotConst.moliKey2.isEmpty()&&!MsbotConst.moliSecret2.isEmpty()) {
-			 if(!raw_message.contains("[CQ")) {
-					String tuLingMsg = groupMsgService.MoliMsg2(command, Math.abs(receiveMsg.getUser_id().hashCode())+"", receiveMsg.getSender().getNickname());
-					@SuppressWarnings("unchecked")
-					Map<String,Object> result = (Map<String, Object>) JSON.parse(tuLingMsg);
-					System.out.println(tuLingMsg);
-					if((result.get("message")+"").contains("请求成功")) {
-						String reply = tuLingMsg.substring(tuLingMsg.indexOf("content")+10,tuLingMsg.indexOf("\",\"typed\":"));
-						replyMsg.setReply(reply);
-						return replyMsg;
-					}
-				}
+		if(raw_message.startsWith(MsbotConst.botName)){
+			raw_message = raw_message.substring(raw_message.indexOf(MsbotConst.botName)+2);
+			raw_message = raw_message.replaceAll("\r",".");
+			raw_message = raw_message.replaceAll("\n",".");
+			System.out.println(raw_message.toString());
+
+			try {
+				String result = erniebotService.sendErnieBotMsg(raw_message);
+				replyMsg.setReply(result);
+
+			} catch (Exception e) {
+				e.printStackTrace();
+				replyMsg.setReply("失败");
 			}
-
-
-
-//		if(!raw_message.contains("[CQ")) {
-//			//图灵机器人
-//			HashMap<String, Object> map = new HashMap<>();
-//			//reqType
-//			map.put("reqType", 0);
-//			//perception 内容
-//			HashMap<String, Object> textMap = new HashMap<>();
-//			HashMap<String, Object> contentMap = new HashMap<>();
-//			contentMap.put("text", raw_message);
-//			textMap.put("inputText", contentMap);
-//			map.put("perception", textMap);
-//			//key
-//			HashMap<String, Object> userMap = new HashMap<>();
-//			userMap.put("apiKey", );
-//			userMap.put("userId",Math.abs(receiveMsg.getSender().getUser_id().hashCode()) +"");
-//			map.put("userInfo", userMap);
-//			//消息传给图灵
-//			String json = JSONObject.toJSONString(map);
-//			System.out.println(json);
-//			String tuLingMsg = groupMsgService.tuLingMsg(json);
-//			System.out.println(tuLingMsg);
-//			//图灵消息返回 读取消息
-//			@SuppressWarnings("unchecked")
-//			Map<String,Object> result = (Map<String, Object>) JSON.parse(tuLingMsg);
-//
-//			@SuppressWarnings("unchecked")
-//			Map<String,Object> intent = (Map<String, Object>) result.get("intent");
-//			Integer code = (Integer) intent.get("code");
-//			if(code>9000||code<3000) {
-//				@SuppressWarnings("unchecked")
-//				List<Map<String,Object>> results = (List<Map<String,Object>>) result.get("results");
-//				String finalResult = "";
-//				for(Map<String,Object> temp : results) {
-//					@SuppressWarnings("unchecked")
-//					Map<String,String> object = (Map<String, String>) temp.get("values");
-//					finalResult += object.get("text");
-//				}
-//				replyMsg.setAt_sender(true);
-//				replyMsg.setReply(finalResult);
-//				return replyMsg;
-//			}
-//		}
-//
-
-
+			replyMsg.setAt_sender(false);
+			return replyMsg;
+		}
 
 		Random r = new Random();
 		int random = r.nextInt(6) + 1;
